@@ -1,0 +1,17 @@
+# CODEOWNERS — auto-request review from listed owners on every PR.
+# Reference: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for the whole repository
+*       @TrongThan
+
+# HAL — careful coordination with platform ports
+/src/hal/                       @TrongThan
+/src/ZenoPCB.h                  @TrongThan
+
+# Vendored libraries — update only via the manual procedure
+/src/vendor/                    @TrongThan
+
+# CI / release plumbing
+/.github/                       @TrongThan
+/library.properties             @TrongThan
+/library.json                   @TrongThan
