@@ -16,10 +16,10 @@ WiFi captive-portal provisioning · MQTT · OTA · Modbus · ZSignals · Alarms 
 ### Tải app điều khiển ZenoPCB
 
 <a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi">
-  <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="54">
-</a>&nbsp;
+  <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" width="200">
+</a>&nbsp;&nbsp;
 <a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi">
-  <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="54">
+  <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200">
 </a>
 
 </div>
@@ -315,10 +315,10 @@ Repo: <https://github.com/zenopcb/zenopcb-iot-platform>
 📱 **Tải app điều khiển ngay**
 
 <a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi">
-  <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="48">
-</a>&nbsp;
+  <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" width="180">
+</a>&nbsp;&nbsp;
 <a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi">
-  <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="48">
+  <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="180">
 </a>
 
 </div>
