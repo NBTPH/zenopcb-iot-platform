@@ -15,10 +15,7 @@ WiFi captive-portal provisioning · MQTT · OTA · Modbus · ZSignals · Alarms 
 
 ### Tải app điều khiển ZenoPCB
 
-<table><tr>
-<td valign="middle"><a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi"><img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="48"></a></td>
-<td valign="middle"><a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="58"></a></td>
-</tr></table>
+<a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi"><img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="48" align="middle"></a>&nbsp;&nbsp;<a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="58" align="middle"></a>
 
 </div>
 
@@ -312,9 +309,6 @@ Repo: <https://github.com/zenopcb/zenopcb-iot-platform>
 
 📱 **Tải app điều khiển ngay**
 
-<table><tr>
-<td valign="middle"><a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi"><img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="48"></a></td>
-<td valign="middle"><a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="58"></a></td>
-</tr></table>
+<a href="https://apps.apple.com/vn/app/zenopcb/id6759211734?l=vi"><img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="48" align="middle"></a>&nbsp;&nbsp;<a href="https://play.google.com/store/apps/details?id=com.zenopcb.iot&hl=vi"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="58" align="middle"></a>
 
 </div>
