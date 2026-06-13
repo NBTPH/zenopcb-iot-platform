@@ -26,7 +26,7 @@
   // server analog. Pattern H — WiFiProvisioning methods stub to failure on
   // UNO R4 per RESEARCH §Architectural Responsibility Map.
   class WebServer;  // Forward decl so `WebServer *_webServer;` member compiles.
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
   // Pattern H — no AP-mode hardware on STM32 (Ethernet F4 / ESP-AT F1).
   // WiFiProvisioning methods stub to failure.
   class WebServer;  // Forward decl so `WebServer *_webServer;` member compiles.

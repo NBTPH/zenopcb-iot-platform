@@ -46,13 +46,13 @@
 // Pattern B for Preferences). The vendored FlashStorage_STM32 only compiles on
 // STM32F/L/H/G/WB/MP1 cores; including this header from any other target is a
 // hard compile error in upstream. ZenoPCB consumers (Stm32NVS in Plan 07-04)
-// MUST wrap their translation units in `#if defined(STM32F1) || defined(STM32F4)
+// MUST wrap their translation units in `#if defined(STM32F1xx) || defined(STM32F4xx)
 // || ...` so ESP32 / ESP8266 / UNO R4 builds never reach this file.
 //
 // We keep upstream's `#error` guard verbatim below as a defense-in-depth check.
 // ============================================================================
 
-#if !( defined(STM32F0) || defined(STM32F1)  || defined(STM32F2) || defined(STM32F3)  ||defined(STM32F4) || defined(STM32F7) || \
+#if !( defined(STM32F0) || defined(STM32F1xx)  || defined(STM32F2) || defined(STM32F3)  ||defined(STM32F4xx) || defined(STM32F7) || \
        defined(STM32L0) || defined(STM32L1)  || defined(STM32L4) || defined(STM32H7)  ||defined(STM32G0) || defined(STM32G4) || \
        defined(STM32WB) || defined(STM32MP1) || defined(STM32L5) )
   #error This code is intended to run on STM32F/L/H/G/WB/MP1 platform! Please check your Tools->Board setting.

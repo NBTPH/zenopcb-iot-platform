@@ -1336,7 +1336,7 @@ namespace ZenoPCB
             // Simple WiFi monitoring when not using provisioning.
             // Pattern H gate: STM32F4 default-Ethernet has no WiFi.h so
             // status polling is skipped — provider abstraction is mandatory.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             static bool wasConnected = false;
             bool isNowConnected = WiFi.status() == WL_CONNECTED;
 
@@ -1790,7 +1790,7 @@ namespace ZenoPCB
         if (_wifiConfigured)
         {
             // Pattern H gate: WiFi.disconnect/begin unavailable on F4 Ethernet path.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             WiFi.disconnect();
             delay(100);
             WiFi.begin(_wifiSSID.c_str(), _wifiPassword.c_str());
@@ -1813,7 +1813,7 @@ namespace ZenoPCB
         }
         // Pattern H gate: F4 default-Ethernet has no WiFi.h; in that branch a
         // provider is mandatory, so reaching here means not-connected.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         return WiFi.status() == WL_CONNECTED;
 #else
         return false;
@@ -1876,7 +1876,7 @@ namespace ZenoPCB
     String Zeno::getIP() const
     {
         // Pattern H gate: F4 default-Ethernet has no WiFi.h.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         if (WiFi.status() == WL_CONNECTED)
         {
             return WiFi.localIP().toString();
@@ -1988,7 +1988,7 @@ namespace ZenoPCB
         // WiFi.h equivalent, so the test/claim lambdas (which instantiate a
         // local WiFiClient) skip wiring on that platform — the provisioning
         // surface (web server, AP mode) is already a no-op stub there.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         _wifiProvisioning->setMQTTTestCallback([this]() -> bool
                                                {
             // Phase 5 D-14 (layered): runtime override -> build-flag override -> XOR fallback.
@@ -2315,7 +2315,7 @@ namespace ZenoPCB
             // (which on F4 is permanently false since provisioning is a
             // no-op stub) — effectively disabling MQTT auto-reconnect
             // unless an external network provider is wired in.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             _mqtt->setNetworkCheck([this]()
                                    { return WiFi.status() == WL_CONNECTED && !isAPMode(); });
 #else
@@ -2379,7 +2379,7 @@ namespace ZenoPCB
                 }
                 else
                 {
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                     _mqtt->setClient(&_wifiClient);
                     ZENO_LOG_CORE("⚠️ Provider client NULL, fallback to WiFiClient");
 #else
@@ -2389,7 +2389,7 @@ namespace ZenoPCB
             }
             else
             {
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                 _mqtt->setClient(&_wifiClient);
                 ZENO_LOG_CORE("✅ WiFiClient set for MQTT");
 #else
@@ -4085,7 +4085,7 @@ namespace ZenoPCB
             }
             else
             {
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                 _ota->setClient(&_otaWifiClient);
                 ZENO_LOG_CORE("⚠️ OTA fallback to dedicated OTA WiFiClient (provider OTA client NULL)");
 #else
@@ -4095,7 +4095,7 @@ namespace ZenoPCB
         }
         else
         {
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             _ota->setClient(&_otaWifiClient);
             ZENO_LOG_CORE("✅ OTA using dedicated OTA WiFiClient (separate from MQTT)");
 #else

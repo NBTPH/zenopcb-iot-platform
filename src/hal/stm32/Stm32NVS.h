@@ -47,7 +47,7 @@
 // (vendor/FlashStorage/FlashStorage_STM32.h:55-58); guarding the include
 // + class body at the header surface ensures ESP32/ESP8266/UNO R4 envs
 // produce an empty translation unit for this file during library scanning.
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 // Relative include into the vendored ZenoFlashStorage (Plan 07-03, MIT,
 // renamed from upstream EEPROMClass → ZenoFlashStorage per D-14). The
@@ -126,6 +126,6 @@ private:
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
 
 #endif  // ZENOPCB_STM32_NVS_H

@@ -17,9 +17,9 @@
   #include <ESP8266WiFi.h>
 #elif defined(ARDUINO_UNOR4_WIFI)
   #include <WiFiS3.h>
-#elif defined(STM32F4)
+#elif defined(STM32F4xx)
   // F4 default = Ethernet (no WiFi.h equivalent on STM32duino Ethernet path).
-#elif defined(STM32F1)
+#elif defined(STM32F1xx)
   #include <WiFiEspAT.h>
 #endif
 

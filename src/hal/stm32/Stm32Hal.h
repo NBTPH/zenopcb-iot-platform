@@ -12,8 +12,8 @@
  * IZenoHal sub-getters. Per-family divergence is concentrated inside
  * `capabilities()` (F4 adds CAP_DIAGNOSTICS per D-12 OQ-1 RESOLVED;
  * F1 MICRO drops it pre-emptively) and inside Stm32NVS partition size
- * and Stm32System heap totals — all via `#if defined(STM32F4)` /
- * `#elif defined(STM32F1)` internal switches.
+ * and Stm32System heap totals — all via `#if defined(STM32F4xx)` /
+ * `#elif defined(STM32F1xx)` internal switches.
  *
  * Pattern D — deleted copy semantics. The contained Stm32System wraps the
  * NVIC + IWatchdog process-global singletons; the contained Stm32NVS wraps
@@ -40,7 +40,7 @@
 // surface so non-STM32 envs see an empty translation unit for this facade.
 // The IZenoHal abstract interface include stays OUTSIDE the guard because
 // it is the cross-platform contract type.
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 #include "Stm32Storage.h"
 #include "Stm32NVS.h"
@@ -74,7 +74,7 @@ public:
         // D-10 / D-12 OQ-1 RESOLVED: F4 adds CAP_DIAGNOSTICS (heap budget);
         // F1 MICRO drops it pre-emptively.
         uint32_t caps = CAP_NVS | CAP_NTP | CAP_WATCHDOG;
-#if defined(STM32F4)
+#if defined(STM32F4xx)
         caps |= CAP_DIAGNOSTICS;
 #endif
         return caps;
@@ -99,6 +99,6 @@ IZenoHal& getStm32Hal();
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
 
 #endif  // ZENOPCB_STM32_HAL_H

@@ -18,6 +18,36 @@
  * }
  */
 
+// ============================================================================
+// Auto MICRO_BASIC profile for tight-flash MCUs.
+//
+// STM32F103 Blue Pill (C8) has 64 KB Flash. The full library (provisioning,
+// storage, schedule, alarm, OTA, diagnostics) overflows by ~70 KB. Auto-disable
+// the optional modules so the library links by default on F103. Users with
+// F103CB (128 KB) or who explicitly want a module can opt back in by defining
+// `ZENOPCB_MICRO_BASIC_OFF` in their build flags.
+// ============================================================================
+#if defined(STM32F1xx) && !defined(ZENOPCB_MICRO_BASIC_OFF)
+  #ifndef ZENOPCB_DISABLE_PROVISIONING
+    #define ZENOPCB_DISABLE_PROVISIONING
+  #endif
+  #ifndef ZENOPCB_DISABLE_DIAGNOSTICS
+    #define ZENOPCB_DISABLE_DIAGNOSTICS
+  #endif
+  #ifndef ZENOPCB_DISABLE_SCHEDULE
+    #define ZENOPCB_DISABLE_SCHEDULE
+  #endif
+  #ifndef ZENOPCB_DISABLE_ALARM
+    #define ZENOPCB_DISABLE_ALARM
+  #endif
+  #ifndef ZENOPCB_DISABLE_OTA
+    #define ZENOPCB_DISABLE_OTA
+  #endif
+  #ifndef ZENOPCB_DISABLE_STORAGE
+    #define ZENOPCB_DISABLE_STORAGE
+  #endif
+#endif
+
 #include <Arduino.h>
 // Phase 7 Plan 07-06 — WiFi.h switch extended to 4 platforms. Phase 7 ports
 // (UNO R4 WiFi, STM32) integrate alongside existing ESP32 + ESP8266 path. F4
@@ -29,11 +59,16 @@
   #include <ESP8266WiFi.h>
 #elif defined(ARDUINO_UNOR4_WIFI)
   #include <WiFiS3.h>
-#elif defined(STM32F4)
+#elif defined(STM32F4xx)
   // F4 may use WiFiEspAT (override -DZENOPCB_NET=esp-at) OR Ethernet (default).
   // No WiFi.h equivalent on default F4 Ethernet path.
-#elif defined(STM32F1)
-  #include <WiFiEspAT.h>
+#elif defined(STM32F1xx)
+  // Default MICRO_BASIC profile auto-disables provisioning on F103, so the
+  // WiFiEspAT external library only needs to be installed when the user
+  // explicitly opts back in via -DZENOPCB_MICRO_BASIC_OFF.
+  #if !defined(ZENOPCB_DISABLE_PROVISIONING)
+    #include <WiFiEspAT.h>
+  #endif
 #endif
 
 // Optional TLS/SSL support - Define ZENOPCB_ENABLE_TLS to enable (adds ~150KB Flash)
@@ -55,7 +90,7 @@
 #elif defined(ARDUINO_UNOR4_WIFI)
   #include "hal/unor4/UnoR4Hal.h"
   #define ZENOPCB_DEFAULT_HAL() ZenoPCB::getUnoR4Hal()
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
   #include "hal/stm32/Stm32Hal.h"
   #define ZENOPCB_DEFAULT_HAL() ZenoPCB::getStm32Hal()
 #else
@@ -1179,7 +1214,7 @@ namespace ZenoPCB
         // The owning code paths (direct WiFi.begin() in Zeno::begin()) are
         // already Pattern-H-guarded; the network provider layer supplies
         // the client via `_networkProvider->getClient()` for non-WiFi paths.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         WiFiClient _wifiClient;    // MQTT client
         WiFiClient _otaWifiClient; // OTA client (riêng, không ảnh hưởng MQTT)
 #endif

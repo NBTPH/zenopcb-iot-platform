@@ -1,6 +1,6 @@
 #include "Stm32OTA.h"
 
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 #include "../../core/ZenoPCBDebug.h"
 
@@ -25,4 +25,4 @@ bool   Stm32OTA::rollBack()                       { return false; }
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)

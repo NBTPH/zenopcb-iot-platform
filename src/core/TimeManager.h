@@ -9,7 +9,7 @@
 // compile downstream. ESP32 / ESP8266 / STM32 newlib all provide a
 // complete `<sys/time.h>` — keep it included there to preserve the
 // `configTime()` call path inside TimeManager.cpp.
-#if defined(ESP32) || defined(ESP8266) || defined(STM32F1) || defined(STM32F4)
+#if defined(ESP32) || defined(ESP8266) || defined(STM32F1xx) || defined(STM32F4xx)
   #include <sys/time.h>
 #endif
 // Plan 06-03 OQ-4 RESOLVED — esp_sntp.h is an ESP-IDF header that does

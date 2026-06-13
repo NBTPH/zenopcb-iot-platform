@@ -1,6 +1,6 @@
 #include "Stm32Hal.h"
 
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 namespace ZenoPCB {
 
@@ -19,12 +19,12 @@ namespace ZenoPCB {
 // support DiagnosticsCollector accumulator. The static_asserts below
 // double-anchor the per-family expected hex to the call-site so a future
 // edit cannot silently desync the two surfaces.
-#if defined(STM32F4)
+#if defined(STM32F4xx)
 static_assert(
     (IZenoHal::CAP_NVS | IZenoHal::CAP_NTP | IZenoHal::CAP_WATCHDOG |
      IZenoHal::CAP_DIAGNOSTICS) == 0x9Cu,
     "STM32F4 capability bitmask must equal 0x9C");
-#elif defined(STM32F1)
+#elif defined(STM32F1xx)
 static_assert(
     (IZenoHal::CAP_NVS | IZenoHal::CAP_NTP | IZenoHal::CAP_WATCHDOG) == 0x1Cu,
     "STM32F1 MICRO capability bitmask must equal 0x1C");
@@ -37,4 +37,4 @@ IZenoHal& getStm32Hal() {
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)

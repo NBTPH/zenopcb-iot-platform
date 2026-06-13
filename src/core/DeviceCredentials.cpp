@@ -17,7 +17,7 @@
   #include "../hal/esp8266/Esp8266Hal.h"
 #elif defined(ARDUINO_UNOR4_WIFI)
   #include "../hal/unor4/UnoR4Hal.h"
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
   #include "../hal/stm32/Stm32Hal.h"
 #endif
 
@@ -47,7 +47,7 @@ namespace ZenoPCB
         : _hal(getEsp8266Hal()), _provisioned(false)
 #elif defined(ARDUINO_UNOR4_WIFI)
         : _hal(getUnoR4Hal()), _provisioned(false)
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
         : _hal(getStm32Hal()), _provisioned(false)
 #else
 #error "DeviceCredentials default ctor: unsupported platform (no canonical HAL singleton). \

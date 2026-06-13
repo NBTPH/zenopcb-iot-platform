@@ -15,7 +15,7 @@
   #include "../hal/esp8266/Esp8266Hal.h"
 #elif defined(ARDUINO_UNOR4_WIFI)
   #include "../hal/unor4/UnoR4Hal.h"
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
   #include "../hal/stm32/Stm32Hal.h"
 #endif
 #include "../ZenoJson.h"  // ArduinoJson API from vendored copy (namespace ZenoJson; see vendor/ArduinoJson/LICENSE.md)
@@ -2308,7 +2308,7 @@ namespace ZenoPCB
         : WiFiProvisioning(getEsp8266Hal())
 #elif defined(ARDUINO_UNOR4_WIFI)
         : WiFiProvisioning(getUnoR4Hal())
-#elif defined(STM32F1) || defined(STM32F4)
+#elif defined(STM32F1xx) || defined(STM32F4xx)
         : WiFiProvisioning(getStm32Hal())
 #else
 #error "WiFiProvisioning default ctor: unsupported platform (no canonical HAL singleton). \

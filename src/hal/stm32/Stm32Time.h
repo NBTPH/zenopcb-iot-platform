@@ -27,7 +27,7 @@
 // Ethernet / WiFiEspAT envs (Plan 07-05). Guarding here keeps the
 // Stm32Time type from materialising on ESP32/ESP8266 envs during
 // library indexing — symmetric to the rest of the Stm32*.h family.
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 #include <time.h>
 
@@ -51,6 +51,6 @@ public:
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
 
 #endif  // ZENOPCB_STM32_TIME_H

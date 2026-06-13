@@ -31,7 +31,7 @@
 // system includes here because every method is a failure-return stub, but
 // the guard keeps the class type from materialising on ESP32/ESP8266 envs
 // during library scanning (symmetric to the rest of the Stm32*.h family).
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 namespace ZenoPCB {
 
@@ -56,6 +56,6 @@ public:
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
 
 #endif  // ZENOPCB_STM32_STORAGE_H

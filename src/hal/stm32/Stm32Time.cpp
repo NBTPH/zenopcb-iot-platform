@@ -1,6 +1,6 @@
 #include "Stm32Time.h"
 
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 #include "../../core/TimeManager.h"
 
@@ -34,4 +34,4 @@ bool Stm32Time::isSynced() {
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)

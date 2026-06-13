@@ -1,6 +1,14 @@
 #include "Stm32NVS.h"
 
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
+
+// Single-TU entry point for the vendored ZenoFlashStorage impl.
+// `Stm32NVS.h` pulls in `FlashStorage_STM32.hpp` (class decl only); the
+// impl of eeprom_buffer_{fill,flush,read_byte,write_byte} lives in
+// `utility/stm32_eeprom_Impl.h` and is only included via the upstream
+// `FlashStorage_STM32.h` single-TU pattern. Including it here in the .cpp
+// keeps the impl in exactly one translation unit so the library links.
+#include "../../vendor/FlashStorage/FlashStorage_STM32.h"
 
 #include <string.h>
 
@@ -15,9 +23,9 @@ namespace ZenoPCB {
 // defined via E2END). Clamping below `length()` keeps NVS usage within
 // the per-family RAM/Flash budget per D-12 MICRO profile.
 // ============================================================================
-#if defined(STM32F4)
+#if defined(STM32F4xx)
 static constexpr size_t kPartitionBytes = 8u * 1024u;   // F4 NVS budget.
-#elif defined(STM32F1)
+#elif defined(STM32F1xx)
 static constexpr size_t kPartitionBytes = 2u * 1024u;   // F1 MICRO budget per D-12.
 #endif
 
@@ -305,4 +313,4 @@ bool Stm32NVS::clear() {
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)

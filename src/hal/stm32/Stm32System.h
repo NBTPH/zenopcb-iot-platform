@@ -39,7 +39,7 @@
 // CMSIS / HAL intrinsics + IWatchdog.h live in the .cpp behind the same
 // guard. Guarding at the header surface keeps the Stm32System type from
 // materialising on non-STM32 envs during library scanning.
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 namespace ZenoPCB {
 
@@ -63,6 +63,6 @@ public:
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
 
 #endif  // ZENOPCB_STM32_SYSTEM_H

@@ -151,7 +151,7 @@ namespace ZenoPCB
         // Pattern H gate: STM32F4 default-Ethernet has no WiFi.h; the
         // diagnostics IP collection falls through to the not-connected
         // sentinel in that branch.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         if (WiFi.status() == WL_CONNECTED)
         {
             return WiFi.localIP().toString();
@@ -190,7 +190,7 @@ namespace ZenoPCB
 #endif
 
         // WiFi RSSI — Pattern H gate as above.
-#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1)
+#if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         if (WiFi.status() == WL_CONNECTED)
         {
             return WiFi.RSSI();

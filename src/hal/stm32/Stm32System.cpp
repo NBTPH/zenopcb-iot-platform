@@ -1,6 +1,6 @@
 #include "Stm32System.h"
 
-#if defined(STM32F1) || defined(STM32F4)
+#if defined(STM32F1xx) || defined(STM32F4xx)
 
 #include <stdio.h>
 #include <string.h>
@@ -49,9 +49,9 @@ uint32_t Stm32System::getMaxAllocHeap() {
 uint32_t Stm32System::getTotalHeap() {
     // Per-family static const — STM32 SRAM is statically partitioned at
     // link time (07-RESEARCH §F1 + F4 spike).
-#if defined(STM32F4)
+#if defined(STM32F4xx)
     return 196608;   // 192 KB SRAM on Nucleo-F429ZI / F407VG.
-#elif defined(STM32F1)
+#elif defined(STM32F1xx)
     return 20480;    // 20 KB SRAM on Blue Pill F103C8.
 #endif
 }
@@ -97,4 +97,4 @@ void Stm32System::feedWatchdog() {
 
 }  // namespace ZenoPCB
 
-#endif  // defined(STM32F1) || defined(STM32F4)
+#endif  // defined(STM32F1xx) || defined(STM32F4xx)
