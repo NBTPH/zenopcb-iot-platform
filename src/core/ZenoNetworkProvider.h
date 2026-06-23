@@ -2,11 +2,11 @@
  * @file ZenoNetworkProvider.h
  * @brief Abstract interface for pluggable network providers
  *
- * Cho phép thư viện bên ngoài (Zeno4G, ZenoEthernetW5500, ZenoMultiConnect)
- * cung cấp kết nối mạng cho ZenoPCB mà core library không phụ thuộc
- * vào bất kỳ hardware driver nào.
+ * Cho php th vin bn ngoi (Zeno4G, ZenoEthernetW5500, ZenoMultiConnect)
+ * cung cp kt ni mng cho ZenoPCB m core library khng ph thuc
+ * vo bt k hardware driver no.
  *
- * User tạo provider, rồi truyền vào Zeno class:
+ * User to provider, ri truyn vo Zeno class:
  * @code
  * #include <ZenoEthernetW5500.h>
  * ZenoEthernetProvider ethProvider(5, 26);
@@ -24,18 +24,18 @@
 namespace ZenoPCB
 {
 
-    // Forward declaration — full definition in ZenoPCBTypes.h
+    // Forward declaration full definition in ZenoPCBTypes.h
     struct DeviceConfig;
 
     /**
      * @brief Abstract base class for all network providers
      *
-     * Implement this interface khi tạo network provider mới.
-     * Mỗi provider cung cấp:
-     * - begin()       → khởi tạo hardware + kết nối mạng
-     * - loop()        → bảo trì kết nối (DHCP, GPRS reconnect, ...)
-     * - isConnected() → kiểm tra trạng thái
-     * - getClient()   → trả về Client* cho MQTT sử dụng
+     * Implement this interface khi to network provider mi.
+     * Mi provider cung cp:
+     * - begin()        khi to hardware + kt ni mng
+     * - loop()         bo tr kt ni (DHCP, GPRS reconnect, ...)
+     * - isConnected()  kim tra trng thi
+     * - getClient()    tr v Client* cho MQTT s dng
      */
     class ZenoNetworkProvider
     {
@@ -43,80 +43,80 @@ namespace ZenoPCB
         virtual ~ZenoNetworkProvider() = default;
 
         /**
-         * @brief Khởi tạo network hardware và kết nối
+         * @brief Khi to network hardware v kt ni
          *
-         * Được gọi từ Zeno::begin() sau khi DeviceConfig đã load từ NVS.
-         * Provider đọc config liên quan (APN, IP tĩnh, DHCP, ...) từ đây.
+         * c gi t Zeno::begin() sau khi DeviceConfig  load t NVS.
+         * Provider c config lin quan (APN, IP tnh, DHCP, ...) t y.
          *
-         * @param config DeviceConfig chứa thông tin từ NVS provisioning
-         * @return true nếu hardware OK (không nhất thiết phải connected ngay)
+         * @param config DeviceConfig cha thng tin t NVS provisioning
+         * @return true nu hardware OK (khng nht thit phi connected ngay)
          */
         virtual bool begin(const DeviceConfig &config) = 0;
 
         /**
-         * @brief Bảo trì kết nối — gọi từ Zeno::loop() mỗi vòng lặp
+         * @brief Bo tr kt ni  gi t Zeno::loop() mi vng lp
          *
-         * Thực hiện: DHCP renewal, GPRS reconnect, link check, v.v.
+         * Thc hin: DHCP renewal, GPRS reconnect, link check, v.v.
          */
         virtual void loop() = 0;
 
         /**
-         * @brief Kiểm tra kết nối mạng có sẵn sàng không
-         * @return true nếu có link + IP hợp lệ
+         * @brief Kim tra kt ni mng c sn sng khng
+         * @return true nu c link + IP hp l
          */
         virtual bool isConnected() const = 0;
 
         /**
-         * @brief Lấy Client* cho MQTT sử dụng
+         * @brief Ly Client* cho MQTT s dng
          *
-         * Client* phải tồn tại suốt lifetime của provider.
-         * MQTT sẽ dùng pointer này trực tiếp.
+         * Client* phi tn ti sut lifetime ca provider.
+         * MQTT s dng pointer ny trc tip.
          *
-         * @return Pointer đến Arduino Client (EthernetClient, TinyGsmClient, ...)
+         * @return Pointer n Arduino Client (EthernetClient, TinyGsmClient, ...)
          */
         virtual Client *getClient() = 0;
 
         /**
-         * @brief Lấy Client* riêng cho OTA (không ảnh hưởng MQTT)
+         * @brief Ly Client* ring cho OTA (khng nh hng MQTT)
          *
-         * OTA và MQTT phải dùng TCP connection ĐỘC LẬP.
-         * Nếu chia sẻ cùng 1 Client*: OTA connect() sẽ kill TCP của MQTT.
+         * OTA v MQTT phi dng TCP connection C LP.
+         * Nu chia s cng 1 Client*: OTA connect() s kill TCP ca MQTT.
          *
-         * Default: return getClient() (fallback cho provider chưa override).
-         * Các provider có dedicated OTA client (Ethernet, 4G) nên override.
+         * Default: return getClient() (fallback cho provider cha override).
+         * Cc provider c dedicated OTA client (Ethernet, 4G) nn override.
          *
-         * @return Pointer đến Arduino Client riêng cho OTA
+         * @return Pointer n Arduino Client ring cho OTA
          */
         virtual Client *getOTAClient() { return getClient(); }
 
         /**
-         * @brief Lấy địa chỉ IP hiện tại
-         * @return IP dưới dạng String, "0.0.0.0" nếu chưa kết nối
+         * @brief Ly a ch IP hin ti
+         * @return IP di dng String, "0.0.0.0" nu cha kt ni
          */
         virtual String getLocalIP() const = 0;
 
         /**
-         * @brief Tên provider cho logging
-         * @return Chuỗi tĩnh, ví dụ: "Ethernet", "4G", "MultiConnect"
+         * @brief Tn provider cho logging
+         * @return Chui tnh, v d: "Ethernet", "4G", "MultiConnect"
          */
         virtual const char *getName() const = 0;
 
         /**
-         * @brief Đồng bộ thời gian qua network provider
+         * @brief ng b thi gian qua network provider
          *
-         * Cho phép provider tự sync time bằng cách riêng (ví dụ: modem NTP
-         * qua AT+CNTP cho 4G). Nếu thành công, provider set ESP32 RTC
-         * bằng settimeofday() và return true.
+         * Cho php provider t sync time bng cch ring (v d: modem NTP
+         * qua AT+CNTP cho 4G). Nu thnh cng, provider set ESP32 RTC
+         * bng settimeofday() v return true.
          *
-         * Default: return false (provider không hỗ trợ, dùng configTime fallback).
+         * Default: return false (provider khng h tr, dng configTime fallback).
          *
-         * @return true nếu sync thành công và ESP32 RTC đã được set
-         * @return false nếu provider không hỗ trợ hoặc sync thất bại
+         * @return true nu sync thnh cng v ESP32 RTC  c set
+         * @return false nu provider khng h tr hoc sync tht bi
          */
         virtual bool syncTime() { return false; }
 
         // ============================================
-        // Diagnostics support — override in providers
+        // Diagnostics support override in providers
         // ============================================
 
         /** @brief Signal quality (WiFi: RSSI dBm, 4G: CSQ 0-31, Ethernet: link speed proxy) */
@@ -128,14 +128,14 @@ namespace ZenoPCB
         /** @brief Network type string ("LTE", "3G", "WiFi", "Ethernet") */
         virtual String getNetworkType() const { return ""; }
 
-        /** @brief Modem IMEI — unique hardware ID for cellular modules */
+        /** @brief Modem IMEI  unique hardware ID for cellular modules */
         virtual String getModemIMEI() const { return ""; }
 
         /** @brief MAC address or equivalent unique ID (IMEI for 4G) */
         virtual String getMACAddress() const { return ""; }
 
         // ============================================
-        // Pause support — pause reconnection during AP mode
+        // Pause support pause reconnection during AP mode
         // ============================================
 
         /** @brief Pause network maintenance (reconnect, etc.) */

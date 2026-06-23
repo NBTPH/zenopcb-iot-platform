@@ -7,7 +7,7 @@
 namespace ZenoPCB {
 
 bool UnoR4Storage::begin() {
-    // CAP_FS_FILES=0 — no LittleFS / SPIFFS on UNO R4 RA4M1. Log once to
+    // CAP_FS_FILES=0 no LittleFS / SPIFFS on UNO R4 RA4M1. Log once to
     // surface the platform gap; UnoR4Hal::capabilities() omits CAP_FS_FILES
     // so capability-gated callers should never reach this in practice.
     ZENO_LOG_CORE("[WARN] UnoR4Storage: filesystem not supported (CAP_FS_FILES=0)");

@@ -4,9 +4,9 @@
  *
  * Plan 04-03. See ConnectionConfig.h / DataMonitorConfig.h for the path
  * constants `CONNECTIONS_DIR`, `META_FILE`, `DATA_MONITORS_DIR`,
- * `DM_META_FILE` — path strings unchanged (EDGE-02 preserved).
+ * `DM_META_FILE`  path strings unchanged (EDGE-02 preserved).
  *
- * Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile (F103 64KB budget):
+ * Plan 07-06.6  TU guard for ZENOPCB_MICRO_BASIC profile (F103 64KB budget):
  * when `-DZENOPCB_DISABLE_STORAGE` is set, the entire storage layer compiles
  * out (LittleFSManager + ConnectionConfig + DataMonitorConfig persistence).
  */
@@ -36,7 +36,7 @@ namespace ZenoPCB
 
     namespace
     {
-        // Bounded buffers for JSON staging. Sized per 04-03-AUDIT §3.3.
+        // Bounded buffers for JSON staging. Sized per 04-03-AUDIT 3.3.
         constexpr size_t CONFIG_FILE_BUF_SIZE = 2048;
         constexpr size_t CONFIG_META_BUF_SIZE = 4096;
         constexpr size_t DM_FILE_BUF_SIZE = 1024;
@@ -140,7 +140,7 @@ namespace ZenoPCB
 
         if (_hal->storage().exists(path.c_str()))
         {
-            logError("Config already exists: " + String(config.shortId));
+            logError("Config already exists:" + String(config.shortId));
             return false;
         }
 
@@ -152,7 +152,7 @@ namespace ZenoPCB
         String jsonStr;
         serializeJson(doc, jsonStr);
 
-        // Write via HAL (Plan 04-03 — see 04-03-AUDIT.md §5 Deviation A:
+        // Write via HAL (Plan 04-03 see 04-03-AUDIT.md 5 Deviation A:
         // the prior temp+rename atomic semantic is replaced with a direct
         // writeFile() because IZenoStorage exposes no rename(). Short-write
         // detection retained via return-value compare.)
@@ -181,7 +181,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(path.c_str()))
         {
-            logError("Config not found: " + shortId);
+            logError("Config not found:" + shortId);
             return false;
         }
 
@@ -196,7 +196,7 @@ namespace ZenoPCB
         DeserializationError error = deserializeJson(doc, content);
         if (error)
         {
-            logError("JSON parse error: " + String(error.c_str()));
+            logError("JSON parse error:" + String(error.c_str()));
             return false;
         }
 
@@ -228,7 +228,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(path.c_str()))
         {
-            logError("Config not found: " + String(config.shortId));
+            logError("Config not found:" + String(config.shortId));
             return false;
         }
 
@@ -277,7 +277,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(path.c_str()))
         {
-            logError("Config not found: " + shortId);
+            logError("Config not found:" + shortId);
             return false;
         }
 
@@ -433,14 +433,14 @@ namespace ZenoPCB
 
     size_t LittleFSManager::getStorageUsed()
     {
-        // Deviation B per 04-03-AUDIT.md §5 — IZenoStorage does not expose
+        // Deviation B per 04-03-AUDIT.md 5 IZenoStorage does not expose
         // usedBytes(); return 0 until a future plan extends the HAL surface.
         return 0;
     }
 
     size_t LittleFSManager::getStorageAvailable()
     {
-        // Deviation B per 04-03-AUDIT.md §5 — IZenoStorage does not expose
+        // Deviation B per 04-03-AUDIT.md 5 IZenoStorage does not expose
         // totalBytes(); return 0 until a future plan extends the HAL surface.
         return 0;
     }
@@ -467,7 +467,7 @@ namespace ZenoPCB
 
         if (_hal->storage().exists(path.c_str()))
         {
-            logError("Data monitor already exists: " + String(config.mqttKey));
+            logError("Data monitor already exists:" + String(config.mqttKey));
             return false;
         }
 
@@ -510,7 +510,7 @@ namespace ZenoPCB
         String content;
         if (!_readFile(path, content))
         {
-            logError("Data monitor not found: " + mqttKey);
+            logError("Data monitor not found:" + mqttKey);
             return false;
         }
 
@@ -520,7 +520,7 @@ namespace ZenoPCB
 
         if (err)
         {
-            logError("JSON parse error: " + String(err.c_str()));
+            logError("JSON parse error:" + String(err.c_str()));
             return false;
         }
 
@@ -553,7 +553,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(path.c_str()))
         {
-            logError("Data monitor not found for update: " + String(config.mqttKey));
+            logError("Data monitor not found for update:" + String(config.mqttKey));
             return false;
         }
 
@@ -595,7 +595,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(path.c_str()))
         {
-            logError("Data monitor not found for delete: " + mqttKey);
+            logError("Data monitor not found for delete:" + mqttKey);
             return false;
         }
 
@@ -706,7 +706,7 @@ namespace ZenoPCB
 
         if (err)
         {
-            logError("Metadata JSON parse error: " + String(err.c_str()));
+            logError("Metadata JSON parse error:" + String(err.c_str()));
             return false;
         }
 
@@ -935,7 +935,7 @@ namespace ZenoPCB
 
     bool LittleFSManager::_atomicWrite(const String &path, const String &content)
     {
-        // 04-03-AUDIT.md §5 Deviation A: IZenoStorage does not expose rename(),
+        // 04-03-AUDIT.md 5 Deviation A: IZenoStorage does not expose rename(),
         // so the pre-refactor temp+rename atomic-write sequence is replaced
         // with a direct writeFile() and short-write detection. Power-loss
         // crash-resilience is reduced; functional callers already check the
@@ -958,7 +958,7 @@ namespace ZenoPCB
             return false;
         }
 
-        // We choose a bounded staging buffer per AUDIT §3.3. Connection /
+        // We choose a bounded staging buffer per AUDIT 3.3. Connection /
         // data-monitor files top out around 2 KB; meta files top out around
         // 4 KB at MAX_CONNECTIONS/MAX_DATA_MONITORS=200. CONFIG_META_BUF_SIZE
         // = 4096 covers both.

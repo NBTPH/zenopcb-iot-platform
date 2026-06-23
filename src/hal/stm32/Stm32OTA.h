@@ -3,14 +3,14 @@
 
 /**
  * @file Stm32OTA.h
- * @brief STM32 (F1 + F4) concrete impl of IZenoOTA — failure-stub
+ * @brief STM32 (F1 + F4) concrete impl of IZenoOTA  failure-stub
  *        (CAP_OTA=0 default; no custom bootloader on default builds).
  *
- * Mechanical mirror of `Esp8266OTA.{h,cpp}` Pattern A — see Phase 7
- * 07-PATTERNS.md §"Stm32OTA". STM32 OTA requires a custom bootloader
+ * Mechanical mirror of `Esp8266OTA.{h,cpp}` Pattern A  see Phase 7
+ * 07-PATTERNS.md "Stm32OTA". STM32 OTA requires a custom bootloader
  * (dual-bank flash partition + IAP write + reset-to-bootloader handshake)
  * which is explicitly out of v1.0.0 scope per 07-CONTEXT D-12. Unlike
- * UnoR4OTA — which offers a `-DZENOPCB_ENABLE_UNOR4_OTA` opt-in flag —
+ * UnoR4OTA  which offers a `-DZENOPCB_ENABLE_UNOR4_OTA` opt-in flag 
  * Stm32OTA has NO opt-in flag: every method always returns the failure
  * stub. Future work (Plan 07-09+ or downstream user fork) would author a
  * custom bootloader and conditionally enable real bodies behind a build
@@ -25,13 +25,13 @@
  *  2. A misbehaving caller that ignores the capability bit gets a single
  *     warning log + a failure return, not a crash.
  *
- * Pattern D — deleted copy semantics for hygiene (no underlying state,
+ * Pattern D  deleted copy semantics for hygiene (no underlying state,
  * but mirrors the rest of the Stm32 HAL).
  */
 
 #include "../IZenoOTA.h"
 
-// Pattern B / Pitfall 7 — TU guard at header surface. No STM32-specific
+// Pattern B / Pitfall 7 TU guard at header surface. No STM32-specific
 // system includes here because every method is a failure-return stub
 // (no `<Updater.h>` analog on STM32duino default), but the guard keeps
 // the class type from materialising on ESP32/ESP8266 envs during
@@ -45,7 +45,7 @@ public:
     Stm32OTA() = default;
     ~Stm32OTA() override = default;
 
-    // Deleted copy semantics (Pattern D — facade hygiene).
+    // Deleted copy semantics (Pattern D facade hygiene).
     Stm32OTA(const Stm32OTA&) = delete;
     Stm32OTA& operator=(const Stm32OTA&) = delete;
 

@@ -1,16 +1,17 @@
 /*
     Modbus Library for Arduino
     Core functions
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 Andr Sarmento Barbosa
                   2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 
-// Plan 06-03 D-03 — entire Modbus subsystem is ESP32-only. PIO's
+// Plan 06-03 D-03 entire Modbus subsystem is ESP32-only. PIO's
 // library scanner indexes all .cpp under lib/ZenoPCB/src/, so this TU
 // guard reduces the file to an empty translation unit on ESP8266.
 #if defined(ESP32)
 
 #include "Modbus.h"
+#include "../core/ZenoPCBDebug.h"
 
 #if defined(MODBUS_GLOBAL_REGS)
 #if defined(MODBUS_USE_STL)
@@ -313,7 +314,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 //uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
                 uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
                 uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
-                //Serial.printf("%d, %d, %d\n", fileNum, recNum, recLen);
+                //ZENO_LOG_RAW("%d, %d, %d\n", fileNum, recNum, recLen);
                 if (recs[0] != 0x06 || recNum > 0x270F) { // Wrong ref type or count of records
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;
@@ -931,4 +932,4 @@ namespace std {
 }
 #endif
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

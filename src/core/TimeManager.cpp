@@ -17,17 +17,17 @@ namespace ZenoPCB
 
         if (_ntpInitialized)
         {
-            ZENO_LOG_CORE("⏰ NTP already initialized, skipping");
+            ZENO_LOG_CORE("NTP already initialized, skipping");
             return;
         }
 
-        ZENO_LOG_CORE("⏰ Initializing NTP time sync...");
-        ZENO_LOG_CORE("   Primary: %s", ntpServer);
-        ZENO_LOG_CORE("   Secondary: %s", ntpServer2);
-        ZENO_LOG_CORE("   Tertiary: %s", ntpServer3);
-        ZENO_LOG_CORE("   GMT Offset: %ld seconds", gmtOffset_sec);
+        ZENO_LOG_CORE("Initializing NTP time sync...");
+        ZENO_LOG_CORE("Primary: %s", ntpServer);
+        ZENO_LOG_CORE("Secondary: %s", ntpServer2);
+        ZENO_LOG_CORE("Tertiary: %s", ntpServer3);
+        ZENO_LOG_CORE("GMT Offset: %ld seconds", gmtOffset_sec);
 
-        // Phase 7 Plan 07-06.5 (Area C) — configTime() is an
+        // Phase 7 Plan 07-06.5 (Area C) configTime() is an
         // Espressif-core SNTP extension that is NOT declared on
         // ArduinoCore-renesas (UNO R4) or STM32duino. NTP on those
         // platforms is delegated to their HAL Time sub-impl
@@ -40,7 +40,7 @@ namespace ZenoPCB
         // Initialize SNTP
         configTime(gmtOffset_sec, daylightOffset_sec, ntpServer, ntpServer2, ntpServer3);
 
-        // Set sync mode (immediate) — ESP32-only
+        // Set sync mode (immediate) ESP32-only
         // ESP8266 lwIP SNTP does not expose sntp_set_sync_mode; configTime()
         // above is sufficient on ESP8266 (Plan 06-03 OQ-4 RESOLVED).
 #if defined(ESP32)
@@ -55,12 +55,12 @@ namespace ZenoPCB
         (void)ntpServer;
         (void)ntpServer2;
         (void)ntpServer3;
-        ZENO_LOG_CORE("⚠️ TimeManager::syncNTP no-op on this platform (route NTP through HAL Time sub-impl)");
+        ZENO_LOG_CORE("TimeManager::syncNTP no-op on this platform (route NTP through HAL Time sub-impl)");
 #endif
 
         _ntpInitialized = true;
 
-        ZENO_LOG_CORE("✅ NTP sync initiated, waiting for response...");
+        ZENO_LOG_CORE("NTP sync initiated, waiting for response...");
     }
 
     bool TimeManager::isSynced()
@@ -73,7 +73,7 @@ namespace ZenoPCB
 
     bool TimeManager::waitForSync(uint8_t maxWaitSeconds)
     {
-        ZENO_LOG_CORE("⏳ Waiting for NTP sync (max %d seconds)...", maxWaitSeconds);
+        ZENO_LOG_CORE("Waiting for NTP sync (max %d seconds)...", maxWaitSeconds);
 
         uint32_t startTime = millis();
         uint32_t timeout = maxWaitSeconds * 1000;
@@ -82,7 +82,7 @@ namespace ZenoPCB
         {
             if (millis() - startTime > timeout)
             {
-                ZENO_LOG_CORE("❌ NTP sync timeout after %d seconds", maxWaitSeconds);
+                ZENO_LOG_CORE("NTP sync timeout after %d seconds", maxWaitSeconds);
                 return false;
             }
 
@@ -100,7 +100,7 @@ namespace ZenoPCB
         gmtime_r(&now, &timeinfo);
 
         ZENO_LOG_RAW("\n");
-        ZENO_LOG_CORE("✅ NTP synced! UTC time: %04d-%02d-%02d %02d:%02d:%02d",
+        ZENO_LOG_CORE("NTP synced! UTC time: %04d-%02d-%02d %02d:%02d:%02d",
                       timeinfo.tm_year + 1900,
                       timeinfo.tm_mon + 1,
                       timeinfo.tm_mday,

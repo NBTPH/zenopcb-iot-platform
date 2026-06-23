@@ -619,13 +619,13 @@ namespace ZenoPCB
 
     /**
      * @brief MQTT data-monitor message structure
-     * NOTE: Lưu dataJson string thay vì JsonObject để tránh dangling reference
+     * NOTE: Lu dataJson string thay v JsonObject  trnh dangling reference
      */
     struct DataMonitorMessage
     {
         String type; // "dm" = data-monitor
         DataMonitorAction action;
-        String dataJson; // Raw JSON string của data object
+        String dataJson; // Raw JSON string ca data object
 
         static DataMonitorAction actionFromChar(char c)
         {

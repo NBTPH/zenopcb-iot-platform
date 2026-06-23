@@ -10,7 +10,7 @@ namespace ZenoPCB {
 void Esp32Time::syncNTP(const char *server,
                         long gmtOffsetSec,
                         int daylightOffsetSec) {
-    // Pitfall 5 — delegate to TimeManager so a single owner controls the
+    // Pitfall 5 delegate to TimeManager so a single owner controls the
     // global lwIP SNTP state. TimeManager::syncNTP has additional
     // secondary/tertiary server defaults; pass through the primary and
     // let the defaults supply fallbacks.

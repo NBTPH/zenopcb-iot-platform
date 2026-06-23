@@ -3,18 +3,18 @@
 
 /**
  * @file UnoR4NVS.h
- * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoNVS —
+ * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoNVS 
  *        wraps the Arduino built-in `<EEPROM.h>` (Renesas FSP EEPROM
  *        emulation, ~8 KB on RA4M1).
  *
  * Mechanical Pattern A mirror of Esp8266NVS.{h,cpp} (Plan 06-01).
  * See .planning/phases/07-uno-r4-stm32-ports-capability-matrix/07-PATTERNS.md
- * §"UnoR4NVS" (lines 351-415).
+ * "UnoR4NVS" (lines 351-415).
  *
- * D-10 + RESEARCH §Architectural Responsibility Map line 110: UNO R4
+ * D-10 + RESEARCH Architectural Responsibility Map line 110: UNO R4
  * exposes the standard Arduino `<EEPROM.h>` API backed by RA4M1 silicon-
  * level wear-leveled flash emulation (~8 KB total). No vendored
- * Preferences backport is needed — we hand-roll a small length-prefixed
+ * Preferences backport is needed  we hand-roll a small length-prefixed
  * KV walker over the EEPROM byte array. Layout per record:
  *
  *   [u8 nsHash][u8 keyLen][u8 valLen][key bytes ...][val bytes ...]
@@ -23,11 +23,11 @@
  *                 acceptable: caller surface is `begin(ns)` then keyed
  *                 reads, and namespaces are static literals not user
  *                 input). 0x00 marks an empty slot / end-of-store.
- *   - `keyLen`  : 1..254 — bytes in the key (raw, no NUL).
+ *   - `keyLen`  : 1..254  bytes in the key (raw, no NUL).
  *                 0xFF reserved for "deleted record" tombstone.
- *   - `valLen`  : 0..254 — bytes in the value (raw, no NUL).
+ *   - `valLen`  : 0..254  bytes in the value (raw, no NUL).
  *
- * RA4M1 EEPROM has silicon-level wear leveling (RESEARCH §Don't Hand-Roll),
+ * RA4M1 EEPROM has silicon-level wear leveling (RESEARCH Don't Hand-Roll),
  * so no software wear management is required at the KV layer.
  *
  * Holds only the namespace identifier + open/readOnly flags; no
@@ -58,13 +58,13 @@ class UnoR4NVS : public IZenoNVS {
 public:
     UnoR4NVS() = default;
     ~UnoR4NVS() override {
-        // Best-effort end() — clear the open flag so a destructor-without-end
+        // Best-effort end() clear the open flag so a destructor-without-end
         // path does not leave the wrapper in an inconsistent state. The
         // EEPROM byte array itself is process-global; nothing to release.
         _open = false;
     }
 
-    // Deleted copy semantics (Pitfall 3 — EEPROM byte array is process-
+    // Deleted copy semantics (Pitfall 3 EEPROM byte array is process-
     // global state; duplicating the wrapper would let two `_open`
     // namespaces race on commit / clear).
     UnoR4NVS(const UnoR4NVS&) = delete;

@@ -188,7 +188,7 @@ namespace ZenoPCB
 
         // Register management
         bool addRegister(const DataMonitorConfig &config);
-        bool updateRegisterConfig(const DataMonitorConfig &config); // ⭐ Update existing config (enabled, etc.)
+        bool updateRegisterConfig(const DataMonitorConfig &config); // Update existing config (enabled, etc.)
         bool removeRegister(const String &mqttKey);
         bool hasRegister(const String &mqttKey) const;
         std::vector<String> listRegisters() const;
@@ -234,7 +234,7 @@ namespace ZenoPCB
         String buildTelemetryJson(size_t maxSize = 4096, bool includeNulls = false);
         String buildRegisterJson(const String &mqttKey); // Single register JSON
 
-        // Instant publish flag — set after write to force immediate Modbus telemetry
+        // Instant publish flag set after write to force immediate Modbus telemetry
         void requestInstantPublish() { _instantPublishPending = true; }
         bool isInstantPublishPending() const { return _instantPublishPending; }
         void clearInstantPublish() { _instantPublishPending = false; }
@@ -253,14 +253,14 @@ namespace ZenoPCB
 
         // Max age of last-known-good value when register is in error state.
         // After this duration without a successful read, the stale value is
-        // no longer published — prevents app from showing permanently-stale data.
+        // no longer published prevents app from showing permanently-stale data.
         static constexpr uint32_t STALE_VALUE_MAX_AGE_MS = 60000; // 60 seconds
 
         // Number of times to send null in periodic telemetry for a stale-expired register
         // before stopping. Ensures app receives at least N null signals.
         static constexpr uint8_t NULL_PERIODIC_SEND_COUNT = 2;
 
-        // ⭐ Callback to check if connection is enabled (for filtering disabled connections)
+        // Callback to check if connection is enabled (for filtering disabled connections)
         using ConnectionEnabledCallback = std::function<bool(const String &connectionId)>;
         void setConnectionEnabledCallback(ConnectionEnabledCallback callback) { _connectionEnabledCallback = callback; }
 
@@ -288,7 +288,7 @@ namespace ZenoPCB
         // Track how many times null has been sent in periodic telemetry per register
         std::map<String, uint8_t> _nullSentCount;
 
-        // ⭐ Callback to check connection enabled status
+        // Callback to check connection enabled status
         ConnectionEnabledCallback _connectionEnabledCallback;
     };
 

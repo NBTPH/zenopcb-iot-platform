@@ -9,7 +9,7 @@ namespace ZenoPCB {
 
 // Cached epoch from the most recent successful WiFi.getTime() call. The
 // RA4M1 ArduinoCore-renesas RTC API path is still spike-pending (07-PATTERNS
-// line 671 — "Set system clock via Renesas FSP RTC ... planner specs exact
+// line 671 "Set system clock via Renesas FSP RTC ... planner specs exact
 // API"). Until the spike confirms the precise RTC.setTime overload, we cache
 // the last-known epoch + the millis() snapshot at sync time so `now()` can
 // return a plausible wall-clock without relying on the system clock having
@@ -21,13 +21,13 @@ static volatile uint32_t s_lastSyncMillis = 0;
 void UnoR4Time::syncNTP(const char *server,
                         long gmtOffsetSec,
                         int /*daylightOffsetSec*/) {
-    // WiFiS3 has built-in NTP via WiFi.getTime() — returns Unix epoch
+    // WiFiS3 has built-in NTP via WiFi.getTime() returns Unix epoch
     // seconds when the WiFi co-processor's NTP client has succeeded, or
     // 0 while still warming up.
     //
     // Per 07-PATTERNS line 668, the `server` and `daylightOffsetSec`
     // params are accepted for IZenoTime contract compatibility but are
-    // not forwarded to WiFiS3 — WiFiS3 picks its own NTP server and
+    // not forwarded to WiFiS3 WiFiS3 picks its own NTP server and
     // does not expose DST configuration. `gmtOffsetSec` is folded into
     // the cached epoch so callers reading `now()` get a local-zone time.
     unsigned long epoch = WiFi.getTime();
@@ -40,7 +40,7 @@ void UnoR4Time::syncNTP(const char *server,
         // `time(nullptr)` returns the correct value without the cache
         // fallback below.
     }
-    (void)server;  // intentionally unused — WiFiS3 picks default NTP server
+    (void)server;  // intentionally unused WiFiS3 picks default NTP server
 }
 
 time_t UnoR4Time::now() {

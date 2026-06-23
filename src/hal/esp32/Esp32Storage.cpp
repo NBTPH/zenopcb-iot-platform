@@ -74,7 +74,7 @@ void Esp32Storage::listFiles(const char *prefix,
     char dirPath[128];
     const char *lastSlash = strrchr(effectivePrefix, '/');
     if (!lastSlash) {
-        // No slash at all — treat root as the search directory.
+        // No slash at all treat root as the search directory.
         dirPath[0] = '/';
         dirPath[1] = '\0';
     } else {
@@ -82,7 +82,7 @@ void Esp32Storage::listFiles(const char *prefix,
         // with one). Guard against overrun.
         size_t copyLen = static_cast<size_t>(lastSlash - effectivePrefix);
         if (copyLen == 0) {
-            // Prefix starts with '/', last slash is the first char — root.
+            // Prefix starts with '/', last slash is the first char root.
             dirPath[0] = '/';
             dirPath[1] = '\0';
         } else {
@@ -102,7 +102,7 @@ void Esp32Storage::listFiles(const char *prefix,
     // Iterate every direct child entry. Each `entry` is closed automatically
     // when it goes out of scope at the bottom of each loop iteration
     // (Arduino-ESP32 File RAII), but we also close explicitly for clarity
-    // (Pitfall 2 — leaked LittleFS handles exhaust the ~5-handle table).
+    // (Pitfall 2 leaked LittleFS handles exhaust the ~5-handle table).
     while (true) {
         File entry = dir.openNextFile();
         if (!entry) break;

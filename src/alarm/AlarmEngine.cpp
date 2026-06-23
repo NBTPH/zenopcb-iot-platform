@@ -1,4 +1,4 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_ALARM)
 
 #include "AlarmEngine.h"
@@ -16,7 +16,7 @@
 #define ZENO_LOG_ALARM(fmt, ...)
 #endif
 
-// Verbose alarm logs — only when ZENOPCB_DEBUG_VERBOSE=1
+// Verbose alarm logs only when ZENOPCB_DEBUG_VERBOSE=1
 #if ZENOPCB_DEBUG_VERBOSE
 #define ZENO_LOG_ALARM_V(fmt, ...) ZENO_LOG("Alarm", fmt, ##__VA_ARGS__)
 #else
@@ -57,7 +57,7 @@ namespace ZenoPCB
             savedMs[i] = _rules[i].lastTriggeredMs;
         }
 
-        // Full sync — replace all
+        // Full sync replace all
         _ruleCount = 0;
         memset(_rules, 0, sizeof(_rules));
 
@@ -71,7 +71,7 @@ namespace ZenoPCB
         {
             if (_ruleCount >= MAX_ALARM_RULES)
             {
-                ZENO_LOG_ALARM("⚠️ Max rules reached (%d), ignoring rest", MAX_ALARM_RULES);
+                ZENO_LOG_ALARM("Max rules reached (%d), ignoring rest", MAX_ALARM_RULES);
                 break;
             }
 
@@ -79,7 +79,7 @@ namespace ZenoPCB
             const char *key = r["k"];
             if (!id || !key)
             {
-                ZENO_LOG_ALARM("⚠️ Skipping rule with missing id/key");
+                ZENO_LOG_ALARM("Skipping rule with missing id/key");
                 continue;
             }
 
@@ -103,7 +103,7 @@ namespace ZenoPCB
                 if (strcmp(savedId[i], id) == 0)
                 {
                     rule->lastTriggeredMs = savedMs[i];
-                    ZENO_LOG_ALARM("  ↻ Rule [%s] cooldown restored (%ums elapsed)",
+                    ZENO_LOG_ALARM("Rule [%s] cooldown restored (%ums elapsed)",
                                    id, millis() - savedMs[i]);
                     break;
                 }
@@ -122,13 +122,13 @@ namespace ZenoPCB
             _ruleCount++;
         }
 
-        ZENO_LOG_ALARM("✅ Synced %d rules", _ruleCount);
+        ZENO_LOG_ALARM("Synced %d rules", _ruleCount);
 
         // Log each rule's cooldown for diagnosis
         for (int i = 0; i < _ruleCount; i++)
         {
             const AlarmRule *r = &_rules[i];
-            ZENO_LOG_ALARM("  Rule[%d] id=%s key=%s cd=%us", i, r->id, r->key, r->cooldownSec);
+            ZENO_LOG_ALARM("Rule[%d] id=%s key=%s cd=%us", i, r->id, r->key, r->cooldownSec);
         }
 
         return _ruleCount;
@@ -148,12 +148,12 @@ namespace ZenoPCB
                 _ruleCount--;
                 memset(&_rules[_ruleCount], 0, sizeof(AlarmRule));
 
-                ZENO_LOG_ALARM("🗑️ Removed rule: %s (remaining: %d)", ruleId, _ruleCount);
+                ZENO_LOG_ALARM("Removed rule: %s (remaining: %d)", ruleId, _ruleCount);
                 return true;
             }
         }
 
-        ZENO_LOG_ALARM("⚠️ Rule not found for delete: %s", ruleId);
+        ZENO_LOG_ALARM("Rule not found for delete: %s", ruleId);
         return false;
     }
 
@@ -177,11 +177,11 @@ namespace ZenoPCB
 
     void AlarmEngine::checkAlarms(const char *key, double currentValue)
     {
-        // Cooldown uses millis() — never depends on NTP.
-        // Event timestamp uses NTP epoch (0 if not yet synced — backend ignores ts=0).
+        // Cooldown uses millis() never depends on NTP.
+        // Event timestamp uses NTP epoch (0 if not yet synced backend ignores ts=0).
         uint32_t nowMs = millis();
 
-        ZENO_LOG_ALARM_V("🔍 checkAlarms: key=%s value=%.4f rules=%d", key, currentValue, _ruleCount);
+        ZENO_LOG_ALARM_V("checkAlarms: key=%s value=%.4f rules=%d", key, currentValue, _ruleCount);
 
         for (int i = 0; i < _ruleCount; i++)
         {
@@ -190,22 +190,22 @@ namespace ZenoPCB
             // Skip disabled or non-matching key
             if (!rule->enabled)
             {
-                ZENO_LOG_ALARM_V("  [%s] skip: disabled", rule->id);
+                ZENO_LOG_ALARM_V("[%s] skip: disabled", rule->id);
                 continue;
             }
             if (strcmp(rule->key, key) != 0)
                 continue;
 
-            ZENO_LOG_ALARM_V("  [%s] match key=%s c=%d v=%.4f", rule->id, key, rule->condition, rule->value);
+            ZENO_LOG_ALARM_V("[%s] match key=%s c=%d v=%.4f", rule->id, key, rule->condition, rule->value);
 
-            // Cooldown check using millis() — safe unsigned arithmetic handles 49-day overflow
+            // Cooldown check using millis() safe unsigned arithmetic handles 49-day overflow
             if (rule->lastTriggeredMs > 0)
             {
                 uint32_t elapsedMs = nowMs - rule->lastTriggeredMs; // unsigned subtraction: safe across overflow
                 uint32_t elapsedSec = elapsedMs / 1000;
                 if (elapsedSec < rule->cooldownSec)
                 {
-                    ZENO_LOG_ALARM("  [%s] cooldown: %us / %us remaining",
+                    ZENO_LOG_ALARM("[%s] cooldown: %us / %us remaining",
                                    rule->id, elapsedSec, rule->cooldownSec - elapsedSec);
                     continue; // Still in cooldown
                 }
@@ -216,13 +216,13 @@ namespace ZenoPCB
                 rule->condition, currentValue,
                 rule->value, rule->lower, rule->upper);
 
-            ZENO_LOG_ALARM_V("  [%s] eval: %.4f c=%d %.4f → %s",
+            ZENO_LOG_ALARM_V("[%s] eval: %.4f c=%d %.4f %s",
                              rule->id, currentValue, rule->condition, rule->value,
                              triggered ? "TRIGGERED" : "no");
 
             if (triggered)
             {
-                ZENO_LOG_ALARM("🔔 TRIGGERED: %s=%.2f (rule:%s, sev:%d)",
+                ZENO_LOG_ALARM("TRIGGERED: %s=%.2f (rule:%s, sev:%d)",
                                key, currentValue, rule->id, rule->severity);
 
                 // Build alarm event
@@ -245,11 +245,11 @@ namespace ZenoPCB
                 if (delivered)
                 {
                     rule->lastTriggeredMs = nowMs; // start cooldown via millis()
-                    ZENO_LOG_ALARM("  ✅ Delivered — cooldown started (%us for rule %s)", rule->cooldownSec, rule->id);
+                    ZENO_LOG_ALARM("Delivered cooldown started (%us for rule %s)", rule->cooldownSec, rule->id);
                 }
                 else
                 {
-                    ZENO_LOG_ALARM("  ⚠️ Delivery failed — cooldown NOT started, will retry");
+                    ZENO_LOG_ALARM("Delivery failed cooldown NOT started, will retry");
                 }
 
                 // Always fire user notification callback (for local LED/buzzer etc.)
@@ -270,7 +270,7 @@ namespace ZenoPCB
         DeserializationError err = deserializeJson(doc, telemetryJson);
         if (err)
         {
-            ZENO_LOG_ALARM("⚠️ JSON parse error: %s", err.c_str());
+            ZENO_LOG_ALARM("JSON parse error: %s", err.c_str());
             return;
         }
 
@@ -323,7 +323,7 @@ namespace ZenoPCB
     uint32_t AlarmEngine::_getTimestamp()
     {
         // Returns NTP-synced UTC epoch for use in alarm event timestamp.
-        // Returns 0 if not synced — backend should treat ts=0 as "time unknown".
+        // Returns 0 if not synced backend should treat ts=0 as "time unknown".
         // NOT used for cooldown logic (cooldown uses millis()).
         if (TimeManager::isSynced())
         {
@@ -344,13 +344,13 @@ namespace ZenoPCB
             const AlarmRule *r = &_rules[i];
             if (r->condition == 6 || r->condition == 7)
             {
-                ZENO_LOG_ALARM("  [%d] id=%s key=%s c=%d sev=%d cd=%d lo=%.2f hi=%.2f en=%d",
+                ZENO_LOG_ALARM("[%d] id=%s key=%s c=%d sev=%d cd=%d lo=%.2f hi=%.2f en=%d",
                                i, r->id, r->key, r->condition, r->severity,
                                r->cooldownSec, r->lower, r->upper, r->enabled);
             }
             else
             {
-                ZENO_LOG_ALARM("  [%d] id=%s key=%s c=%d sev=%d cd=%d v=%.2f en=%d",
+                ZENO_LOG_ALARM("[%d] id=%s key=%s c=%d sev=%d cd=%d v=%.2f en=%d",
                                i, r->id, r->key, r->condition, r->severity,
                                r->cooldownSec, r->value, r->enabled);
             }

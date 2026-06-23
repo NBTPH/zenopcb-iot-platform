@@ -54,7 +54,7 @@ namespace ZenoPCB
         bool readHoldingRegisters(uint16_t address, uint16_t count, uint8_t slaveId = 1);
         bool readInputRegisters(uint16_t address, uint16_t count, uint8_t slaveId = 1);
 
-        // ⭐ NEW: Read with buffer - synchronous read that writes result to buffer
+        // NEW: Read with buffer - synchronous read that writes result to buffer
         uint16_t readHoldingRegistersWithBuffer(uint16_t address, uint16_t *buffer, uint16_t count, uint8_t slaveId = 1);
         uint16_t readInputRegistersWithBuffer(uint16_t address, uint16_t *buffer, uint16_t count, uint8_t slaveId = 1);
         bool readCoilWithBuffer(uint16_t address, bool *value, uint8_t slaveId = 1);
@@ -70,7 +70,7 @@ namespace ZenoPCB
         String getLastError() const { return _lastError; }
         uint8_t getLastErrorCode() const { return _lastErrorCode; } // Modbus error code (0x00-0xFF)
 
-        // ⭐ v2.4: Connection health tracking for backoff
+        // v2.4: Connection health tracking for backoff
         // When consecutive failures exceed threshold, connection enters backoff mode
         // to prevent blocking main loop with repeated timeouts
         bool isHealthy() const; // Returns true if connection is healthy or backoff expired
@@ -122,11 +122,11 @@ namespace ZenoPCB
         String _lastError;
         uint8_t _lastErrorCode; // Last Modbus error code (0=success, 0xE4=timeout, etc.)
 
-        // ⭐ v2.4: Health tracking for backoff
+        // v2.4: Health tracking for backoff
         uint8_t _consecutiveFailures; // Count of consecutive poll failures
         uint32_t _backoffUntil;       // Don't poll until this time (millis)
 
-        // ⭐ v2.5: Async read state
+        // v2.5: Async read state
         bool _asyncSuccess;           // Result of last async read
         bool _asyncBoolResult;        // For coil/discrete async reads
         uint16_t _asyncTransId;       // TCP transaction tracking
@@ -139,7 +139,7 @@ namespace ZenoPCB
         // Helper methods
         bool _initRTU();
         bool _initTCP();
-        bool _ensureTCPConnection(); // ⭐ NEW: Ensure TCP is connected before operations
+        bool _ensureTCPConnection(); // NEW: Ensure TCP is connected before operations
         bool _reconnect();
         void _setError(const String &error);
         void _clearError();
@@ -157,12 +157,12 @@ namespace ZenoPCB
     public:
         static ModbusConnectionManager &getInstance();
 
-        // ⭐ Set default RX/TX/DE pins for ALL RTU connections (call before addConnection)
+        // Set default RX/TX/DE pins for ALL RTU connections (call before addConnection)
         // rxPin, txPin: Serial1 pins for ESP32
         // dePin: Direction Enable pin for RS485 transceiver (MAX485 DE/RE)
         static void setDefaultRTUPins(int8_t rxPin, int8_t txPin, int8_t dePin = -1);
 
-        // ⭐ Default RTU pins (static, shared by all connections)
+        // Default RTU pins (static, shared by all connections)
         static int8_t s_defaultRxPin; // RX pin for Serial1
         static int8_t s_defaultTxPin; // TX pin for Serial1
         static int8_t s_defaultDEPin; // DE pin for RS485 direction control (-1 = auto TX)

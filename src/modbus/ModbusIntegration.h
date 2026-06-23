@@ -4,6 +4,7 @@
  *
  * Usage:
  * #include "modbus/ModbusIntegration.h"
+#include "../core/ZenoPCBDebug.h"
  * using namespace ZenoPCB;
  *
  * // Initialize
@@ -49,7 +50,7 @@ namespace ZenoPCB
         success &= ModbusDataBuffer::getInstance().begin();
         success &= RegisterPollingEngine::getInstance().begin();
 
-        // ⭐ Set callback to check if connection is enabled
+        // Set callback to check if connection is enabled
         // Used by buildTelemetryJson to skip registers of disabled connections
         ModbusDataBuffer::getInstance().setConnectionEnabledCallback([](const String &connectionId) -> bool
                                                                      {
@@ -76,7 +77,7 @@ namespace ZenoPCB
 
         // 1. Load all saved connections
         std::vector<String> connIds = LittleFSManager::listAllConfigs();
-        Serial.printf("[Modbus] Found %d saved connection configs\n", connIds.size());
+        ZENO_LOG_RAW("[Modbus] Found %d saved connection configs\n", connIds.size());
 
         for (const String &shortId : connIds)
         {
@@ -87,30 +88,30 @@ namespace ZenoPCB
                 {
                     if (ModbusConnectionManager::getInstance().addConnection(conn))
                     {
-                        Serial.printf("[Modbus] ✅ Loaded connection: %s (protocol=%s)\n",
+                        ZENO_LOG_RAW("[Modbus] Loaded connection: %s (protocol=%s)\n",
                                       conn.shortId,
                                       conn.protocol == ConnectionProtocol::MODBUS_RTU ? "RTU" : "TCP");
                         loadedCount++;
                     }
                     else
                     {
-                        Serial.printf("[Modbus] ❌ Failed to add connection: %s\n", conn.shortId);
+                        ZENO_LOG_RAW("[Modbus] Failed to add connection: %s\n", conn.shortId);
                     }
                 }
                 else
                 {
-                    Serial.printf("[Modbus] ⏭️ Skipped disabled connection: %s\n", conn.shortId);
+                    ZENO_LOG_RAW("[Modbus] Skipped disabled connection: %s\n", conn.shortId);
                 }
             }
             else
             {
-                Serial.printf("[Modbus] ❌ Failed to read connection: %s\n", shortId.c_str());
+                ZENO_LOG_RAW("[Modbus] Failed to read connection: %s\n", shortId.c_str());
             }
         }
 
         // 2. Load all saved data monitors
         std::vector<String> monitorIds = LittleFSManager::listAllDataMonitors();
-        Serial.printf("[Modbus] Found %d saved data monitor configs\n", monitorIds.size());
+        ZENO_LOG_RAW("[Modbus] Found %d saved data monitor configs\n", monitorIds.size());
 
         for (const String &mqttKey : monitorIds)
         {
@@ -119,7 +120,7 @@ namespace ZenoPCB
             {
                 if (monitor.enabled)
                 {
-                    // ⭐ Check if connection is enabled before adding register
+                    // Check if connection is enabled before adding register
                     String connId(monitor.connectionId);
                     ConnectionConfig conn;
                     bool connectionEnabled = true;
@@ -131,7 +132,7 @@ namespace ZenoPCB
 
                     if (!connectionEnabled)
                     {
-                        Serial.printf("[Modbus] ⏭️ Skipped monitor: %s (connection %s is disabled)\n",
+                        ZENO_LOG_RAW("[Modbus] Skipped monitor: %s (connection %s is disabled)\n",
                                       monitor.mqttKey, monitor.connectionId);
                         continue;
                     }
@@ -139,28 +140,28 @@ namespace ZenoPCB
                     // Add to RegisterPollingEngine (which also adds to ModbusDataBuffer)
                     if (RegisterPollingEngine::getInstance().addRegister(monitor))
                     {
-                        Serial.printf("[Modbus] ✅ Loaded monitor: %s (conn=%s, addr=%d)\n",
+                        ZENO_LOG_RAW("[Modbus] Loaded monitor: %s (conn=%s, addr=%d)\n",
                                       monitor.mqttKey, monitor.connectionId, monitor.address);
                         loadedCount++;
                     }
                     else
                     {
-                        Serial.printf("[Modbus] ❌ Failed to add monitor: %s (connection %s not found?)\n",
+                        ZENO_LOG_RAW("[Modbus] Failed to add monitor: %s (connection %s not found?)\n",
                                       monitor.mqttKey, monitor.connectionId);
                     }
                 }
                 else
                 {
-                    Serial.printf("[Modbus] ⏭️ Skipped disabled monitor: %s\n", monitor.mqttKey);
+                    ZENO_LOG_RAW("[Modbus] Skipped disabled monitor: %s\n", monitor.mqttKey);
                 }
             }
             else
             {
-                Serial.printf("[Modbus] ❌ Failed to read monitor: %s\n", mqttKey.c_str());
+                ZENO_LOG_RAW("[Modbus] Failed to read monitor: %s\n", mqttKey.c_str());
             }
         }
 
-        Serial.printf("[Modbus] 📊 Loaded %d configs total\n", loadedCount);
+        ZENO_LOG_RAW("[Modbus] Loaded %d configs total\n", loadedCount);
         return loadedCount;
     }
 

@@ -23,7 +23,7 @@ bool   Stm32Storage::mkdir(const char *)                           { return fals
 
 void Stm32Storage::listFiles(const char *,
                              std::function<void(const char *)>) {
-    // No filesystem — emit zero callbacks (no-op body).
+    // No filesystem emit zero callbacks (no-op body).
 }
 
 }  // namespace ZenoPCB

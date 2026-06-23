@@ -9,7 +9,7 @@ namespace ZenoPCB {
 
 bool Esp8266OTA::begin(size_t expectedSize, const char *expectedMd5) {
     if (!Update.begin(expectedSize)) return false;
-    // Pitfall 2 (RESEARCH §"ESP32 API Wrapping Strategy") — MD5 via begin().
+    // Pitfall 2 (RESEARCH "ESP32 API Wrapping Strategy") MD5 via begin().
     // The ESP8266 UpdaterClass exposes the same `setMD5(const char*)` overload.
     if (expectedMd5 && expectedMd5[0] != '\0') {
         Update.setMD5(expectedMd5);
@@ -32,18 +32,18 @@ bool Esp8266OTA::end() {
 }
 
 void Esp8266OTA::abort() {
-    // PITFALL 2 — ESP8266 UpdaterClass has no Update.abort(). Partial
+    // PITFALL 2 ESP8266 UpdaterClass has no Update.abort(). Partial
     // writes are already in flash; eboot detects a malformed sketch at
     // next boot and refuses to swap. No-op is the correct behaviour.
 }
 
 const char *Esp8266OTA::errorString() {
-    // PITFALL 2 — ESP8266 `UpdaterClass::getErrorString()` returns
+    // PITFALL 2 ESP8266 `UpdaterClass::getErrorString()` returns
     // `String` by value (not `const char*` like Arduino-ESP32 Core 3.x).
     // Cache into a static char buffer so the IZenoOTA contract's
     // "pointer remains valid until the next OTA call" promise holds.
     //
-    // `char buf[64]` ≤ 512 B per-frame budget (D-08); function-local
+    // `char buf[64]` 512 B per-frame budget (D-08); function-local
     // static is initialised once and zero-filled at first call.
     static char buf[64];
     String s = Update.getErrorString();
@@ -54,7 +54,7 @@ const char *Esp8266OTA::errorString() {
     return buf;
 }
 
-// PITFALL 2 — ESP8266 eboot is single-slot (no spare bootable
+// PITFALL 2 ESP8266 eboot is single-slot (no spare bootable
 // partition). Rollback is unsupported at the bootloader level on
 // both calls; one-liner bodies keep the structural grep gate happy.
 bool Esp8266OTA::canRollBack() { return false; }

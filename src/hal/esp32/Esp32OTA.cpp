@@ -7,7 +7,7 @@ namespace ZenoPCB {
 
 bool Esp32OTA::begin(size_t expectedSize, const char *expectedMd5) {
     if (!Update.begin(expectedSize)) return false;
-    // Pitfall 2 (RESEARCH §"ESP32 API Wrapping Strategy") — MD5 via begin().
+    // Pitfall 2 (RESEARCH "ESP32 API Wrapping Strategy") MD5 via begin().
     if (expectedMd5 && expectedMd5[0] != '\0') {
         Update.setMD5(expectedMd5);
     }

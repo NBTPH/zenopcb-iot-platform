@@ -3,13 +3,13 @@
 
 /**
  * @file UnoR4System.h
- * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoSystem —
+ * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoSystem 
  *        wraps NVIC_SystemReset + newlib mallinfo + RA4M1 unique-ID + the
  *        ArduinoCore-renesas WatchdogTimer library.
  *
  * Mechanical Pattern A mirror of Esp8266System.{h,cpp} (Plan 06-01).
  * See .planning/phases/07-uno-r4-stm32-ports-capability-matrix/07-PATTERNS.md
- * §"UnoR4System" (lines 695-749).
+ * "UnoR4System" (lines 695-749).
  *
  * Method-body divergences from the ESP8266 analog (implemented in
  * UnoR4System.cpp):
@@ -19,7 +19,7 @@
  *     (RA4M1 ships with the standard newlib-nano allocator); a
  *     PLACEHOLDER 0 is returned if `mallinfo` is unavailable.
  *   - `getTotalHeap()` returns hardcoded `32768` (RA4M1 DRAM total ~32 KB
- *     per RESEARCH §F1/F4 memory budget table — same pattern as
+ *     per RESEARCH F1/F4 memory budget table  same pattern as
  *     Esp8266System Pitfall 4).
  *   - `getUniqueId()` formats the lower 32 bits of the Renesas FSP 128-bit
  *     unique ID. Wave 1 spike confirms exact API path; a deterministic
@@ -54,7 +54,7 @@ public:
     UnoR4System() = default;
     ~UnoR4System() override = default;
 
-    // Deleted copy semantics (Pitfall 3 hygiene — WatchdogTimer is a
+    // Deleted copy semantics (Pitfall 3 hygiene WatchdogTimer is a
     // process-global singleton on ArduinoCore-renesas).
     UnoR4System(const UnoR4System&) = delete;
     UnoR4System& operator=(const UnoR4System&) = delete;

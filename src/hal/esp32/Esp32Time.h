@@ -3,11 +3,11 @@
 
 /**
  * @file Esp32Time.h
- * @brief ESP32 concrete impl of IZenoTime — delegates to existing
+ * @brief ESP32 concrete impl of IZenoTime  delegates to existing
  *        TimeManager so the two parallel time interfaces share state.
  *
  * Phasing TimeManager out is deferred to Phase 5/6 per 04-RESEARCH.md
- * §"Open Questions" #1 (Pitfall 5 — avoid two parallel configTime callers
+ * "Open Questions" #1 (Pitfall 5  avoid two parallel configTime callers
  * fighting over the global lwIP SNTP state).
  *
  * Deleted copy semantics for Pitfall 3 hygiene.
@@ -15,7 +15,7 @@
 
 #include "../IZenoTime.h"
 
-// Plan 06-03 — TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
+// Plan 06-03 TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
 // mirror). `<time.h>` is portable but the Esp32Time impl delegates to
 // the ESP32-specific TimeManager which pulls in `esp_sntp.h`; keep the
 // whole class body behind the guard to mirror the pattern.
@@ -30,7 +30,7 @@ public:
     Esp32Time() = default;
     ~Esp32Time() override = default;
 
-    // Deleted copy semantics (Pitfall 3 hygiene — global SNTP state).
+    // Deleted copy semantics (Pitfall 3 hygiene global SNTP state).
     Esp32Time(const Esp32Time&) = delete;
     Esp32Time& operator=(const Esp32Time&) = delete;
 

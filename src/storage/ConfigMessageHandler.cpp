@@ -5,7 +5,7 @@
  * @author ZenoPCB Development Team
  * @version 1.0.0
  */
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_STORAGE)
 
 #include "ConfigMessageHandler.h"
@@ -21,17 +21,17 @@
 #include "../modbus/RegisterPollingEngine.h"
 #endif
 
-// Debug logging - BẬT để kiểm tra
+// Debug logging - BT kim tra
 #ifndef ZENOPCB_DEBUG_STORAGE
-#define ZENOPCB_DEBUG_STORAGE 1 // ⚠️ SET TO 1 FOR DEBUG
+#define ZENOPCB_DEBUG_STORAGE 1 // SET TO 1 FOR DEBUG
 #endif
 
-// Phase 7 Plan 07-06.5 — route through the portable ZENOPCB_PRINTF shim so
+// Phase 7 Plan 07-06.5 route through the portable ZENOPCB_PRINTF shim so
 // platforms without ZENOPCB_PRINTF (Renesas UART on UNO R4, STM32duino
 // HardwareSerial) compile cleanly. ESP32 / ESP8266 path expands to the
 // original `ZENOPCB_PRINTF(...)` byte-for-byte.
 #if ZENOPCB_DEBUG_STORAGE
-#define STORAGE_LOG(fmt, ...) ZENOPCB_PRINTF("[CC-Handler] " fmt "\n", ##__VA_ARGS__)
+#define STORAGE_LOG(fmt, ...) ZENOPCB_PRINTF("[CC-Handler]" fmt "\n", ##__VA_ARGS__)
 #define STORAGE_LOG_RAW(fmt, ...) ZENOPCB_PRINTF(fmt, ##__VA_ARGS__)
 #else
 #define STORAGE_LOG(fmt, ...)
@@ -63,19 +63,19 @@ namespace ZenoPCB
             return true;
         }
 
-        Serial.println("╔══════════════════════════════════════════════════════════════╗");
-        Serial.println("║    ConfigMessageHandler - Initializing...                    ║");
-        Serial.println("╚══════════════════════════════════════════════════════════════╝");
+        STORAGE_LOG_RAW("\n");
+        STORAGE_LOG_RAW("ConfigMessageHandler - Initializing...\n");
+        STORAGE_LOG_RAW("\n");
 
         // Initialize LittleFSManager first
         if (!LittleFSManager::initialize())
         {
-            STORAGE_LOG("❌ Failed to initialize LittleFSManager");
+            STORAGE_LOG("Failed to initialize LittleFSManager");
             return false;
         }
 
         _initialized = true;
-        STORAGE_LOG("✅ ConfigMessageHandler initialized successfully");
+        STORAGE_LOG("ConfigMessageHandler initialized successfully");
         return true;
     }
 
@@ -99,22 +99,20 @@ namespace ZenoPCB
     {
         uint32_t startTime = millis();
         _messagesProcessed++;
-
-        Serial.println();
-        Serial.println("╔══════════════════════════════════════════════════════════════╗");
-        Serial.println("║    📥 Connection Config Message Received                     ║");
-        Serial.println("╠══════════════════════════════════════════════════════════════╣");
-        STORAGE_LOG_RAW("║ Topic: %s\n", maskTopic(topic).c_str());
-        STORAGE_LOG_RAW("║ Payload (%d bytes):\n", payload.length());
+        STORAGE_LOG_RAW("\n");
+        STORAGE_LOG_RAW("Connection Config Message Received\n");
+        STORAGE_LOG_RAW("\n");
+        STORAGE_LOG_RAW("Topic: %s\n", maskTopic(topic).c_str());
+        STORAGE_LOG_RAW("Payload (%d bytes):\n", payload.length());
 
         // Pretty print payload (limit to 500 chars for readability)
         String truncPayload = payload.substring(0, 500);
-        STORAGE_LOG_RAW("║ %s\n", truncPayload.c_str());
+        STORAGE_LOG_RAW("%s\n", truncPayload.c_str());
         if (payload.length() > 500)
         {
-            STORAGE_LOG_RAW("║ ... (truncated)\n");
+            STORAGE_LOG_RAW("... (truncated)\n");
         }
-        Serial.println("╚══════════════════════════════════════════════════════════════╝");
+        STORAGE_LOG_RAW("\n");
 
         // Check initialization
         if (!_initialized)
@@ -130,13 +128,13 @@ namespace ZenoPCB
         if (!_parsePayload(payload, message, parseError))
         {
             _errorsCount++;
-            Serial.println("❌ Parse Error: " + parseError);
+            STORAGE_LOG_RAW("%s\n", String("Parse Error:" + parseError).c_str());
             _notifyError(parseError, payload);
             return _errorResult(parseError);
         }
 
         // Log parsed action
-        ZENOPCB_PRINTF("📋 Parsed: type=%s, action=%s\n",
+        ZENOPCB_PRINTF("Parsed: type=%s, action=%s\n",
                       message.type.c_str(),
                       actionToString(message.action));
 
@@ -168,12 +166,12 @@ namespace ZenoPCB
         if (!result.success)
         {
             _errorsCount++;
-            ZENOPCB_PRINTF("❌ Handler failed: %s (took %d ms)\n",
+            ZENOPCB_PRINTF("Handler failed: %s (took %d ms)\n",
                           result.errorMessage.c_str(), processingTime);
         }
         else
         {
-            ZENOPCB_PRINTF("✅ Handler success: shortId=%s (took %d ms)\n",
+            ZENOPCB_PRINTF("Handler success: shortId=%s (took %d ms)\n",
                           result.shortId.c_str(), processingTime);
         }
 
@@ -192,7 +190,7 @@ namespace ZenoPCB
 
         if (jsonError)
         {
-            error = "JSON parse error: " + String(jsonError.c_str());
+            error = "JSON parse error:" + String(jsonError.c_str());
             STORAGE_LOG("Parse error: %s", error.c_str());
             return false;
         }
@@ -228,7 +226,7 @@ namespace ZenoPCB
         outMessage.action = ConfigMessage::actionFromChar(actionStr[0]);
         if (outMessage.action == ConfigAction::UNKNOWN)
         {
-            error = "Unknown action: " + actionStr;
+            error = "Unknown action:" + actionStr;
             return false;
         }
 
@@ -238,7 +236,7 @@ namespace ZenoPCB
         // (JsonDocument doc will be destroyed after this function returns)
         if (doc["d"].is<JsonObject>())
         {
-            // ⭐ Serialize data object to string
+            // Serialize data object to string
             // IMPORTANT: Use default options to preserve all fields including "en":0
             serializeJson(doc["d"], outMessage.dataJson);
 
@@ -247,7 +245,7 @@ namespace ZenoPCB
         }
         else if (outMessage.action != ConfigAction::DELETE)
         {
-            error = "Missing 'd' (data) field for " + actionStr + " action";
+            error = "Missing 'd' (data) field for" + actionStr + "action";
             return false;
         }
 
@@ -277,7 +275,7 @@ namespace ZenoPCB
             return false;
         }
 
-        // Note: "nm" (name) field removed - MQTT không gửi nữa
+        // Note: "nm" (name) field removed - MQTT khng gi na
 
         // Check protocol if present - support "pr", "protocol"
         // Valid values: "S", "T", "serial", "tcp"
@@ -286,7 +284,7 @@ namespace ZenoPCB
         {
             if (protocol != "S" && protocol != "T" && protocol != "serial" && protocol != "tcp")
             {
-                error = "Invalid protocol: " + protocol + " (must be 'S', 'T', 'serial' or 'tcp')";
+                error = "Invalid protocol:" + protocol + "(must be 'S', 'T', 'serial' or 'tcp')";
                 return false;
             }
         }
@@ -326,7 +324,7 @@ namespace ZenoPCB
 
     HandleResult ConfigMessageHandler::_handleCreate(const ConfigMessage &message)
     {
-        Serial.println("\n🆕 Processing CREATE Connection Config...");
+        STORAGE_LOG_RAW("\n Processing CREATE Connection Config...\n");
 
         // Parse dataJson string back to JsonObject
         JsonDocument doc;
@@ -352,38 +350,38 @@ namespace ZenoPCB
         }
 
         // Print debug info for the parsed config
-        Serial.println("📝 Parsed Connection Config:");
+        STORAGE_LOG_RAW("Parsed Connection Config:\n");
         config.printDebug();
 
         // Check if already exists
         if (LittleFSManager::configExists(String(config.shortId)))
         {
-            ZENOPCB_PRINTF("⚠️ Config already exists: %s - will skip create\n", config.shortId);
-            return _errorResult(String("Config already exists: ") + config.shortId, ConfigAction::CREATE);
+            ZENOPCB_PRINTF("Config already exists: %s - will skip create\n", config.shortId);
+            return _errorResult(String("Config already exists:") + config.shortId, ConfigAction::CREATE);
         }
 
         // Create in storage
         if (!LittleFSManager::createConfig(config))
         {
             String lastError = LittleFSManager::getLastError();
-            return _errorResult(String("Storage error: ") + lastError, ConfigAction::CREATE);
+            return _errorResult(String("Storage error:") + lastError, ConfigAction::CREATE);
         }
 
-        ZENOPCB_PRINTF("💾 Config saved to LittleFS: /connections/%s.json\n", config.shortId);
+        ZENOPCB_PRINTF("Config saved to LittleFS: /connections/%s.json\n", config.shortId);
 
-        // ⭐ Add to Modbus Connection Manager
+        // Add to Modbus Connection Manager
 #if defined(ESP32)
-        Serial.println("🔌 Adding connection to Modbus Manager...");
+        STORAGE_LOG_RAW("Adding connection to Modbus Manager...\n");
         if (ModbusConnectionManager::getInstance().addConnection(config))
         {
-            ZENOPCB_PRINTF("✅ Modbus connection added: %s\n", config.shortId);
+            ZENOPCB_PRINTF("Modbus connection added: %s\n", config.shortId);
         }
         else
         {
-            ZENOPCB_PRINTF("❌ Failed to add Modbus connection: %s\n", config.shortId);
+            ZENOPCB_PRINTF("Failed to add Modbus connection: %s\n", config.shortId);
         }
 #else
-        STORAGE_LOG("Modbus not available on this platform — connection %s persisted only",
+        STORAGE_LOG("Modbus not available on this platform connection %s persisted only",
                     config.shortId);
 #endif
 
@@ -402,14 +400,14 @@ namespace ZenoPCB
 
     HandleResult ConfigMessageHandler::_handleUpdate(const ConfigMessage &message)
     {
-        Serial.println("\n📝 Processing UPDATE Connection Config...");
+        STORAGE_LOG_RAW("\n Processing UPDATE Connection Config...\n");
 
         // Parse dataJson string back to JsonObject
         JsonDocument doc;
         DeserializationError jsonError = deserializeJson(doc, message.dataJson);
         if (jsonError)
         {
-            ZENOPCB_PRINTF("❌ JSON deserialize error: %s\n", jsonError.c_str());
+            ZENOPCB_PRINTF("JSON deserialize error: %s\n", jsonError.c_str());
             return _errorResult("Failed to parse data JSON", ConfigAction::UPDATE);
         }
 
@@ -437,23 +435,23 @@ namespace ZenoPCB
         }
 
         // Print debug info for the parsed config
-        Serial.println("📝 Updated Connection Config:");
+        STORAGE_LOG_RAW("Updated Connection Config:\n");
         config.printDebug();
 
-        // ⭐ UPSERT: If config doesn't exist → create it (backend may send "u" for new configs)
+        // UPSERT: If config doesn't exist create it (backend may send "u" for new configs)
         bool isNewConfig = !LittleFSManager::configExists(shortId);
 
         if (isNewConfig)
         {
-            STORAGE_LOG("Config %s not found — UPSERT: creating new", shortId.c_str());
+            STORAGE_LOG("Config %s not found UPSERT: creating new", shortId.c_str());
 
             if (!LittleFSManager::createConfig(config))
             {
                 String lastError = LittleFSManager::getLastError();
-                return _errorResult(String("Storage create error: ") + lastError, ConfigAction::UPDATE);
+                return _errorResult(String("Storage create error:") + lastError, ConfigAction::UPDATE);
             }
 
-            ZENOPCB_PRINTF("💾 [UPSERT] Config created in LittleFS: /connections/%s.json\n", config.shortId);
+            ZENOPCB_PRINTF("[UPSERT] Config created in LittleFS: /connections/%s.json\n", config.shortId);
 
             // Add to Modbus Connection Manager
 #if defined(ESP32)
@@ -461,15 +459,15 @@ namespace ZenoPCB
             {
                 if (ModbusConnectionManager::getInstance().addConnection(config))
                 {
-                    ZENOPCB_PRINTF("✅ [UPSERT] Modbus connection added: %s\n", config.shortId);
+                    ZENOPCB_PRINTF("[UPSERT] Modbus connection added: %s\n", config.shortId);
                 }
                 else
                 {
-                    ZENOPCB_PRINTF("❌ [UPSERT] Failed to add Modbus connection: %s\n", config.shortId);
+                    ZENOPCB_PRINTF("[UPSERT] Failed to add Modbus connection: %s\n", config.shortId);
                 }
             }
 
-            // ⭐ Load any saved monitors that reference this new connection
+            // Load any saved monitors that reference this new connection
             if (config.enabled)
             {
                 std::vector<String> monitorIds = LittleFSManager::listAllDataMonitors();
@@ -483,7 +481,7 @@ namespace ZenoPCB
                         {
                             if (RegisterPollingEngine::getInstance().addRegister(monitor))
                             {
-                                ZENOPCB_PRINTF("   ✅ Loaded saved register: %s\n", monitor.mqttKey);
+                                ZENOPCB_PRINTF("Loaded saved register: %s\n", monitor.mqttKey);
                                 loadedCount++;
                             }
                         }
@@ -491,11 +489,11 @@ namespace ZenoPCB
                 }
                 if (loadedCount > 0)
                 {
-                    ZENOPCB_PRINTF("📋 [UPSERT] Loaded %d saved registers for new connection: %s\n", loadedCount, shortId.c_str());
+                    ZENOPCB_PRINTF("[UPSERT] Loaded %d saved registers for new connection: %s\n", loadedCount, shortId.c_str());
                 }
             }
 #else
-            STORAGE_LOG("[UPSERT] Modbus not available — connection %s persisted only", config.shortId);
+            STORAGE_LOG("[UPSERT] Modbus not available connection %s persisted only", config.shortId);
 #endif
 
             // Notify created callback
@@ -510,10 +508,10 @@ namespace ZenoPCB
             if (!LittleFSManager::updateConfig(config))
             {
                 String lastError = LittleFSManager::getLastError();
-                return _errorResult(String("Storage error: ") + lastError, ConfigAction::UPDATE);
+                return _errorResult(String("Storage error:") + lastError, ConfigAction::UPDATE);
             }
 
-            ZENOPCB_PRINTF("💾 Config updated in LittleFS: /connections/%s.json\n", config.shortId);
+            ZENOPCB_PRINTF("Config updated in LittleFS: /connections/%s.json\n", config.shortId);
 
             // Update Modbus connection based on enabled status
 #if defined(ESP32)
@@ -523,15 +521,15 @@ namespace ZenoPCB
                 ModbusConnectionManager::getInstance().removeConnection(shortId.c_str());
                 if (ModbusConnectionManager::getInstance().addConnection(config))
                 {
-                    ZENOPCB_PRINTF("✅ Modbus connection updated: %s (enabled)\n", config.shortId);
+                    ZENOPCB_PRINTF("Modbus connection updated: %s (enabled)\n", config.shortId);
                 }
                 else
                 {
-                    ZENOPCB_PRINTF("❌ Failed to update Modbus connection: %s\n", config.shortId);
+                    ZENOPCB_PRINTF("Failed to update Modbus connection: %s\n", config.shortId);
                 }
 
-                // ⭐ Load all registers of this connection from LittleFS (if not already loaded)
-                ZENOPCB_PRINTF("📋 Loading registers for connection: %s\n", shortId.c_str());
+                // Load all registers of this connection from LittleFS (if not already loaded)
+                ZENOPCB_PRINTF("Loading registers for connection: %s\n", shortId.c_str());
                 std::vector<String> monitorIds = LittleFSManager::listAllDataMonitors();
                 size_t loadedCount = 0;
 
@@ -546,41 +544,41 @@ namespace ZenoPCB
                             // Try to add (will update if already exists)
                             if (RegisterPollingEngine::getInstance().addRegister(monitor))
                             {
-                                ZENOPCB_PRINTF("   ✅ Loaded register: %s\n", monitor.mqttKey);
+                                ZENOPCB_PRINTF("Loaded register: %s\n", monitor.mqttKey);
                                 loadedCount++;
                             }
                             else
                             {
-                                ZENOPCB_PRINTF("   ⚠️ Register already exists or failed: %s\n", monitor.mqttKey);
+                                ZENOPCB_PRINTF("Register already exists or failed: %s\n", monitor.mqttKey);
                             }
                         }
                     }
                 }
 
-                ZENOPCB_PRINTF("📋 Loaded %d registers for connection: %s\n", loadedCount, shortId.c_str());
+                ZENOPCB_PRINTF("Loaded %d registers for connection: %s\n", loadedCount, shortId.c_str());
 
-                // ⭐ Enable all registers of this connection
+                // Enable all registers of this connection
                 size_t enabledCount = RegisterPollingEngine::getInstance().enableRegistersByConnection(shortId);
-                ZENOPCB_PRINTF("✅ Enabled %d registers for connection: %s\n", enabledCount, config.shortId);
+                ZENOPCB_PRINTF("Enabled %d registers for connection: %s\n", enabledCount, config.shortId);
             }
             else
             {
                 // Connection disabled - just remove it (don't add back)
                 if (ModbusConnectionManager::getInstance().removeConnection(shortId.c_str()))
                 {
-                    ZENOPCB_PRINTF("⏸️ Modbus connection removed (disabled): %s\n", config.shortId);
+                    ZENOPCB_PRINTF("Modbus connection removed (disabled): %s\n", config.shortId);
                 }
                 else
                 {
-                    ZENOPCB_PRINTF("⚠️ Modbus connection was not active: %s\n", config.shortId);
+                    ZENOPCB_PRINTF("Modbus connection was not active: %s\n", config.shortId);
                 }
 
-                // ⭐ Disable all registers of this connection
+                // Disable all registers of this connection
                 size_t disabledCount = RegisterPollingEngine::getInstance().disableRegistersByConnection(shortId);
-                ZENOPCB_PRINTF("⏸️ Disabled %d registers for connection: %s\n", disabledCount, config.shortId);
+                ZENOPCB_PRINTF("Disabled %d registers for connection: %s\n", disabledCount, config.shortId);
             }
 #else
-            STORAGE_LOG("Modbus not available — config %s update persisted only (enabled=%d)",
+            STORAGE_LOG("Modbus not available config %s update persisted only (enabled=%d)",
                         config.shortId, config.enabled);
 #endif
 
@@ -600,7 +598,7 @@ namespace ZenoPCB
 
     HandleResult ConfigMessageHandler::_handleDelete(const ConfigMessage &message)
     {
-        Serial.println("\n🗑️ Processing DELETE Connection Config...");
+        STORAGE_LOG_RAW("\n Processing DELETE Connection Config...\n");
 
         // Get shortId - parse from dataJson if available
         String shortId;
@@ -616,43 +614,43 @@ namespace ZenoPCB
             }
         }
 
-        ZENOPCB_PRINTF("   Target shortId: %s\n", shortId.c_str());
+        ZENOPCB_PRINTF("Target shortId: %s\n", shortId.c_str());
 
         if (shortId.length() == 0)
         {
-            Serial.println("❌ Missing shortId for delete");
+            STORAGE_LOG_RAW("Missing shortId for delete\n");
             return _errorResult("Missing shortId for delete", ConfigAction::DELETE);
         }
 
         // Check if exists
         if (!LittleFSManager::configExists(shortId))
         {
-            ZENOPCB_PRINTF("⚠️ Config not found for delete: %s\n", shortId.c_str());
-            return _errorResult(String("Config not found: ") + shortId, ConfigAction::DELETE);
+            ZENOPCB_PRINTF("Config not found for delete: %s\n", shortId.c_str());
+            return _errorResult(String("Config not found:") + shortId, ConfigAction::DELETE);
         }
 
         // Delete from storage
         if (!LittleFSManager::deleteConfig(shortId))
         {
             String lastError = LittleFSManager::getLastError();
-            return _errorResult("Storage error: " + lastError, ConfigAction::DELETE);
+            return _errorResult("Storage error:" + lastError, ConfigAction::DELETE);
         }
 
-        ZENOPCB_PRINTF("🗑️ Config deleted from LittleFS: /connections/%s.json\n", shortId.c_str());
+        ZENOPCB_PRINTF("Config deleted from LittleFS: /connections/%s.json\n", shortId.c_str());
 
-        // ⭐ Remove from Modbus Connection Manager
+        // Remove from Modbus Connection Manager
 #if defined(ESP32)
-        Serial.println("🔌 Removing connection from Modbus Manager...");
+        STORAGE_LOG_RAW("Removing connection from Modbus Manager...\n");
         if (ModbusConnectionManager::getInstance().removeConnection(shortId.c_str()))
         {
-            ZENOPCB_PRINTF("✅ Modbus connection removed: %s\n", shortId.c_str());
+            ZENOPCB_PRINTF("Modbus connection removed: %s\n", shortId.c_str());
         }
         else
         {
-            ZENOPCB_PRINTF("⚠️ Modbus connection not found (already removed?): %s\n", shortId.c_str());
+            ZENOPCB_PRINTF("Modbus connection not found (already removed?): %s\n", shortId.c_str());
         }
 #else
-        STORAGE_LOG("Modbus not available — connection %s removed only from storage", shortId.c_str());
+        STORAGE_LOG("Modbus not available connection %s removed only from storage", shortId.c_str());
 #endif
 
         // Notify callback

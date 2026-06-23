@@ -16,7 +16,7 @@ namespace ZenoPCB
         _config.port = MQTT_DEFAULT_PORT;
         _config.keepAlive = MQTT_DEFAULT_KEEPALIVE;
         _config.socketTimeout = MQTT_DEFAULT_SOCKET_TIMEOUT;
-        _config.cleanSession = false; // false để LWT hoạt động + giữ session
+        _config.cleanSession = false; // false LWT hot ng + gi session
         _config.autoReconnect = true;
         _config.maxReconnectAttempts = MQTT_MAX_RECONNECT_ATTEMPTS;
         _config.reconnectInterval = MQTT_RECONNECT_INTERVAL_MS;
@@ -69,8 +69,8 @@ namespace ZenoPCB
     ZenoPCBMQTT &ZenoPCBMQTT::keepAlive(uint16_t seconds)
     {
         _config.keepAlive = seconds;
-        // ⚠️ FIX: Only update keepAlive on ZenoPubSubClient directly
-        // DO NOT call full setConfig() — it copies 6 Strings and risks dangling pointers
+        // FIX: Only update keepAlive on ZenoPubSubClient directly
+        // DO NOT call full setConfig() it copies 6 Strings and risks dangling pointers
         _client.getInternalClient().setKeepAlive(seconds);
         return *this;
     }
@@ -78,7 +78,7 @@ namespace ZenoPCB
     ZenoPCBMQTT &ZenoPCBMQTT::socketTimeout(uint16_t seconds)
     {
         _config.socketTimeout = seconds;
-        // ⚠️ FIX: Only update socketTimeout on ZenoPubSubClient directly
+        // FIX: Only update socketTimeout on ZenoPubSubClient directly
         _client.getInternalClient().setSocketTimeout(seconds);
         return *this;
     }
@@ -91,8 +91,8 @@ namespace ZenoPCB
         _config.lwt_qos = qos;
         _config.lwt_retain = retain;
 
-        // ⚠️ FIX: Do NOT call setConfig() here. LWT is stored in _config
-        // and will be applied during begin() → setConfig() and used in connect().
+        // FIX: Do NOT call setConfig() here. LWT is stored in _config
+        // and will be applied during begin() setConfig() and used in connect().
 
         ZENO_LOG_MQTT("LWT updated - Topic: %s, QoS: %d, Retain: %d",
                       maskTopic(topic).c_str(), qos, retain);
@@ -158,7 +158,7 @@ namespace ZenoPCB
 
         // Set default LWT if not configured and deviceId is set
         // Must match sendStatus() exactly: same topic, payload format, QoS 1, retain=true
-        // → Broker replaces retained "online" with "offline" when client dies
+        // Broker replaces retained "online" with "offline" when client dies
         if (_config.lwt_topic.length() == 0 && _deviceId.length() > 0)
         {
             _config.lwt_topic = buildTopic(TOPIC_STATUS);
@@ -222,7 +222,7 @@ namespace ZenoPCB
 
     void ZenoPCBMQTT::forceDisconnect()
     {
-        // Skip sendStatus — network already down, TCP socket dead
+        // Skip sendStatus network already down, TCP socket dead
         // Avoids blocking on write to dead socket (up to 60s TCP retransmit timeout)
         _client.disconnect();
     }
@@ -269,7 +269,7 @@ namespace ZenoPCB
 
         // Mirror the String overload: thin passthrough to MQTTClient. The
         // existing String overload contains no additional pre-publish guards
-        // or queue handling at this layer (verified 2026-06-01) — both
+        // or queue handling at this layer (verified 2026-06-01) both
         // overloads delegate directly to _client.publish.
         return _client.publish(topic, payload, qos, retain);
     }
@@ -433,7 +433,7 @@ namespace ZenoPCB
     // THREAD-NOTE: _deviceId is set once at provisioning (Zeno::setDeviceCredentials)
     // and never mutated post-begin(). _deviceId.c_str() is stable for the lifetime
     // of this call. Output is byte-identical to buildTopic(const String&) for the
-    // same path input — required invariant for downstream MQTT routing.
+    // same path input required invariant for downstream MQTT routing.
     bool ZenoPCBMQTT::buildTopic(const char *path, char *out, size_t outSize) const
     {
         if (!path || !out || outSize == 0)

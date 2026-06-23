@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Irrigation subsystem is ESP32-only.
+// Plan 06-03 D-03 Irrigation subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "IrrigationScheduler.h"
@@ -25,17 +25,17 @@ namespace ZenoPCB
 
     void IrrigationScheduler::begin()
     {
-        ZENO_LOG("IrrigationScheduler", "🚀 Initializing...");
+        ZENO_LOG("IrrigationScheduler", "Initializing...");
 
         if (!TimeManager::isSynced())
         {
-            ZENO_LOG("IrrigationScheduler", "⚠️ NTP not synced, schedules start when time available");
+            ZENO_LOG("IrrigationScheduler", "NTP not synced, schedules start when time available");
         }
 
         reloadSchedules();
 
         _initialized = true;
-        ZENO_LOG("IrrigationScheduler", "✅ Initialized with %d schedules", _schedules.size());
+        ZENO_LOG("IrrigationScheduler", "Initialized with %d schedules", _schedules.size());
     }
 
     // ============================================
@@ -44,7 +44,7 @@ namespace ZenoPCB
 
     void IrrigationScheduler::reloadSchedules()
     {
-        ZENO_LOG("IrrigationScheduler", "📂 Reloading schedules from storage...");
+        ZENO_LOG("IrrigationScheduler", "Reloading schedules from storage...");
 
         _schedules.clear();
         _states.clear();
@@ -60,11 +60,11 @@ namespace ZenoPCB
                     _getOrCreateState(config.scheduleId);
                 }
             }
-            ZENO_LOG("IrrigationScheduler", "✅ Loaded %d enabled schedules", _schedules.size());
+            ZENO_LOG("IrrigationScheduler", "Loaded %d enabled schedules", _schedules.size());
         }
         else
         {
-            ZENO_LOG("IrrigationScheduler", "❌ Failed to load schedules");
+            ZENO_LOG("IrrigationScheduler", "Failed to load schedules");
         }
     }
 
@@ -93,13 +93,13 @@ namespace ZenoPCB
             state.executedToday = false;
             state.lastStatus = IrrigationStatus::IDLE;
 
-            ZENO_LOG("IrrigationScheduler", "🔄 Updated schedule: %s → scenario %s",
+            ZENO_LOG("IrrigationScheduler", "Updated schedule: %s scenario %s",
                      config.scheduleId, config.scenarioId);
         }
         else
         {
             _states.erase(config.scheduleId);
-            ZENO_LOG("IrrigationScheduler", "➖ Removed (disabled): %s", config.scheduleId);
+            ZENO_LOG("IrrigationScheduler", "Removed (disabled): %s", config.scheduleId);
         }
     }
 
@@ -111,7 +111,7 @@ namespace ZenoPCB
             {
                 _schedules.erase(it);
                 _states.erase(id);
-                ZENO_LOG("IrrigationScheduler", "➖ Removed: %s", id.c_str());
+                ZENO_LOG("IrrigationScheduler", "Removed: %s", id.c_str());
                 return;
             }
         }
@@ -121,7 +121,7 @@ namespace ZenoPCB
     {
         _schedules.clear();
         _states.clear();
-        ZENO_LOG("IrrigationScheduler", "🗑️ Cleared all");
+        ZENO_LOG("IrrigationScheduler", "Cleared all");
     }
 
     bool IrrigationScheduler::hasSchedule(const String &id) const
@@ -135,7 +135,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Main loop — called every ~1 second
+    // Main loop called every ~1 second
     // Pattern copied from ScheduleExecutor
     // ============================================
 
@@ -185,7 +185,7 @@ namespace ZenoPCB
 
             if (_isTimeToExecute(config, timeinfo))
             {
-                ZENO_LOG("IrrigationScheduler", "⏰ Recurring triggered: sch=%s → scenario=%s",
+                ZENO_LOG("IrrigationScheduler", "Recurring triggered: sch=%s scenario=%s",
                          config.scheduleId, config.scenarioId);
 
                 config.lastTriggeredMin = timeinfo.tm_min;
@@ -199,7 +199,7 @@ namespace ZenoPCB
                     }
                     else
                     {
-                        ZENO_LOG("IrrigationScheduler", "⚠️ Trigger rejected (executor busy?)");
+                        ZENO_LOG("IrrigationScheduler", "Trigger rejected (executor busy?)");
                     }
                 }
             }
@@ -229,7 +229,7 @@ namespace ZenoPCB
 
             if ((uint32_t)now >= config.executeAt)
             {
-                ZENO_LOG("IrrigationScheduler", "⏰ Once triggered: sch=%s → scenario=%s",
+                ZENO_LOG("IrrigationScheduler", "Once triggered: sch=%s scenario=%s",
                          config.scheduleId, config.scenarioId);
 
                 if (_triggerCb)
@@ -268,7 +268,7 @@ namespace ZenoPCB
 
         if (currentDay != _lastDay)
         {
-            ZENO_LOG("IrrigationScheduler", "📅 Day changed — resetting daily flags");
+            ZENO_LOG("IrrigationScheduler", "Day changed resetting daily flags");
 
             for (auto &pair : _states)
             {
@@ -325,4 +325,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

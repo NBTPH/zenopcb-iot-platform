@@ -92,7 +92,7 @@ namespace ZenoPCB
         // Set socket timeout (important for slow networks like 4G)
         _mqttClient.setSocketTimeout(_config.socketTimeout);
 
-        // ⚠️ CRITICAL FIX: ZenoPubSubClient::setServer() stores a RAW POINTER to domain.
+        // CRITICAL FIX: ZenoPubSubClient::setServer() stores a RAW POINTER to domain.
         // If we pass _config.broker.c_str(), the pointer becomes dangling when
         // _config is reassigned later. Copy to a stable char[] buffer instead.
         memset(_brokerStable, 0, sizeof(_brokerStable));
@@ -164,7 +164,7 @@ namespace ZenoPCB
         // Any one of those identifies the device on the cloud and helps an
         // attacker correlate captured traffic. Just say "connecting".
         ZENO_LOG_MQTT("Connecting...");
-        // Port + TLS state are not credentials — safe to print so the
+        // Port + TLS state are not credentials safe to print so the
         // user can confirm 1883 (plain) vs 8883 (TLS) per env.
         ZENO_LOG_MQTT("transport: port=%u tls=%s",
                       (unsigned)_config.port,
@@ -179,7 +179,7 @@ namespace ZenoPCB
             // Pass empty string "" when username is set but password is empty.
             // Some brokers require the password field to be present in the
             // CONNECT packet even if empty.
-            // Sending nullptr omits the field entirely → BAD_CREDENTIALS (state 4).
+            // Sending nullptr omits the field entirely BAD_CREDENTIALS (state 4).
             const char *user = _config.username.length() == 0 ? nullptr : _config.username.c_str();
             const char *pass = user ? _config.password.c_str() : nullptr; // "" is valid
 
@@ -209,7 +209,7 @@ namespace ZenoPCB
         {
             // Always-on minimal success log. Per user feedback 2026-06-06,
             // serial output for MQTT collapses to two states only:
-            // "connected" or "not connected" — no broker, no creds.
+            // "connected" or "not connected" no broker, no creds.
             ZENOPCB_PRINTF("[MQTT] connected\n");
             _setState(MQTTState::CONNECTED);
             _reconnectAttempts = 0;
@@ -227,7 +227,7 @@ namespace ZenoPCB
 
             // Always-on minimal failure log. Per user feedback 2026-06-06,
             // serial output for MQTT collapses to two states only:
-            // "connected" or "not connected" — no broker, no port, no
+            // "connected" or "not connected" no broker, no port, no
             // clientID, no username, no password, no error code,
             // no actionable carrier-specific hints. Any of those help an
             // attacker (or a curious neighbour on the same serial dump)
@@ -236,11 +236,11 @@ namespace ZenoPCB
             // Detailed state code + elapsed time + hints are debug-gated
             // and only visible when ZENOPCB_DEBUG_MQTT is explicitly on.
             // Broker / credential fields remain stripped even from the
-            // debug path — security guarantee, not a verbosity setting.
+            // debug path security guarantee, not a verbosity setting.
             ZENO_LOG_MQTT("connect state=%d, elapsed=%lums", state, elapsed);
 
-            // ⭐ Nếu đang reconnect, giữ state RECONNECTING để tiếp tục retry
-            // Chỉ set ERROR cho trường hợp lỗi nghiêm trọng (auth, protocol)
+            // Nu ang reconnect, gi state RECONNECTING tip tc retry
+            // Ch set ERROR cho trng hp li nghim trng (auth, protocol)
             bool isFatalError = (state == 1 || state == 2 || state == 4 || state == 5);
             if (isFatalError)
             {
@@ -248,7 +248,7 @@ namespace ZenoPCB
             }
             else if (_state != MQTTState::RECONNECTING)
             {
-                // Lần connect đầu tiên thất bại - tự động bắt đầu reconnect
+                // Ln connect u tin tht bi - t ng bt u reconnect
                 if (_config.autoReconnect)
                 {
                     ZENO_LOG_MQTT("Initial connect failed, starting auto-reconnect...");
@@ -262,11 +262,11 @@ namespace ZenoPCB
                     _setState(MQTTState::ERROR);
                 }
             }
-            // Nếu đang RECONNECTING thì giữ nguyên state để _handleReconnect tiếp tục
+            // Nu ang RECONNECTING th gi nguyn state _handleReconnect tip tc
 
             if (_errorCallback)
             {
-                String error = "Connection failed: ";
+                String error = "Connection failed:";
                 switch (state)
                 {
                 case -4:
@@ -324,7 +324,7 @@ namespace ZenoPCB
 
     bool MQTTClient::isConnected()
     {
-        // Use cached _state — avoids calling _mqttClient.connected() on every check.
+        // Use cached _state avoids calling _mqttClient.connected() on every check.
         // With TinyGsmClient, connected() sends AT commands to the modem (blocking 1-3s).
         // The _state is updated by loop() when it detects a disconnect (when network available).
         return _state == MQTTState::CONNECTED;
@@ -496,18 +496,18 @@ namespace ZenoPCB
 
     void MQTTClient::loop()
     {
-        // Process MQTT messages — only when network is available.
+        // Process MQTT messages only when network is available.
         // With TinyGsmClient, _mqttClient.loop() internally calls connected() which sends
         // AT commands to the modem (blocking 1-3s). Skipping during AP mode / network-down
         // prevents starving _wifiProvisioning->loop() (handleClient).
-        // Note: removing the || _state==CONNECTED backup — network-unavailable means
+        // Note: removing the || _state==CONNECTED backup network-unavailable means
         // either AP mode is active OR connection is truly down; either way no point running.
         if (_isNetworkAvailable())
         {
             _mqttClient.loop();
         }
 
-        // Check connection state — only when network available to avoid AT commands in AP mode
+        // Check connection state only when network available to avoid AT commands in AP mode
         if (_state == MQTTState::CONNECTED && _isNetworkAvailable() && !_mqttClient.connected())
         {
             // Connection lost
@@ -530,7 +530,7 @@ namespace ZenoPCB
             }
         }
 
-        // ⭐ Auto-recover from ERROR state (nếu network available)
+        // Auto-recover from ERROR state (nu network available)
         if (_state == MQTTState::ERROR && _config.autoReconnect)
         {
             unsigned long now = millis();
@@ -599,12 +599,12 @@ namespace ZenoPCB
 
                 if (_reconnectAttempts >= _config.maxReconnectAttempts)
                 {
-                    // ⭐ KHÔNG DỪNG LẠI - Reset counter và tiếp tục retry ở max interval
+                    // KHNG DNG LI - Reset counter v tip tc retry max interval
                     ZENO_LOG_MQTT("Reconnect cycle %d attempts done, continuing at %lums interval...",
                                   _reconnectAttempts, _currentReconnectInterval);
                     _reconnectAttempts = 0;
-                    // Giữ nguyên _currentReconnectInterval = max (60s)
-                    // Thiết bị sẽ KHÔNG BAO GIỜ bỏ cuộc reconnect
+                    // Gi nguyn _currentReconnectInterval = max (60s)
+                    // Thit b s KHNG BAO GI b cuc reconnect
                 }
             }
         }

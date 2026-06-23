@@ -32,7 +32,7 @@ namespace ZenoPCB
      * - ...
      * - /schedules/meta.json
      *
-     * @note Uses singleton/static pattern. Plan 04-03 — file I/O routes
+     * @note Uses singleton/static pattern. Plan 04-03  file I/O routes
      *       through `IZenoStorage` injected via `setHal(IZenoHal*)`;
      *       Plan 04-05 wires the canonical ESP32 HAL from `Zeno::begin()`.
      */
@@ -46,7 +46,7 @@ namespace ZenoPCB
         /**
          * @brief Inject the HAL used for all filesystem ops.
          *
-         * Static-pointer injection — chosen for ScheduleStorage's static
+         * Static-pointer injection  chosen for ScheduleStorage's static
          * class design (per RESEARCH "Dependency Injection Pattern").
          * Called once at boot from Plan 04-05; until then methods early-
          * return false / empty when `_hal == nullptr`.

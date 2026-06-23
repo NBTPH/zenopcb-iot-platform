@@ -1,4 +1,4 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_DIAGNOSTICS)
 
 #include "DiagnosticsCollector.h"
@@ -80,7 +80,7 @@ namespace ZenoPCB
         }
 #endif
 
-        // Cellular-specific fields (4G/5G) — read from provider
+        // Cellular-specific fields (4G/5G) read from provider
         if ((_connectionType == DiagnosticsConnectionType::CELLULAR_4G ||
              _connectionType == DiagnosticsConnectionType::CELLULAR_5G) &&
             _networkProvider != nullptr)
@@ -164,7 +164,7 @@ namespace ZenoPCB
     int32_t DiagnosticsCollector::_collectSignalStrength()
     {
         // Cellular: convert CSQ (0-31) to approximate dBm
-        // Formula: dBm = CSQ * 2 - 113  (standard 3GPP conversion)
+        // Formula: dBm = CSQ * 2 - 113 (standard 3GPP conversion)
         if ((_connectionType == DiagnosticsConnectionType::CELLULAR_4G ||
              _connectionType == DiagnosticsConnectionType::CELLULAR_5G) &&
             _networkProvider != nullptr)
@@ -178,7 +178,7 @@ namespace ZenoPCB
 #ifdef ZENOPCB_ENABLE_ETHERNET
         if (_connectionType == DiagnosticsConnectionType::ETHERNET)
         {
-            // Ethernet không có RSSI — dùng link speed làm signal quality
+            // Ethernet khng c RSSI dng link speed lm signal quality
             // 100 Mbps full duplex = -50 (excellent), 10 Mbps = -80 (poor)
             if (ETH.localIP() != IPAddress(0, 0, 0, 0))
             {
@@ -189,7 +189,7 @@ namespace ZenoPCB
         }
 #endif
 
-        // WiFi RSSI — Pattern H gate as above.
+        // WiFi RSSI Pattern H gate as above.
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         if (WiFi.status() == WL_CONNECTED)
         {
@@ -215,14 +215,14 @@ namespace ZenoPCB
 #ifdef ZENOPCB_ENABLE_ETHERNET
         if (_connectionType == DiagnosticsConnectionType::ETHERNET)
         {
-            // ETH.macAddress() trả về String dạng "AA:BB:CC:DD:EE:FF"
+            // ETH.macAddress() tr v String dng "AA:BB:CC:DD:EE:FF"
             return ETH.macAddress();
         }
 #endif
 
         // Pattern H TU gate: WiFi.macAddress() zero-arg overload exists on
         // ESP32 / ESP8266 WiFi.h but not on UNO R4 (Renesas CWifi) or STM32
-        // (WiFiEspAT) — those expose only the buffer-out variant. Library
+        // (WiFiEspAT) those expose only the buffer-out variant. Library
         // stays portable; the platform-specific MAC lookup is the HAL's job.
 #if defined(ESP32) || defined(ESP8266)
         if (WiFi.status() == WL_CONNECTED)
@@ -230,7 +230,7 @@ namespace ZenoPCB
             return WiFi.macAddress();
         }
 
-        // Fallback: WiFi MAC luôn đọc được trên ESP32 dù chưa connect
+        // Fallback: WiFi MAC lun c c trn ESP32 d cha connect
         return WiFi.macAddress();
 #else
         // UNO R4 / STM32: HAL system().getMacAddress() should be used.

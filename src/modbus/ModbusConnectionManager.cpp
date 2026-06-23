@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only.
+// Plan 06-03 D-03 Modbus subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "ModbusConnectionManager.h"
@@ -7,20 +7,20 @@
 #include <esp_netif.h>
 
 // Check if lwIP TCP stack is available (any network interface active)
-// 4G uses PPP over UART — lwIP mailbox not initialized for socket API
+// 4G uses PPP over UART lwIP mailbox not initialized for socket API
 // unless WiFi or Ethernet has started a netif
 static bool isTCPStackReady()
 {
     // esp_netif_get_nr_of_ifs() returns 0 when no network interface is registered
-    // WiFi.begin() / ETH.begin() register netifs → count > 0
-    // Pure 4G (TinyGSM AT mode) does NOT register a netif → count = 0
+    // WiFi.begin() / ETH.begin() register netifs count > 0
+    // Pure 4G (TinyGSM AT mode) does NOT register a netif count = 0
     return esp_netif_get_nr_of_ifs() > 0;
 }
 
 namespace ZenoPCB
 {
 
-    // ⭐ Helper: Build serial config from dataBits, parity, stopBits
+    // Helper: Build serial config from dataBits, parity, stopBits
     static uint32_t buildSerialConfig(uint8_t dataBits, Parity parity, uint8_t stopBits)
     {
         // ESP32 Serial config format: SERIAL_xPy
@@ -91,14 +91,14 @@ namespace ZenoPCB
         }
 
         // Default fallback
-        ZENO_LOG("ModbusRTU", "⚠️ Unsupported serial config: %dbit, parity=%d, stop=%d - using 8N1",
+        ZENO_LOG("ModbusRTU", "Unsupported serial config: %dbit, parity=%d, stop=%d - using 8N1",
                  dataBits, (int)parity, stopBits);
         return SERIAL_8N1;
     }
 
     static const char *TAG = "ModbusConn";
 
-    // ⭐ Static default pins (initialized to -1 = not set)
+    // Static default pins (initialized to -1 = not set)
     int8_t ModbusConnectionManager::s_defaultRxPin = -1;
     int8_t ModbusConnectionManager::s_defaultTxPin = -1;
     int8_t ModbusConnectionManager::s_defaultDEPin = -1; // DE pin for RS485 direction control
@@ -151,7 +151,7 @@ namespace ZenoPCB
         {
             _modbusTCP->task();
 
-            // ⭐ FIX: Check TCP connection and reconnect if needed
+            // FIX: Check TCP connection and reconnect if needed
             IPAddress serverIP;
             if (serverIP.fromString(_config.ipAddress))
             {
@@ -160,14 +160,14 @@ namespace ZenoPCB
                     // Only try reconnect if enough time has passed
                     if (_status == CONNECTED)
                     {
-                        ZENO_LOG("ModbusTCP", "⚠️ Connection lost to %s", _config.ipAddress);
+                        ZENO_LOG("ModbusTCP", "Connection lost to %s", _config.ipAddress);
                         _status = ERROR;
                         _nextRetryTime = millis() + _config.reconnectInterval;
                     }
                 }
                 else if (_status != CONNECTED)
                 {
-                    ZENO_LOG("ModbusTCP", "✅ Connection restored to %s", _config.ipAddress);
+                    ZENO_LOG("ModbusTCP", "Connection restored to %s", _config.ipAddress);
                     _status = CONNECTED;
                     _clearError();
                 }
@@ -176,11 +176,11 @@ namespace ZenoPCB
 
         if (_status == ERROR && millis() >= _nextRetryTime)
         {
-            // ⚠️ Guard: Don't retry TCP when no network stack
+            // Guard: Don't retry TCP when no network stack
             if (_protocol == ConnectionProtocol::MODBUS_TCP && !isTCPStackReady())
             {
                 _nextRetryTime = millis() + _config.reconnectInterval;
-                return; // Silently defer — avoid log spam
+                return; // Silently defer avoid log spam
             }
             begin();
         }
@@ -191,19 +191,19 @@ namespace ZenoPCB
         _modbusRTU = std::make_unique<ModbusRTU>();
         _modbus = _modbusRTU.get();
 
-        // ⭐ Use static default pins set via setDefaultRTUPins(), or hardware defaults
+        // Use static default pins set via setDefaultRTUPins(), or hardware defaults
         int8_t rxPin = ModbusConnectionManager::s_defaultRxPin;
         int8_t txPin = ModbusConnectionManager::s_defaultTxPin;
         int8_t dePin = ModbusConnectionManager::s_defaultDEPin;
 
-        // ⭐ DEBUG: Log config values BEFORE building serial config
-        ZENO_LOG("ModbusRTU", "📋 Config: dataBits=%d, parity=%d, stopBits=%d, baudRate=%lu",
+        // DEBUG: Log config values BEFORE building serial config
+        ZENO_LOG("ModbusRTU", "Config: dataBits=%d, parity=%d, stopBits=%d, baudRate=%lu",
                  _config.dataBits, (int)_config.parity, _config.stopBits, _config.baudRate);
 
-        // ⭐ Build serial config from dataBits, parity, stopBits
+        // Build serial config from dataBits, parity, stopBits
         uint32_t serialConfig = buildSerialConfig(_config.dataBits, _config.parity, _config.stopBits);
 
-        // 1. Initialize Serial1 với custom RX/TX pins và dynamic serial config
+        // 1. Initialize Serial1 vi custom RX/TX pins v dynamic serial config
         if (rxPin != -1 && txPin != -1)
         {
             Serial1.begin(_config.baudRate, serialConfig, rxPin, txPin);
@@ -243,10 +243,10 @@ namespace ZenoPCB
         if (_config.responseTimeout > 0)
         {
             _modbusRTU->setTimeout(_config.responseTimeout);
-            ZENO_LOG("ModbusRTU", "⏱️ Response timeout: %dms", _config.responseTimeout);
+            ZENO_LOG("ModbusRTU", "Response timeout: %dms", _config.responseTimeout);
         }
 
-        ZENO_LOG("ModbusRTU", "✅ RTU initialized: %lu baud, %d%c%d, timeout=%dms, ifd=%dms",
+        ZENO_LOG("ModbusRTU", "RTU initialized: %lu baud, %d%c%d, timeout=%dms, ifd=%dms",
                  _config.baudRate, _config.dataBits,
                  _config.parity == Parity::NONE ? 'N' : (_config.parity == Parity::EVEN ? 'E' : 'O'),
                  _config.stopBits, _config.responseTimeout, _config.interFrameDelay);
@@ -256,11 +256,11 @@ namespace ZenoPCB
 
     bool ModbusConnectionInstance::_initTCP()
     {
-        // ⚠️ Guard: lwIP TCP stack must be ready before creating sockets
-        // 4G mode uses PPP (AT commands) — lwip_socket() will crash (assert: Invalid mbox)
+        // Guard: lwIP TCP stack must be ready before creating sockets
+        // 4G mode uses PPP (AT commands) lwip_socket() will crash (assert: Invalid mbox)
         if (!isTCPStackReady())
         {
-            ZENO_LOG("ModbusTCP", "⏳ TCP stack not ready (no WiFi/Ethernet) — deferring connection to %s", _config.ipAddress);
+            ZENO_LOG("ModbusTCP", "TCP stack not ready (no WiFi/Ethernet) deferring connection to %s", _config.ipAddress);
             _status = ERROR;
             _nextRetryTime = millis() + _config.reconnectInterval;
             return true; // Return true to keep config loaded, retry in loop()
@@ -270,29 +270,29 @@ namespace ZenoPCB
         _modbus = _modbusTCP.get();
         _modbusTCP->client();
 
-        // ⭐ FIX: Must establish TCP connection to the server
+        // FIX: Must establish TCP connection to the server
         IPAddress serverIP;
         if (!serverIP.fromString(_config.ipAddress))
         {
-            ZENO_LOG("ModbusTCP", "❌ Invalid IP address: %s", _config.ipAddress);
+            ZENO_LOG("ModbusTCP", "Invalid IP address: %s", _config.ipAddress);
             return false;
         }
 
         uint16_t port = _config.port > 0 ? _config.port : 502; // Default Modbus TCP port
 
-        ZENO_LOG("ModbusTCP", "📡 Connecting to %s:%d...", _config.ipAddress, port);
+        ZENO_LOG("ModbusTCP", "Connecting to %s:%d...", _config.ipAddress, port);
 
         // Try to connect with timeout
         bool connected = _modbusTCP->connect(serverIP, port);
 
         if (connected)
         {
-            ZENO_LOG("ModbusTCP", "✅ TCP connected to %s:%d", _config.ipAddress, port);
+            ZENO_LOG("ModbusTCP", "TCP connected to %s:%d", _config.ipAddress, port);
             return true;
         }
         else
         {
-            ZENO_LOG("ModbusTCP", "⚠️ TCP connect initiated to %s:%d (async)", _config.ipAddress, port);
+            ZENO_LOG("ModbusTCP", "TCP connect initiated to %s:%d (async)", _config.ipAddress, port);
             // Connection might be async, return true and check in loop()
             return true;
         }
@@ -300,20 +300,20 @@ namespace ZenoPCB
 
     bool ModbusConnectionInstance::_reconnect() { return begin(); }
 
-    // ⭐ NEW: Ensure TCP connection is established before any read/write operation
+    // NEW: Ensure TCP connection is established before any read/write operation
     bool ModbusConnectionInstance::_ensureTCPConnection()
     {
         if (!_modbusTCP)
             return false;
 
-        // ⚠️ Guard: TCP stack must be available
+        // Guard: TCP stack must be available
         if (!isTCPStackReady())
             return false;
 
         IPAddress serverIP;
         if (!serverIP.fromString(_config.ipAddress))
         {
-            ZENO_LOG("ModbusTCP", "❌ Invalid IP: %s", _config.ipAddress);
+            ZENO_LOG("ModbusTCP", "Invalid IP: %s", _config.ipAddress);
             return false;
         }
 
@@ -325,7 +325,7 @@ namespace ZenoPCB
 
         // Try to connect
         uint16_t port = _config.port > 0 ? _config.port : 502;
-        ZENO_LOG("ModbusTCP", "📡 Reconnecting to %s:%d...", _config.ipAddress, port);
+        ZENO_LOG("ModbusTCP", "Reconnecting to %s:%d...", _config.ipAddress, port);
 
         _modbusTCP->connect(serverIP, port);
 
@@ -336,14 +336,14 @@ namespace ZenoPCB
             _modbusTCP->task();
             if (_modbusTCP->isConnected(serverIP))
             {
-                ZENO_LOG("ModbusTCP", "✅ Reconnected to %s:%d", _config.ipAddress, port);
+                ZENO_LOG("ModbusTCP", "Reconnected to %s:%d", _config.ipAddress, port);
                 _status = CONNECTED;
                 return true;
             }
             delay(10);
         }
 
-        ZENO_LOG("ModbusTCP", "❌ Failed to connect to %s:%d", _config.ipAddress, port);
+        ZENO_LOG("ModbusTCP", "Failed to connect to %s:%d", _config.ipAddress, port);
         return false;
     }
 
@@ -383,7 +383,7 @@ namespace ZenoPCB
         {
             if (_consecutiveFailures >= HEALTH_FAILURE_THRESHOLD)
             {
-                Serial.printf("[Modbus] ✅ Connection %s recovered after %d failures\n",
+                ZENO_LOG_RAW("[Modbus] Connection %s recovered after %d failures\n",
                               _shortId, _consecutiveFailures);
             }
             _consecutiveFailures = 0;
@@ -404,7 +404,7 @@ namespace ZenoPCB
                 backoffMs = HEALTH_BACKOFF_MAX_MS;
 
             _backoffUntil = millis() + backoffMs;
-            Serial.printf("[Modbus] ⏳ Connection %s backoff %dms (failures=%d)\n",
+            ZENO_LOG_RAW("[Modbus] Connection %s backoff %dms (failures=%d)\n",
                           _shortId, backoffMs, _consecutiveFailures);
         }
     }
@@ -614,10 +614,10 @@ namespace ZenoPCB
             return false;
         if (_modbusTCP)
         {
-            // ⭐ FIX: Ensure TCP connection before write
+            // FIX: Ensure TCP connection before write
             if (!_ensureTCPConnection())
             {
-                ZENO_LOG("ModbusTCP", "❌ Cannot writeCoil: TCP not connected");
+                ZENO_LOG("ModbusTCP", "Cannot writeCoil: TCP not connected");
                 return false;
             }
 
@@ -638,10 +638,10 @@ namespace ZenoPCB
             return false;
         if (_modbusTCP)
         {
-            // ⭐ FIX: Ensure TCP connection before write
+            // FIX: Ensure TCP connection before write
             if (!_ensureTCPConnection())
             {
-                ZENO_LOG("ModbusTCP", "❌ Cannot writeHreg: TCP not connected");
+                ZENO_LOG("ModbusTCP", "Cannot writeHreg: TCP not connected");
                 return false;
             }
 
@@ -732,23 +732,23 @@ namespace ZenoPCB
         return false;
     }
 
-    // ⭐ NEW: Synchronous read with buffer - waits for response
+    // NEW: Synchronous read with buffer - waits for response
     uint16_t ModbusConnectionInstance::readHoldingRegistersWithBuffer(uint16_t address, uint16_t *buffer, uint16_t count, uint8_t slaveId)
     {
         if (!isConnected() || !buffer)
         {
-            ZENO_LOG("Modbus", "❌ readHreg failed: not connected or null buffer");
+            ZENO_LOG("Modbus", "readHreg failed: not connected or null buffer");
             return 0;
         }
 
-        ZENO_LOG_MODBUS("📤 Reading Hreg: slave=%d addr=%d count=%d", slaveId, address, count);
+        ZENO_LOG_MODBUS("Reading Hreg: slave=%d addr=%d count=%d", slaveId, address, count);
 
         if (_modbusTCP)
         {
-            // ⭐ FIX: Ensure TCP connection before read
+            // FIX: Ensure TCP connection before read
             if (!_ensureTCPConnection())
             {
-                ZENO_LOG("ModbusTCP", "❌ Cannot read: TCP not connected");
+                ZENO_LOG("ModbusTCP", "Cannot read: TCP not connected");
                 return 0;
             }
 
@@ -758,7 +758,7 @@ namespace ZenoPCB
 
             if (transId == 0)
             {
-                ZENO_LOG("ModbusTCP", "❌ readHreg failed to start transaction");
+                ZENO_LOG("ModbusTCP", "readHreg failed to start transaction");
                 return 0;
             }
 
@@ -781,34 +781,34 @@ namespace ZenoPCB
             // Don't send if transaction already in progress
             if (_modbusRTU->slave())
             {
-                ZENO_LOG("ModbusRTU", "⚠️ Transaction already in progress");
+                ZENO_LOG("ModbusRTU", "Transaction already in progress");
                 return 0;
             }
 
             // Static variable to store error result
             static Modbus::ResultCode lastError = Modbus::EX_SUCCESS;
 
-            // ⭐ Capture 'this' pointer to store error code in instance variable
+            // Capture 'this' pointer to store error code in instance variable
             auto cb = [this](Modbus::ResultCode event, uint16_t transactionId, void *data) -> bool
             {
                 lastError = event;
-                this->_lastErrorCode = (uint8_t)event; // ⭐ Store in instance variable
+                this->_lastErrorCode = (uint8_t)event; // Store in instance variable
 
                 if (event != Modbus::EX_SUCCESS)
                 {
-                    ZENO_LOG("ModbusRTU", "❌ Error: 0x%02X (transId=%d)", event, transactionId);
+                    ZENO_LOG("ModbusRTU", "Error: 0x%02X (transId=%d)", event, transactionId);
                 }
                 else
                 {
-                    ZENO_LOG_MODBUS("✅ Success callback (transId=%d)", transactionId);
+                    ZENO_LOG_MODBUS("Success callback (transId=%d)", transactionId);
                 }
                 return true;
             };
 
             lastError = Modbus::EX_SUCCESS; // Reset before request
-            this->_lastErrorCode = 0;       // ⭐ Reset instance error code
+            this->_lastErrorCode = 0;       // Reset instance error code
             uint16_t transId = _modbusRTU->readHreg(slaveId, address, buffer, count, cb, 0);
-            ZENO_LOG_MODBUS("📤 Sent RTU request: slave=%d addr=%d count=%d transId=%d",
+            ZENO_LOG_MODBUS("Sent RTU request: slave=%d addr=%d count=%d transId=%d",
                             slaveId, address, count, transId);
 
             // Process the transaction - wait until slave() returns 0 (transaction complete)
@@ -822,7 +822,7 @@ namespace ZenoPCB
 
                 if (millis() - start >= timeout)
                 {
-                    ZENO_LOG("ModbusRTU", "⏰ Timeout after %lums", millis() - start);
+                    ZENO_LOG("ModbusRTU", "Timeout after %lums", millis() - start);
                     return transId;
                 }
             }
@@ -830,17 +830,17 @@ namespace ZenoPCB
             // Transaction completed
             if (lastError == Modbus::EX_SUCCESS)
             {
-                this->_lastErrorCode = 0; // ⭐ Clear error on success
-                ZENO_LOG_MODBUS("✅ RTU Response in %lums, buffer[0]=%d (0x%04X)",
+                this->_lastErrorCode = 0; // Clear error on success
+                ZENO_LOG_MODBUS("RTU Response in %lums, buffer[0]=%d (0x%04X)",
                                 millis() - start, buffer[0], buffer[0]);
                 return transId; // Success: return transaction ID
             }
             else
             {
-                this->_lastErrorCode = (uint8_t)lastError; // ⭐ Ensure error code is stored
-                ZENO_LOG("ModbusRTU", "❌ RTU Error 0x%02X in %lums (timeout/no response)",
+                this->_lastErrorCode = (uint8_t)lastError; // Ensure error code is stored
+                ZENO_LOG("ModbusRTU", "RTU Error 0x%02X in %lums (timeout/no response)",
                          lastError, millis() - start);
-                return 0; // ⚡ Error: return 0 để báo lỗi
+                return 0; // Error: return 0 bo li
             }
         }
         return 0;
@@ -1069,13 +1069,13 @@ namespace ZenoPCB
         return instance;
     }
 
-    // ⭐ Set default RX/TX/DE pins for all RTU connections
+    // Set default RX/TX/DE pins for all RTU connections
     void ModbusConnectionManager::setDefaultRTUPins(int8_t rxPin, int8_t txPin, int8_t dePin)
     {
         s_defaultRxPin = rxPin;
         s_defaultTxPin = txPin;
         s_defaultDEPin = dePin;
-        Serial.printf("[ModbusManager] Default RTU pins set: RX=%d, TX=%d, DE=%d\n", rxPin, txPin, dePin);
+        ZENO_LOG_RAW("[ModbusManager] Default RTU pins set: RX=%d, TX=%d, DE=%d\n", rxPin, txPin, dePin);
     }
 
     ModbusConnectionManager::~ModbusConnectionManager() { stop(); }
@@ -1193,4 +1193,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

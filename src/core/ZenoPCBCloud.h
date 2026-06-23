@@ -6,7 +6,7 @@
 namespace ZenoPCB
 {
     // ============================================
-    // Cloud endpoint — XOR encoded, key = 0x5A
+    // Cloud endpoint XOR encoded, key = 0x5A
     // DO NOT store plaintext here.
     //
     // D-26 single-broker (Phase 7 Plan 07-06, 2026-06-03): two-broker
@@ -31,7 +31,7 @@ namespace ZenoPCB
 
     /**
      * @brief Decode and return the default cloud broker address.
-     *        Called once at runtime — result is not stored as a global string.
+     *        Called once at runtime  result is not stored as a global string.
      *        volatile key prevents compiler from folding XOR at compile time.
      */
     inline String getCloudBroker()

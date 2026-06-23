@@ -1,4 +1,4 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_SCHEDULE)
 
 #include "ScheduleStorage.h"
@@ -13,7 +13,7 @@ namespace ZenoPCB
     const char *ScheduleStorage::SCHEDULE_DIR = "/schedules";
     const char *ScheduleStorage::METADATA_FILE = "/schedules/meta.json";
 
-    // Static HAL pointer (Plan 04-03 — injected by Plan 04-05 wiring).
+    // Static HAL pointer (Plan 04-03 injected by Plan 04-05 wiring).
     IZenoHal *ScheduleStorage::_hal = nullptr;
 
     // ============================================
@@ -77,14 +77,14 @@ namespace ZenoPCB
 
         if (!ensureScheduleDirectory())
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to create schedules directory");
+            ZENO_LOG("ScheduleStorage", "Failed to create schedules directory");
             return false;
         }
 
         // Check if adding new schedule would exceed limit
         if (!scheduleExists(config.id) && isMaxSchedulesReached())
         {
-            ZENO_LOG("ScheduleStorage", "❌ Max schedules limit reached (%d)", MAX_SCHEDULES);
+            ZENO_LOG("ScheduleStorage", "Max schedules limit reached (%d)", MAX_SCHEDULES);
             return false;
         }
 
@@ -128,7 +128,7 @@ namespace ZenoPCB
         String jsonStr;
         if (serializeJson(doc, jsonStr) == 0)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to serialize JSON");
+            ZENO_LOG("ScheduleStorage", "Failed to serialize JSON");
             return false;
         }
 
@@ -137,12 +137,12 @@ namespace ZenoPCB
                                                    jsonStr.length());
         if (written != jsonStr.length())
         {
-            ZENO_LOG("ScheduleStorage", "❌ Short write: %s (%u/%u)",
+            ZENO_LOG("ScheduleStorage", "Short write: %s (%u/%u)",
                      filePath.c_str(), (unsigned)written, (unsigned)jsonStr.length());
             return false;
         }
 
-        ZENO_LOG("ScheduleStorage", "✅ Schedule saved: %s", config.id);
+        ZENO_LOG("ScheduleStorage", "Schedule saved: %s", config.id);
         return true;
     }
 
@@ -158,17 +158,17 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("ScheduleStorage", "❌ Schedule not found: %s", scheduleId.c_str());
+            ZENO_LOG("ScheduleStorage", "Schedule not found: %s", scheduleId.c_str());
             return false;
         }
 
-        // Read entire file into a bounded buffer (Pitfall 2 — wrapper owns
+        // Read entire file into a bounded buffer (Pitfall 2 wrapper owns
         // file handle lifecycle).
         char buf[SCHEDULE_FILE_BUF_SIZE];
         size_t bytesRead = _hal->storage().readFile(filePath.c_str(), buf, sizeof(buf));
         if (bytesRead == 0)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to read file: %s", filePath.c_str());
+            ZENO_LOG("ScheduleStorage", "Failed to read file: %s", filePath.c_str());
             return false;
         }
 
@@ -177,7 +177,7 @@ namespace ZenoPCB
 
         if (error)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to parse JSON: %s", error.c_str());
+            ZENO_LOG("ScheduleStorage", "Failed to parse JSON: %s", error.c_str());
             return false;
         }
 
@@ -214,7 +214,7 @@ namespace ZenoPCB
         outConfig.createdAt = doc["createdAt"] | 0;
         outConfig.updatedAt = doc["updatedAt"] | 0;
 
-        ZENO_LOG("ScheduleStorage", "✅ Schedule loaded: %s", scheduleId.c_str());
+        ZENO_LOG("ScheduleStorage", "Schedule loaded: %s", scheduleId.c_str());
         return true;
     }
 
@@ -230,7 +230,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("ScheduleStorage", "⚠️ Schedule not found for deletion: %s", scheduleId.c_str());
+            ZENO_LOG("ScheduleStorage", "Schedule not found for deletion: %s", scheduleId.c_str());
             return false;
         }
 
@@ -238,11 +238,11 @@ namespace ZenoPCB
 
         if (result)
         {
-            ZENO_LOG("ScheduleStorage", "✅ Schedule deleted: %s", scheduleId.c_str());
+            ZENO_LOG("ScheduleStorage", "Schedule deleted: %s", scheduleId.c_str());
         }
         else
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to delete schedule: %s", scheduleId.c_str());
+            ZENO_LOG("ScheduleStorage", "Failed to delete schedule: %s", scheduleId.c_str());
         }
 
         return result;
@@ -269,7 +269,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(SCHEDULE_DIR))
         {
-            ZENO_LOG("ScheduleStorage", "⚠️ Schedules directory not found, returning empty list");
+            ZENO_LOG("ScheduleStorage", "Schedules directory not found, returning empty list");
             return true; // Not an error, just empty
         }
 
@@ -278,7 +278,7 @@ namespace ZenoPCB
         // we extract the basename to recover the schedule ID, then call
         // loadSchedule(). Skip the meta.json sentinel.
         // Note: SCHEDULE_DIR is "/schedules" (no trailing slash). Esp32Storage
-        // uses strncmp(entry, prefix, strlen(prefix)) to filter — so we pass
+        // uses strncmp(entry, prefix, strlen(prefix)) to filter so we pass
         // "/schedules/" with the slash so that meta.json under /schedules is
         // matched but unrelated paths are excluded.
         const char *prefix = "/schedules/";
@@ -313,7 +313,7 @@ namespace ZenoPCB
             }
         }
 
-        ZENO_LOG("ScheduleStorage", "✅ Loaded %d schedules", outSchedules.size());
+        ZENO_LOG("ScheduleStorage", "Loaded %d schedules", outSchedules.size());
         return true;
     }
 
@@ -336,7 +336,7 @@ namespace ZenoPCB
         meta.lastUpdated = time(nullptr);
         writeMetadata(meta);
 
-        ZENO_LOG("ScheduleStorage", "✅ Cleared all schedules");
+        ZENO_LOG("ScheduleStorage", "Cleared all schedules");
         return allDeleted;
     }
 
@@ -373,7 +373,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("ScheduleStorage", "⚠️ Metadata not found, using defaults");
+            ZENO_LOG("ScheduleStorage", "Metadata not found, using defaults");
             outMeta = ScheduleMetadata();
             return false;
         }
@@ -382,7 +382,7 @@ namespace ZenoPCB
         size_t bytesRead = _hal->storage().readFile(filePath.c_str(), buf, sizeof(buf));
         if (bytesRead == 0)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to read metadata file");
+            ZENO_LOG("ScheduleStorage", "Failed to read metadata file");
             return false;
         }
 
@@ -391,7 +391,7 @@ namespace ZenoPCB
 
         if (error)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to parse metadata JSON");
+            ZENO_LOG("ScheduleStorage", "Failed to parse metadata JSON");
             return false;
         }
 
@@ -424,7 +424,7 @@ namespace ZenoPCB
         String jsonStr;
         if (serializeJson(doc, jsonStr) == 0)
         {
-            ZENO_LOG("ScheduleStorage", "❌ Failed to serialize metadata");
+            ZENO_LOG("ScheduleStorage", "Failed to serialize metadata");
             return false;
         }
 
@@ -433,7 +433,7 @@ namespace ZenoPCB
                                                    jsonStr.length());
         if (written != jsonStr.length())
         {
-            ZENO_LOG("ScheduleStorage", "❌ Short write metadata (%u/%u)",
+            ZENO_LOG("ScheduleStorage", "Short write metadata (%u/%u)",
                      (unsigned)written, (unsigned)jsonStr.length());
             return false;
         }

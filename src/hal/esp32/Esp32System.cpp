@@ -38,7 +38,7 @@ size_t Esp32System::getUniqueId(char *out, size_t outSize) {
     if (!out || outSize < 9) return 0;
 
     uint64_t chipid = ESP.getEfuseMac();
-    // Format matches WiFiProvisioning.cpp:1861 — 8 hex chars of the upper
+    // Format matches WiFiProvisioning.cpp:1861 8 hex chars of the upper
     // 32 bits of the 48-bit MAC. snprintf only (CLAUDE.md).
     int written = snprintf(out, outSize, "%08X", (uint32_t)(chipid >> 16));
     if (written < 0) {
@@ -62,7 +62,7 @@ void Esp32System::feedWatchdog() {
     // serial with "esp_task_wdt_reset(763): task not found" once per call
     // when the library feeds the WDT from inside loop()-driven code.
     // Only reset when the current task is actually registered (user opted
-    // in via esp_task_wdt_add). Always yield() — that feeds the IDLE
+    // in via esp_task_wdt_add). Always yield() that feeds the IDLE
     // task WDT, which IS active by default and is the watchdog Arduino
     // sketches actually rely on.
     if (esp_task_wdt_status(NULL) == ESP_OK) {

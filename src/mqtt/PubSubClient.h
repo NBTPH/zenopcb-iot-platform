@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 //
-// knolleary/PubSubClient — vendored from upstream (~v2.8) into ZenoPCB IoT Library
+// knolleary/PubSubClient vendored from upstream (~v2.8) into ZenoPCB IoT Library
 // (https://github.com/knolleary/pubsubclient)
 //
 // Original Copyright (c) Nicholas O'Leary.
-// Licensed under MIT — see lib/ZenoPCB/src/mqtt/VENDORED.md.
+// Licensed under MIT see lib/ZenoPCB/src/mqtt/VENDORED.md.
 //
 // Plan 06-2.5c (2026-06-02): class renamed from `PubSubClient`
 // to `ZenoPubSubClient` to claim as ZenoPCB internal component.
@@ -43,8 +43,8 @@
 #endif
 
 // MQTT_MAX_TRANSFER_SIZE : limit how much data is passed to the network client
-//  in each write call. Needed for the Arduino Wifi Shield. Leave undefined to
-//  pass the entire MQTT packet in each write call.
+// in each write call. Needed for the Arduino Wifi Shield. Leave undefined to
+// pass the entire MQTT packet in each write call.
 // #define MQTT_MAX_TRANSFER_SIZE 80
 
 // Possible values for client.state()
@@ -117,7 +117,7 @@ private:
    // Build up the header ready to send
    // Returns the size of the header
    // Note: the header is built at the end of the first MQTT_MAX_HEADER_SIZE bytes, so will start
-   //       (MQTT_MAX_HEADER_SIZE - <returned size>) bytes into the buffer
+   // (MQTT_MAX_HEADER_SIZE - <returned size>) bytes into the buffer
    size_t buildHeader(uint8_t header, uint8_t *buf, uint16_t length);
    IPAddress ip;
    const char *domain;
@@ -169,9 +169,9 @@ public:
    boolean publish_P(const char *topic, const uint8_t *payload, unsigned int plength, boolean retained);
    // Start to publish a message.
    // This API:
-   //   beginPublish(...)
-   //   one or more calls to write(...)
-   //   endPublish()
+   // beginPublish(...)
+   // one or more calls to write(...)
+   // endPublish()
    // Allows for arbitrarily large payloads to be sent without them having to be copied into
    // a new buffer and held in memory at one time
    // Returns 1 if the message was started successfully, 0 if there was an error

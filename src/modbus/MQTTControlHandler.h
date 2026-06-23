@@ -16,6 +16,7 @@
 #define MQTT_CONTROL_HANDLER_H
 
 #include <Arduino.h>
+#include "../core/ZenoPCBDebug.h"
 #include "../ZenoJson.h"  // ArduinoJson API from vendored copy (namespace ZenoJson; see vendor/ArduinoJson/LICENSE.md)
 #include <vector>
 #include <functional>
@@ -146,7 +147,7 @@ namespace ZenoPCB
      * // In MQTT message callback
      * MQTTControlHandler handler;
      * handler.onResult([](const ControlMessageResult& result) {
-     *     Serial.printf("Control: %d/%d success\n", result.successCount, result.totalRequests);
+     *     ZENO_LOG_RAW("Control: %d/%d success\n", result.successCount, result.totalRequests);
      * });
      * handler.handleMessage(payload);
      */

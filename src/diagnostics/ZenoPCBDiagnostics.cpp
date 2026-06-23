@@ -1,10 +1,10 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_DIAGNOSTICS)
 
 #include "ZenoPCBDiagnostics.h"
 #include "../mqtt/ZenoPCBMQTT.h"
 #include "../core/ZenoPCBDebug.h"
-// Plan 06-03 — platform HAL bridge picks the canonical singleton for
+// Plan 06-03 platform HAL bridge picks the canonical singleton for
 // the current target. Plan 04-05 will swap this to ctor-injected
 // IZenoHal& and remove the bridge entirely.
 #if defined(ESP32)
@@ -86,7 +86,7 @@ namespace ZenoPCB
     {
         if (_mqtt == nullptr || _handler == nullptr)
         {
-            // ZENO_LOG_CORE("[DIAG-LOOP] ERROR: mqtt or handler is null"); // Tắt debug này
+            // ZENO_LOG_CORE("[DIAG-LOOP] ERROR: mqtt or handler is null"); // Tt debug ny
             return;
         }
 
@@ -96,16 +96,16 @@ namespace ZenoPCB
         // static unsigned long lastDebugPrint = 0;
         // if (millis() - lastDebugPrint > 30000) // Every 30 seconds
         // {
-        //     lastDebugPrint = millis();
-        //     ZENO_LOG_CORE("[DIAG-LOOP] Running - MQTT: %s, LastSend: %lu ms ago",
-        //                   mqttConnected ? "connected" : "disconnected",
-        //                   millis() - _lastSendTime);
+        // lastDebugPrint = millis();
+        // ZENO_LOG_CORE("[DIAG-LOOP] Running - MQTT: %s, LastSend: %lu ms ago",
+        // mqttConnected ? "connected" : "disconnected",
+        // millis() - _lastSendTime);
         // }
 
         // Auto-send on first connection (delayed to avoid flooding 4G modem)
         if (mqttConnected && !_mqttWasConnected)
         {
-            // MQTT just connected — schedule first send after 3s
+            // MQTT just connected schedule first send after 3s
             // On 4G, sending immediately after connect causes TCP socket overflow
             ZENO_LOG_CORE("[DIAG] MQTT connected - scheduling first diagnostics in 3s");
             _firstSendDone = false;

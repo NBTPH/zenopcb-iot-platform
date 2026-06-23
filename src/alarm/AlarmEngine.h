@@ -8,7 +8,7 @@ namespace ZenoPCB
 {
 
     /**
-     * @brief Edge Alarm Engine — evaluates alarm rules locally on device
+     * @brief Edge Alarm Engine  evaluates alarm rules locally on device
      *
      * Responsibilities:
      * - Store alarm rules received from backend
@@ -16,7 +16,7 @@ namespace ZenoPCB
      * - Manage cooldown per rule
      * - Generate alarm events for publishing
      *
-     * Memory: ~3KB (20 rules × 145 bytes + overhead)
+     * Memory: ~3KB (20 rules  145 bytes + overhead)
      */
     class AlarmEngine
     {
@@ -28,7 +28,7 @@ namespace ZenoPCB
         // ============================================
 
         /**
-         * @brief Full sync — replace all rules with new set
+         * @brief Full sync  replace all rules with new set
          * @param rules JsonArray from backend config payload "r"
          * @return Number of rules loaded
          */
@@ -89,7 +89,7 @@ namespace ZenoPCB
          *
          * The callback receives the AlarmEvent and returns true if the event was
          * successfully delivered (e.g., published to MQTT). Returning false prevents
-         * the cooldown timer from starting — the alarm will retry on the next check.
+         * the cooldown timer from starting  the alarm will retry on the next check.
          */
         void onAlarmTriggered(std::function<bool(const AlarmEvent &event)> callback)
         {

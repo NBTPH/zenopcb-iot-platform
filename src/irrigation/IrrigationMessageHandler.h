@@ -27,12 +27,12 @@ namespace ZenoPCB
      * }
      *
      * Actions:
-     *   execute — run scenario immediately (inline steps, NOT saved)
-     *   ss      — sync scenario to flash (create/update)
-     *   ds      — delete scenario from flash
-     *   sc      — sync schedule to flash (create/update, separate entity)
-     *   dc      — delete schedule from flash
-     *   fa      — full sync (clear all + save all scenarios + schedules)
+     *   execute  run scenario immediately (inline steps, NOT saved)
+     *   ss       sync scenario to flash (create/update)
+     *   ds       delete scenario from flash
+     *   sc       sync schedule to flash (create/update, separate entity)
+     *   dc       delete schedule from flash
+     *   fa       full sync (clear all + save all scenarios + schedules)
      */
     class IrrigationMessageHandler
     {

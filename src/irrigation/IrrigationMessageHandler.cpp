@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Irrigation subsystem is ESP32-only.
+// Plan 06-03 D-03 Irrigation subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "IrrigationMessageHandler.h"
@@ -45,7 +45,7 @@ namespace ZenoPCB
         unsigned long startMs = millis();
         IrrigationHandleResult result;
 
-        ZENO_LOG("IrrigationMsgHandler", "📩 Received message (%d bytes)", payload.length());
+        ZENO_LOG("IrrigationMsgHandler", "Received message (%d bytes)", payload.length());
 
         // Parse JSON
         JsonDocument doc;
@@ -124,7 +124,7 @@ namespace ZenoPCB
         if (err)
         {
             error = "Invalid payload";
-            ZENO_LOG("IrrigationMsgHandler", "❌ JSON parse error: %s", err.c_str());
+            ZENO_LOG("IrrigationMsgHandler", "JSON parse error: %s", err.c_str());
             return false;
         }
         return true;
@@ -151,7 +151,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Handle EXECUTE — run scenario immediately
+    // Handle EXECUTE run scenario immediately
     // Steps are inline, NOT saved to LittleFS
     // ============================================
 
@@ -209,13 +209,13 @@ namespace ZenoPCB
         }
 
         result.success = true;
-        ZENO_LOG("IrrigationMsgHandler", "✅ Execute started: %s (eid=%s, %d steps)",
+        ZENO_LOG("IrrigationMsgHandler", "Execute started: %s (eid=%s, %d steps)",
                  sid, eid ? eid : "?", stepCount);
         return result;
     }
 
     // ============================================
-    // Handle SS — save scenario to LittleFS (V3: no schedule info)
+    // Handle SS save scenario to LittleFS (V3: no schedule info)
     // ============================================
 
     IrrigationHandleResult IrrigationMessageHandler::_handleSyncScenario(const JsonObject &data)
@@ -262,7 +262,7 @@ namespace ZenoPCB
         }
 
         result.success = true;
-        ZENO_LOG("IrrigationMsgHandler", "✅ SS: %s (%d steps)", sid, config.stepCount);
+        ZENO_LOG("IrrigationMsgHandler", "SS: %s (%d steps)", sid, config.stepCount);
 
         if (_onSyncedCallback)
             _onSyncedCallback(sid);
@@ -270,7 +270,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Handle DS — delete scenario from LittleFS
+    // Handle DS delete scenario from LittleFS
     // ============================================
 
     IrrigationHandleResult IrrigationMessageHandler::_handleDeleteScenario(const JsonObject &data)
@@ -301,7 +301,7 @@ namespace ZenoPCB
             if (strcmp(exec.scenarioId, sid) == 0)
             {
                 executor.stopExecution();
-                ZENO_LOG("IrrigationMsgHandler", "⚠️ Stopped running scenario: %s", sid);
+                ZENO_LOG("IrrigationMsgHandler", "Stopped running scenario: %s", sid);
             }
         }
 
@@ -314,10 +314,10 @@ namespace ZenoPCB
         }
 
         // Remove from scheduler (any schedules referencing this scenario won't run)
-        // Note: We don't auto-delete schedules — they become orphaned (server handles cleanup)
+        // Note: We don't auto-delete schedules they become orphaned (server handles cleanup)
 
         result.success = true;
-        ZENO_LOG("IrrigationMsgHandler", "✅ DS: %s", sid);
+        ZENO_LOG("IrrigationMsgHandler", "DS: %s", sid);
 
         if (_onDeletedCallback)
             _onDeletedCallback(sid);
@@ -325,7 +325,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Handle SC — sync schedule to LittleFS (V3: separate entity)
+    // Handle SC sync schedule to LittleFS (V3: separate entity)
     // ============================================
 
     IrrigationHandleResult IrrigationMessageHandler::_handleSyncSchedule(const JsonObject &data)
@@ -407,13 +407,13 @@ namespace ZenoPCB
         IrrigationScheduler::getInstance().addOrUpdateSchedule(schConfig);
 
         result.success = true;
-        ZENO_LOG("IrrigationMsgHandler", "✅ SC: %s → scenario %s (type=%c)",
+        ZENO_LOG("IrrigationMsgHandler", "SC: %s scenario %s (type=%c)",
                  id, sid, (char)schConfig.scheduleType);
         return result;
     }
 
     // ============================================
-    // Handle DC — delete schedule from LittleFS
+    // Handle DC delete schedule from LittleFS
     // ============================================
 
     IrrigationHandleResult IrrigationMessageHandler::_handleDeleteSchedule(const JsonObject &data)
@@ -429,19 +429,19 @@ namespace ZenoPCB
 
         strlcpy(result.scheduleId, id, sizeof(result.scheduleId));
 
-        // Delete from storage (idempotent — ok if not found)
+        // Delete from storage (idempotent ok if not found)
         IrrigationStorage::deleteSchedule(id);
 
         // Remove from scheduler in-memory
         IrrigationScheduler::getInstance().removeSchedule(id);
 
         result.success = true;
-        ZENO_LOG("IrrigationMsgHandler", "✅ DC: %s", id);
+        ZENO_LOG("IrrigationMsgHandler", "DC: %s", id);
         return result;
     }
 
     // ============================================
-    // Handle FA — full sync (clear all + reload)
+    // Handle FA full sync (clear all + reload)
     // ============================================
 
     IrrigationHandleResult IrrigationMessageHandler::_handleFullSync(const JsonObject &data)
@@ -453,7 +453,7 @@ namespace ZenoPCB
         if (executor.isRunning())
         {
             executor.stopExecution();
-            ZENO_LOG("IrrigationMsgHandler", "⚠️ Stopped running scenario for full sync");
+            ZENO_LOG("IrrigationMsgHandler", "Stopped running scenario for full sync");
         }
 
         // Clear all existing data
@@ -555,12 +555,12 @@ namespace ZenoPCB
         result.success = true;
         result.scenarioCount = scCount;
         result.scheduleCount = schCount;
-        ZENO_LOG("IrrigationMsgHandler", "✅ FA: %d scenarios, %d schedules", scCount, schCount);
+        ZENO_LOG("IrrigationMsgHandler", "FA: %d scenarios, %d schedules", scCount, schCount);
         return result;
     }
 
     // ============================================
-    // Step Parser — V2 format
+    // Step Parser V2 format
     // ============================================
 
     bool IrrigationMessageHandler::_parseSteps(const JsonArray &stepsArr,
@@ -649,4 +649,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

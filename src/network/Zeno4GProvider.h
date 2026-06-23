@@ -32,12 +32,12 @@
 #include "../vendor/StreamDebugger/StreamDebugger.h"
 #endif
 
-// TinyGSM vendored — no external lib_deps required
+// TinyGSM vendored no external lib_deps required
 #include "../vendor/TinyGSM/TinyGsmClient.h"
 #include "../core/ZenoNetworkProvider.h"
 #include "../core/ZenoPCBTypes.h"
 #include "../core/ZenoPCBDebug.h"
-#include <sys/time.h> // settimeofday() — for modem NTP → ESP32 RTC
+#include <sys/time.h> // settimeofday() for modem NTP ESP32 RTC
 
 namespace ZenoPCB
 {
@@ -56,8 +56,8 @@ namespace ZenoPCB
     public:
         /**
          * @brief Constructor
-         * @param txPin  ESP32 TX → Modem RX (default: GPIO 17)
-         * @param rxPin  ESP32 RX ← Modem TX (default: GPIO 16)
+         * @param txPin  ESP32 TX  Modem RX (default: GPIO 17)
+         * @param rxPin  ESP32 RX  Modem TX (default: GPIO 16)
          * @param pwrPin Modem power key pin (255 = not used)
          * @param rstPin Modem reset pin (255 = not used)
          * @param baudRate Serial baud rate (default: 115200)
@@ -84,7 +84,7 @@ namespace ZenoPCB
             // Store config for retry
             _savedConfig = config;
 
-            ZENO_LOG("4G", "Initializing modem — TX=%d, RX=%d, PWR=%d",
+            ZENO_LOG("4G", "Initializing modem TX=%d, RX=%d, PWR=%d",
                      _txPin, _rxPin, _pwrPin);
 
             // Store APN config
@@ -98,7 +98,7 @@ namespace ZenoPCB
                 ZENO_LOG("4G", "No APN configured, using default: %s", _apn.c_str());
             }
 
-            // ── Hardware POWERKEY cycle (same as working reference project) ──────
+            // Hardware POWERKEY cycle (same as working reference project) 
             // This is the ONLY reliable way to init A7680C / SIM7600-family modems.
             // DO NOT call modem.restart() / modem.init() before this sequence.
             if (_pwrPin != 255)
@@ -118,7 +118,7 @@ namespace ZenoPCB
             }
 
             // Step 3: (Re)start Serial2
-            ZENO_LOG("4G", "Starting Serial2 — RX=%d TX=%d baud=%d", _rxPin, _txPin, _baudRate);
+            ZENO_LOG("4G", "Starting Serial2 RX=%d TX=%d baud=%d", _rxPin, _txPin, _baudRate);
             Serial2.end();
             delay(500);
             Serial2.begin(_baudRate, SERIAL_8N1, _rxPin, _txPin);
@@ -147,7 +147,7 @@ namespace ZenoPCB
                 }
                 else
                 {
-                    ZENO_LOG("4G", "WARNING: modem not responding yet — continuing anyway");
+                    ZENO_LOG("4G", "WARNING: modem not responding yet continuing anyway");
                 }
             }
             else
@@ -160,20 +160,20 @@ namespace ZenoPCB
             String modemInfo = _modem.getModemInfo();
             ZENO_LOG("4G", "Modem: %s", modemInfo.c_str());
 
-            // ⭐ Bail out early if modem is not responding at all
+            // Bail out early if modem is not responding at all
             if (modemInfo.length() == 0)
             {
-                ZENO_LOG("4G", "ERROR: Modem not responding — check power / pins");
+                ZENO_LOG("4G", "ERROR: Modem not responding check power / pins");
                 _shutdownHardware();
                 return false;
             }
 
-            // ⭐ Check SIM status before blocking on waitForNetwork
+            // Check SIM status before blocking on waitForNetwork
             // Without this, waitForNetwork(60s) blocks the entire boot when no SIM is inserted.
             SimStatus simStatus = _modem.getSimStatus();
             if (simStatus != SimStatus::SIM_READY)
             {
-                ZENO_LOG("4G", "ERROR: SIM not ready (status=%d) — no SIM card or card error?",
+                ZENO_LOG("4G", "ERROR: SIM not ready (status=%d) no SIM card or card error?",
                          (int)simStatus);
                 _shutdownHardware();
                 return false;
@@ -218,7 +218,7 @@ namespace ZenoPCB
                 return true;
             }
 
-            // GPRS failed but modem + SIM OK → allow loop() to retry
+            // GPRS failed but modem + SIM OK allow loop() to retry
             _initialized = true;
             _initFailed = false;
             _initRetryCount = 0;
@@ -234,9 +234,9 @@ namespace ZenoPCB
             // ============================================
             // Init-retry: begin() failed (no SIM / no modem)
             // Periodically try to re-initialize
-            //   - Retries 1-5:  every 60s
-            //   - Retries 6-10: every 120s
-            //   - Retries 11+:  every 300s (5 min)
+            // - Retries 1-5: every 60s
+            // - Retries 6-10: every 120s
+            // - Retries 11+: every 300s (5 min)
             // ============================================
             if (!_initialized && _initFailed)
             {
@@ -253,7 +253,7 @@ namespace ZenoPCB
                 {
                     _lastInitRetry = now;
                     _initRetryCount++;
-                    ZENO_LOG("4G", "🔄 Init retry #%d (interval %ds) — checking modem + SIM...",
+                    ZENO_LOG("4G", "Init retry #%d (interval %ds) checking modem + SIM...",
                              _initRetryCount, retryInterval / 1000);
                     begin(_savedConfig); // Will set _initialized=true on success
                 }
@@ -266,7 +266,7 @@ namespace ZenoPCB
 
             unsigned long now = millis();
 
-            // ⚠️ isGprsConnected() is an AT command (~200-500ms) — throttle to every 10s
+            // isGprsConnected() is an AT command (~200-500ms) throttle to every 10s
             if (now - _lastConnectCheck < 10000)
                 return;
             _lastConnectCheck = now;
@@ -289,7 +289,7 @@ namespace ZenoPCB
                     // Restart modem after 5 consecutive failures
                     if (_consecutiveFails >= 5)
                     {
-                        ZENO_LOG("4G", "5 consecutive failures — restarting modem...");
+                        ZENO_LOG("4G", "5 consecutive failures restarting modem...");
                         _consecutiveFails = 0;
                         _restartModem();
                         return; // Wait for next interval after restart
@@ -316,7 +316,7 @@ namespace ZenoPCB
 
         Client *getOTAClient() override
         {
-            // OTA dùng mux 1 riêng — MQTT vẫn giữ mux 0 không bị kill
+            // OTA dng mux 1 ring MQTT vn gi mux 0 khng b kill
             return &_gsmOTAClient;
         }
 
@@ -376,7 +376,7 @@ namespace ZenoPCB
         }
 
         /**
-         * @brief Get modem IMEI — unique hardware identifier for cellular
+         * @brief Get modem IMEI  unique hardware identifier for cellular
          */
         String getModemIMEI() const override
         {
@@ -384,7 +384,7 @@ namespace ZenoPCB
         }
 
         /**
-         * @brief Get MAC address equivalent — IMEI for cellular modules
+         * @brief Get MAC address equivalent  IMEI for cellular modules
          * Cellular modems don't have MAC addresses, IMEI is the unique ID
          */
         String getMACAddress() const override
@@ -414,21 +414,21 @@ namespace ZenoPCB
          */
         bool syncTime() override
         {
-            ZENO_LOG("4G", "⏰ Reading time from SIM module (AT+CCLK?)...");
+            ZENO_LOG("4G", "Reading time from SIM module (AT+CCLK?)...");
 
-            // Read modem clock directly — carrier pushes time via NITZ
+            // Read modem clock directly carrier pushes time via NITZ
             // when modem registers on network. No NTP needed!
-            // Format: "YY/MM/DD,HH:MM:SS±TZ" (TZ in quarter-hours)
+            // Format: "YY/MM/DD,HH:MM:SSTZ" (TZ in quarter-hours)
             String dateTime = _modem.getGSMDateTime(DATE_FULL);
-            ZENO_LOG("4G", "   Modem clock: %s", dateTime.c_str());
+            ZENO_LOG("4G", "Modem clock: %s", dateTime.c_str());
 
             if (dateTime.length() < 17)
             {
-                ZENO_LOG("4G", "❌ Modem clock not set (NITZ not received yet)");
+                ZENO_LOG("4G", "Modem clock not set (NITZ not received yet)");
                 return false;
             }
 
-            // Parse "YY/MM/DD,HH:MM:SS±TZ"
+            // Parse "YY/MM/DD,HH:MM:SSTZ"
             int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
             char tzSign = '+';
             int tzQuarters = 0;
@@ -438,14 +438,14 @@ namespace ZenoPCB
                                 &tzSign, &tzQuarters);
             if (parsed < 6)
             {
-                ZENO_LOG("4G", "❌ Failed to parse modem time: %s", dateTime.c_str());
+                ZENO_LOG("4G", "Failed to parse modem time: %s", dateTime.c_str());
                 return false;
             }
 
-            // Sanity check — modem returns 80/01/06 before NITZ sync
+            // Sanity check modem returns 80/01/06 before NITZ sync
             if (year < 24)
             {
-                ZENO_LOG("4G", "❌ Modem time not valid yet (year=%d)", year);
+                ZENO_LOG("4G", "Modem time not valid yet (year=%d)", year);
                 return false;
             }
 
@@ -475,7 +475,7 @@ namespace ZenoPCB
             time_t now = time(nullptr);
             struct tm verify;
             gmtime_r(&now, &verify);
-            ZENO_LOG("4G", "⏰ ESP32 RTC set → UTC: %04d-%02d-%02d %02d:%02d:%02d (TZ:%c%d)",
+            ZENO_LOG("4G", "ESP32 RTC set UTC: %04d-%02d-%02d %02d:%02d:%02d (TZ:%c%d)",
                      verify.tm_year + 1900, verify.tm_mon + 1, verify.tm_mday,
                      verify.tm_hour, verify.tm_min, verify.tm_sec,
                      tzSign, tzQuarters);
@@ -485,11 +485,11 @@ namespace ZenoPCB
     private:
         bool _connectGPRS()
         {
-            // ⭐ Check SIM first — if no SIM, bail immediately (no blocking AT calls)
+            // Check SIM first if no SIM, bail immediately (no blocking AT calls)
             SimStatus simStatus = _modem.getSimStatus();
             if (simStatus != SimStatus::SIM_READY)
             {
-                ZENO_LOG("4G", "No SIM / SIM error (status=%d) — skipping GPRS", (int)simStatus);
+                ZENO_LOG("4G", "No SIM / SIM error (status=%d) skipping GPRS", (int)simStatus);
                 _consecutiveFails++;
                 return false;
             }
@@ -497,7 +497,7 @@ namespace ZenoPCB
             // Check network registration before attempting GPRS
             if (!_modem.isNetworkConnected())
             {
-                ZENO_LOG("4G", "Not on network — waiting for registration (15s)...");
+                ZENO_LOG("4G", "Not on network waiting for registration (15s)...");
                 if (!_modem.waitForNetwork(15000))
                 {
                     ZENO_LOG("4G", "Network registration failed");
@@ -506,7 +506,7 @@ namespace ZenoPCB
                 }
             }
 
-            ZENO_LOG("4G", "Connecting GPRS — APN: %s", _apn.c_str());
+            ZENO_LOG("4G", "Connecting GPRS APN: %s", _apn.c_str());
             if (!_modem.gprsConnect(_apn.c_str(), _gprsUser.c_str(), _gprsPass.c_str()))
             {
                 ZENO_LOG("4G", "GPRS connect failed!");
@@ -522,9 +522,9 @@ namespace ZenoPCB
             _connected = true;
             _consecutiveFails = 0;
             ZENO_LOG("4G", "GPRS ready for MQTT!");
-            ZENO_LOG("4G", "  IP      : %s", getLocalIP().c_str()); // uses parsed IP
-            ZENO_LOG("4G", "  Signal  : %d CSQ", _modem.getSignalQuality());
-            ZENO_LOG("4G", "  Operator: %s", _modem.getOperator().c_str());
+            ZENO_LOG("4G", "IP : %s", getLocalIP().c_str()); // uses parsed IP
+            ZENO_LOG("4G", "Signal : %d CSQ", _modem.getSignalQuality());
+            ZENO_LOG("4G", "Operator: %s", _modem.getOperator().c_str());
             return true;
         }
 
@@ -584,11 +584,11 @@ namespace ZenoPCB
         ZenoStreamDebugger _debugger;
 #endif
         mutable TinyGsm _modem;
-        TinyGsmClient _gsmClient;    // MQTT — mux 0
-        TinyGsmClient _gsmOTAClient; // OTA — mux 1 riêng, không ảnh hưởng MQTT
+        TinyGsmClient _gsmClient;    // MQTT mux 0
+        TinyGsmClient _gsmOTAClient; // OTA mux 1 ring, khng nh hng MQTT
 
         /**
-         * @brief Shutdown modem hardware — release Serial2 + hold PWRKEY LOW
+         * @brief Shutdown modem hardware  release Serial2 + hold PWRKEY LOW
          * Called when begin() fails (no modem / no SIM) to free resources
          * and prevent loop() from sending AT commands into the void.
          */
@@ -602,7 +602,7 @@ namespace ZenoPCB
                 digitalWrite(_pwrPin, HIGH);
                 delay(2500);
                 digitalWrite(_pwrPin, LOW);
-                ZENO_LOG("4G", "PWRKEY held LOW — modem powered off");
+                ZENO_LOG("4G", "PWRKEY held LOW modem powered off");
             }
 
             // Release Serial2 so other peripherals can use it
@@ -610,13 +610,13 @@ namespace ZenoPCB
             ZENO_LOG("4G", "Serial2 released");
 
             _connected = false;
-            _initFailed = true; // → loop() will attempt re-init on timer
+            _initFailed = true; // loop() will attempt re-init on timer
             // _initialized stays false
         }
 
         bool _initialized;
         bool _connected;
-        bool _initFailed;        // begin() was called but failed → retry in loop()
+        bool _initFailed;        // begin() was called but failed retry in loop()
         uint8_t _initRetryCount; // Number of re-init attempts
         unsigned long _lastInitRetry;
         unsigned long _lastReconnectAttempt;

@@ -1,4 +1,4 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_SCHEDULE)
 
 #include "ScheduleMessageHandler.h"
@@ -26,7 +26,7 @@ namespace ZenoPCB
         uint32_t startTime = millis();
         ScheduleHandleResult result;
 
-        ZENO_LOG("ScheduleHandler", "📥 Received message on topic: %s", maskTopic(topic).c_str());
+        ZENO_LOG("ScheduleHandler", "Received message on topic: %s", maskTopic(topic).c_str());
         ZENO_LOG("ScheduleHandler", "Payload: %s", payload.c_str());
 
         // Parse JSON payload
@@ -39,7 +39,7 @@ namespace ZenoPCB
             result.errorMessage = error;
             result.processingMs = millis() - startTime;
 
-            ZENO_LOG("ScheduleHandler", "❌ Parse failed: %s", error.c_str());
+            ZENO_LOG("ScheduleHandler", "Parse failed: %s", error.c_str());
 
             if (_onErrorCallback)
             {
@@ -56,7 +56,7 @@ namespace ZenoPCB
             result.errorMessage = error;
             result.processingMs = millis() - startTime;
 
-            ZENO_LOG("ScheduleHandler", "❌ Validation failed: %s", error.c_str());
+            ZENO_LOG("ScheduleHandler", "Validation failed: %s", error.c_str());
 
             if (_onErrorCallback)
             {
@@ -93,7 +93,7 @@ namespace ZenoPCB
 
         result.processingMs = millis() - startTime;
 
-        ZENO_LOG("ScheduleHandler", "✅ Message handled in %dms: action=%c, success=%d",
+        ZENO_LOG("ScheduleHandler", "Message handled in %dms: action=%c, success=%d",
                  result.processingMs, (char)action, result.success);
 
         return result;
@@ -130,7 +130,7 @@ namespace ZenoPCB
         if (rid.length() == 0)
             return false;
 
-        // Format 1: Z Key — "Z0" to "Z99" (cloud native format)
+        // Format 1: Z Key "Z0" to "Z99" (cloud native format)
         if (rid[0] == 'Z' || rid[0] == 'z')
         {
             // Must be Z followed by 1-2 digits: Z0, Z1, ..., Z99
@@ -144,7 +144,7 @@ namespace ZenoPCB
             return true;
         }
 
-        // Format 2: 6-digit numeric Modbus register — "000003"
+        // Format 2: 6-digit numeric Modbus register "000003"
         if (rid.length() != 6)
             return false;
         for (char c : rid)
@@ -177,7 +177,7 @@ namespace ZenoPCB
 
         if (jsonError)
         {
-            error = "JSON parse error: ";
+            error = "JSON parse error:";
             error += jsonError.c_str();
             return false;
         }
@@ -448,7 +448,7 @@ namespace ZenoPCB
             result.errorMessage = "Schedule limit reached (max 20)";
             result.scheduleId = data["id"].as<String>();
 
-            ZENO_LOG("ScheduleHandler", "❌ Schedule limit reached");
+            ZENO_LOG("ScheduleHandler", "Schedule limit reached");
             return result;
         }
 
@@ -478,7 +478,7 @@ namespace ZenoPCB
         result.success = true;
         result.scheduleId = config.id;
 
-        ZENO_LOG("ScheduleHandler", "✅ Schedule created: %s", config.id);
+        ZENO_LOG("ScheduleHandler", "Schedule created: %s", config.id);
 
         // Trigger callback
         if (_onCreatedCallback)
@@ -530,7 +530,7 @@ namespace ZenoPCB
         result.success = true;
         result.scheduleId = config.id;
 
-        ZENO_LOG("ScheduleHandler", "✅ Schedule updated: %s", config.id);
+        ZENO_LOG("ScheduleHandler", "Schedule updated: %s", config.id);
 
         // Trigger callback
         if (_onUpdatedCallback)
@@ -565,7 +565,7 @@ namespace ZenoPCB
             result.success = false;
             result.errorMessage = "Schedule not found";
 
-            ZENO_LOG("ScheduleHandler", "⚠️ Schedule not found for deletion: %s", scheduleId.c_str());
+            ZENO_LOG("ScheduleHandler", "Schedule not found for deletion: %s", scheduleId.c_str());
             return result;
         }
 
@@ -583,7 +583,7 @@ namespace ZenoPCB
         // Success
         result.success = true;
 
-        ZENO_LOG("ScheduleHandler", "✅ Schedule deleted: %s", scheduleId.c_str());
+        ZENO_LOG("ScheduleHandler", "Schedule deleted: %s", scheduleId.c_str());
 
         // Trigger callback
         if (_onDeletedCallback)
@@ -599,7 +599,7 @@ namespace ZenoPCB
         ScheduleHandleResult result;
         result.action = ScheduleAction::SYNC;
 
-        ZENO_LOG("ScheduleHandler", "⚡ Full sync requested");
+        ZENO_LOG("ScheduleHandler", "Full sync requested");
 
         // Data should be an array
         if (!data.is<JsonArray>())
@@ -627,7 +627,7 @@ namespace ZenoPCB
             result.success = true;
             result.scheduleId = "all";
 
-            ZENO_LOG("ScheduleHandler", "✅ All schedules cleared (empty sync)");
+            ZENO_LOG("ScheduleHandler", "All schedules cleared (empty sync)");
 
             if (_onSyncedCallback)
             {
@@ -650,9 +650,9 @@ namespace ZenoPCB
             {
                 if (firstError.length() == 0)
                 {
-                    firstError = "Schedule " + String(config.id) + ": " + error;
+                    firstError = "Schedule" + String(config.id) + ":" + error;
                 }
-                ZENO_LOG("ScheduleHandler", "❌ Failed to parse schedule: %s", error.c_str());
+                ZENO_LOG("ScheduleHandler", "Failed to parse schedule: %s", error.c_str());
                 continue;
             }
 
@@ -660,9 +660,9 @@ namespace ZenoPCB
             {
                 if (firstError.length() == 0)
                 {
-                    firstError = "Failed to save schedule " + String(config.id);
+                    firstError = "Failed to save schedule" + String(config.id);
                 }
-                ZENO_LOG("ScheduleHandler", "❌ Failed to save schedule: %s", config.id);
+                ZENO_LOG("ScheduleHandler", "Failed to save schedule: %s", config.id);
                 continue;
             }
 
@@ -676,16 +676,16 @@ namespace ZenoPCB
         if (successCount == schedules.size())
         {
             result.success = true;
-            ZENO_LOG("ScheduleHandler", "✅ Full sync completed: %d schedules", successCount);
+            ZENO_LOG("ScheduleHandler", "Full sync completed: %d schedules", successCount);
         }
         else
         {
             result.success = false;
-            result.errorMessage = firstError + " (saved " + String(successCount) + "/" + String(schedules.size()) + ")";
-            ZENO_LOG("ScheduleHandler", "⚠️ Partial sync: %d/%d schedules saved", successCount, schedules.size());
+            result.errorMessage = firstError + "(saved" + String(successCount) + "/" + String(schedules.size()) + ")";
+            ZENO_LOG("ScheduleHandler", "Partial sync: %d/%d schedules saved", successCount, schedules.size());
         }
 
-        result.scheduleId = String(successCount) + " schedules";
+        result.scheduleId = String(successCount) + "schedules";
 
         // Trigger callback
         if (_onSyncedCallback)

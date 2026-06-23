@@ -10,14 +10,14 @@
  * `syncNTP` returns immediately; SNTP runs in background. Use
  * `isSynced()` to check sync status before relying on `now()`.
  *
- * On ESP32 the impl may delegate to existing TimeManager — leaving
- * TimeManager intact for Phase 4 per RESEARCH §Pitfall 5 (avoid two
+ * On ESP32 the impl may delegate to existing TimeManager  leaving
+ * TimeManager intact for Phase 4 per RESEARCH Pitfall 5 (avoid two
  * configTime callers fighting over global SNTP state). Phase 5/6 may
  * migrate all TimeManager callers to IZenoTime.
  *
- * `time_t` is C standard <time.h> — POSIX seconds-since-epoch (UTC).
+ * `time_t` is C standard <time.h>  POSIX seconds-since-epoch (UTC).
  *
- * No exceptions — fallible methods return bool.
+ * No exceptions  fallible methods return bool.
  */
 
 #include <stddef.h>

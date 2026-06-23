@@ -11,14 +11,15 @@
  * ZenoPCBMQTT mqtt;
  * mqtt.broker("mqtt.zenopcb.com", 1883)
  *     .credentials("user", "pass")
- *     .onConnected([]() { Serial.println("MQTT Connected!"); })
+ *     .onConnected([]() { ZENO_LOG_RAW("MQTT Connected!\n"); })
  *     .onMessage([](const String& topic, const String& payload) {
- *         Serial.printf("Received: %s = %s\n", topic.c_str(), payload.c_str());
+ *         ZENO_LOG_RAW("Received: %s = %s\n", topic.c_str(), payload.c_str());
  *     })
  *     .begin();
  */
 
 #include <Arduino.h>
+#include "../core/ZenoPCBDebug.h"
 #include "../ZenoJson.h"  // ArduinoJson API from vendored copy (namespace ZenoJson; see vendor/ArduinoJson/LICENSE.md)
 #include "MQTTClient.h"
 #include "MQTTTypes.h"

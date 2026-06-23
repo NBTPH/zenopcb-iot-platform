@@ -33,16 +33,16 @@ namespace ZenoPCB
 #define IRRIGATION_EID_LEN 16  // base36 timestamp (~9 chars + null)
 
     // ============================================
-    // Action codes — V2 protocol
+    // Action codes V2 protocol
     // ============================================
 
     enum class IrrigationAction : uint8_t
     {
-        OPEN_VALVE = 0,  // "ov" — write 1 to targets
-        CLOSE_VALVE = 1, // "cv" — write 0 to targets
-        START_PUMP = 2,  // "sp" — write 1 to targets
-        STOP_PUMP = 3,   // "tp" — write 0 to targets
-        WAIT = 4         // "w"  — pause dur seconds
+        OPEN_VALVE = 0,  // "ov" write 1 to targets
+        CLOSE_VALVE = 1, // "cv" write 0 to targets
+        START_PUMP = 2,  // "sp" write 1 to targets
+        STOP_PUMP = 3,   // "tp" write 0 to targets
+        WAIT = 4         // "w" pause dur seconds
     };
 
     inline IrrigationAction parseIrrigationAction(const char *code)
@@ -147,7 +147,7 @@ namespace ZenoPCB
 
     enum class IrrigationScheduleType : char
     {
-        NONE = 'N',      // No schedule — manual execute only
+        NONE = 'N',      // No schedule manual execute only
         RECURRING = 'R', // Repeat on specific days at specific time
         ONCE = 'O'       // Execute once at specific timestamp
     };
@@ -166,12 +166,12 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // ISO day conversion: ISO 1=Mon..7=Sun → tm_wday 0=Sun..6=Sat
+    // ISO day conversion: ISO 1=Mon..7=Sun tm_wday 0=Sun..6=Sat
     // ============================================
 
     inline uint8_t isoToTmWday(uint8_t isoDay)
     {
-        // ISO: 1=Mon,2=Tue,...,7=Sun → tm_wday: 0=Sun,1=Mon,...,6=Sat
+        // ISO: 1=Mon,2=Tue,...,7=Sun tm_wday: 0=Sun,1=Mon,...,6=Sat
         return (isoDay == 7) ? 0 : isoDay;
     }
 

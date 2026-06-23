@@ -12,7 +12,7 @@
 
 #include <Arduino.h>
 #include <Client.h>
-#include "PubSubClient.h"  // vendored knolleary/PubSubClient — declares class ZenoPubSubClient (post Plan 06-2.5c rename)
+#include "PubSubClient.h"  // vendored knolleary/PubSubClient declares class ZenoPubSubClient (post Plan 06-2.5c rename)
 #include "MQTTTypes.h"
 #include "../core/ZenoPCBDebug.h"
 
@@ -205,7 +205,7 @@ namespace ZenoPCB
 
         /**
          * @brief Get reference to internal ZenoPubSubClient (for direct parameter access)
-         * Use sparingly — prefer setConfig() for full configuration
+         * Use sparingly  prefer setConfig() for full configuration
          */
         ZenoPubSubClient &getInternalClient() { return _mqttClient; }
 

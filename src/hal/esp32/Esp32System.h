@@ -3,7 +3,7 @@
 
 /**
  * @file Esp32System.h
- * @brief ESP32 concrete impl of IZenoSystem — wraps ESP.* + esp_task_wdt.
+ * @brief ESP32 concrete impl of IZenoSystem  wraps ESP.* + esp_task_wdt.
  *
  * Part of Phase 4 HAL (plan 04-02). Methods forward 1:1 to the Arduino-ESP32
  * `ESP` singleton and the ESP-IDF task watchdog. `restart()` is declared
@@ -14,7 +14,7 @@
 
 #include "../IZenoSystem.h"
 
-// Plan 06-03 — TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
+// Plan 06-03 TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
 // mirror). The ESP-IDF headers `<esp_system.h>` + `<esp_task_wdt.h>`
 // do not exist on ESP8266, so the include block and the class body sit
 // behind the platform guard.
@@ -31,7 +31,7 @@ public:
     Esp32System() = default;
     ~Esp32System() override = default;
 
-    // Deleted copy semantics (Pitfall 3 hygiene — ESP.* is a single global).
+    // Deleted copy semantics (Pitfall 3 hygiene ESP.* is a single global).
     Esp32System(const Esp32System&) = delete;
     Esp32System& operator=(const Esp32System&) = delete;
 

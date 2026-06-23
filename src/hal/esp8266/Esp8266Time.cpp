@@ -9,7 +9,7 @@ namespace ZenoPCB {
 void Esp8266Time::syncNTP(const char *server,
                           long gmtOffsetSec,
                           int daylightOffsetSec) {
-    // Pitfall 5 — delegate to TimeManager so a single owner controls the
+    // Pitfall 5 delegate to TimeManager so a single owner controls the
     // global lwIP SNTP state. TimeManager::syncNTP has additional
     // secondary/tertiary server defaults; pass through the primary and
     // let the defaults supply fallbacks.
@@ -18,7 +18,7 @@ void Esp8266Time::syncNTP(const char *server,
     // TimeManager API surface is platform-neutral (`configTime()` +
     // `time(nullptr)`). The lone ESP32-specific include in TimeManager.h
     // (esp_sntp.h) is guarded under `#if defined(ESP32)` by Plan 06-03
-    // (Wave 2) — Plan 06-01 file-author step does not need to touch
+    // (Wave 2) Plan 06-01 file-author step does not need to touch
     // TimeManager.h.
     TimeManager::syncNTP(server ? server : "pool.ntp.org",
                          "time.google.com",

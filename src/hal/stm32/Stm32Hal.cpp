@@ -14,7 +14,7 @@ namespace ZenoPCB {
 // Capabilities sanity check (compile-time): the bitmask returned by
 // Stm32Hal::capabilities() must equal CAP_NVS | CAP_NTP | CAP_WATCHDOG
 // (= 0x1Cu) on F1 and additionally OR-in CAP_DIAGNOSTICS (= 0x80u) on
-// F4 for a total of 0x9Cu. D-10 + D-12 OQ-1 RESOLVED — F103 MICRO drops
+// F4 for a total of 0x9Cu. D-10 + D-12 OQ-1 RESOLVED F103 MICRO drops
 // CAP_DIAGNOSTICS pre-emptively because its 20 KB SRAM budget cannot
 // support DiagnosticsCollector accumulator. The static_asserts below
 // double-anchor the per-family expected hex to the call-site so a future

@@ -1,6 +1,6 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile (F103 budget fit).
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile (F103 budget fit).
 // When `-DZENOPCB_DISABLE_SCHEDULE` is set, the entire Schedule subsystem TU compiles
-// to an empty translation unit — no link symbols emitted, no Flash overhead.
+// to an empty translation unit no link symbols emitted, no Flash overhead.
 #if !defined(ZENOPCB_DISABLE_SCHEDULE)
 
 #include "ScheduleExecutor.h"
@@ -38,12 +38,12 @@ namespace ZenoPCB
 
     bool ScheduleExecutor::begin()
     {
-        ZENO_LOG("ScheduleExecutor", "🚀 Initializing Schedule Executor...");
+        ZENO_LOG("ScheduleExecutor", "Initializing Schedule Executor...");
 
         // Check if time is synced
         if (!TimeManager::isSynced())
         {
-            ZENO_LOG("ScheduleExecutor", "⚠️ NTP not synced yet, schedules will start when time is available");
+            ZENO_LOG("ScheduleExecutor", "NTP not synced yet, schedules will start when time is available");
         }
 
         // Load schedules from storage
@@ -51,7 +51,7 @@ namespace ZenoPCB
 
         _initialized = true;
 
-        ZENO_LOG("ScheduleExecutor", "✅ Schedule Executor initialized with %d schedules", _schedules.size());
+        ZENO_LOG("ScheduleExecutor", "Schedule Executor initialized with %d schedules", _schedules.size());
 
         return true;
     }
@@ -62,7 +62,7 @@ namespace ZenoPCB
 
     void ScheduleExecutor::reloadSchedules()
     {
-        ZENO_LOG("ScheduleExecutor", "📂 Reloading schedules from storage...");
+        ZENO_LOG("ScheduleExecutor", "Reloading schedules from storage...");
 
         _schedules.clear();
 
@@ -77,11 +77,11 @@ namespace ZenoPCB
                 _getOrCreateState(config.id);
             }
 
-            ZENO_LOG("ScheduleExecutor", "✅ Loaded %d schedules", _schedules.size());
+            ZENO_LOG("ScheduleExecutor", "Loaded %d schedules", _schedules.size());
         }
         else
         {
-            ZENO_LOG("ScheduleExecutor", "❌ Failed to load schedules from storage");
+            ZENO_LOG("ScheduleExecutor", "Failed to load schedules from storage");
         }
     }
 
@@ -103,7 +103,7 @@ namespace ZenoPCB
                 state.executedToday = false;
                 state.retryCount = 0;
 
-                ZENO_LOG("ScheduleExecutor", "🔄 Updated schedule in memory: %s (state reset)", config.id);
+                ZENO_LOG("ScheduleExecutor", "Updated schedule in memory: %s (state reset)", config.id);
                 return;
             }
         }
@@ -112,7 +112,7 @@ namespace ZenoPCB
         _schedules.push_back(config);
         _getOrCreateState(config.id); // Initialize state
 
-        ZENO_LOG("ScheduleExecutor", "➕ Added schedule to memory: %s", config.id);
+        ZENO_LOG("ScheduleExecutor", "Added schedule to memory: %s", config.id);
     }
 
     void ScheduleExecutor::removeSchedule(const String &scheduleId)
@@ -126,7 +126,7 @@ namespace ZenoPCB
                 // Remove state
                 _states.erase(scheduleId);
 
-                ZENO_LOG("ScheduleExecutor", "➖ Removed schedule from memory: %s", scheduleId.c_str());
+                ZENO_LOG("ScheduleExecutor", "Removed schedule from memory: %s", scheduleId.c_str());
                 return;
             }
         }
@@ -137,7 +137,7 @@ namespace ZenoPCB
         _schedules.clear();
         _states.clear();
 
-        ZENO_LOG("ScheduleExecutor", "🗑️ Cleared all schedules from memory");
+        ZENO_LOG("ScheduleExecutor", "Cleared all schedules from memory");
     }
 
     uint8_t ScheduleExecutor::getScheduleCount() const
@@ -232,7 +232,7 @@ namespace ZenoPCB
             // Check if current time matches execute time
             if (_isTimeToExecute(config, timeinfo))
             {
-                ZENO_LOG("ScheduleExecutor", "⏰ Recurring schedule triggered: %s", config.id);
+                ZENO_LOG("ScheduleExecutor", "Recurring schedule triggered: %s", config.id);
 
                 if (_executeSchedule(config))
                 {
@@ -266,7 +266,7 @@ namespace ZenoPCB
             // Check if time to execute
             if (now >= config.executeAt)
             {
-                ZENO_LOG("ScheduleExecutor", "⏰ Once schedule triggered: %s", config.id);
+                ZENO_LOG("ScheduleExecutor", "Once schedule triggered: %s", config.id);
 
                 if (_executeSchedule(config))
                 {
@@ -297,7 +297,7 @@ namespace ZenoPCB
             {
                 if (_debugEnabled)
                 {
-                    ZENO_LOG("ScheduleExecutor", "⏰ Interval schedule triggered: %s (every %dms)",
+                    ZENO_LOG("ScheduleExecutor", "Interval schedule triggered: %s (every %dms)",
                              config.id, config.intervalMs);
                 }
 
@@ -326,7 +326,7 @@ namespace ZenoPCB
         // If day changed, reset all daily flags
         if (currentDay != _lastDay)
         {
-            ZENO_LOG("ScheduleExecutor", "📅 Day changed: resetting daily execution flags");
+            ZENO_LOG("ScheduleExecutor", "Day changed: resetting daily execution flags");
 
             for (auto &pair : _states)
             {
@@ -357,7 +357,7 @@ namespace ZenoPCB
 
     bool ScheduleExecutor::_executeSchedule(const ScheduleConfig &config)
     {
-        ZENO_LOG("ScheduleExecutor", "▶️ Executing schedule: %s (type=%s, action=%c)",
+        ZENO_LOG("ScheduleExecutor", "Executing schedule: %s (type=%s, action=%c)",
                  config.id,
                  scheduleTypeToString(config.scheduleType),
                  (char)config.actionType);
@@ -387,24 +387,24 @@ namespace ZenoPCB
 
     bool ScheduleExecutor::_executeSetAction(const ScheduleConfig &config)
     {
-        ZENO_LOG("ScheduleExecutor", "📤 SET action: writing value %lld to register %s",
+        ZENO_LOG("ScheduleExecutor", "SET action: writing value %lld to register %s",
                  config.setValue, config.rid);
 
-        // ── Z Key path ────────────────────────────────────────────────
-        // rid "Z0".."Z99" → write directly to ZKeyBuffer (no Modbus needed)
+        // Z Key path 
+        // rid "Z0".."Z99" write directly to ZKeyBuffer (no Modbus needed)
         if (_isZKeyRid(config.rid))
         {
-            int idx = atoi(config.rid + 1); // "Z3" → 3
+            int idx = atoi(config.rid + 1); // "Z3" 3
             ZKeyBuffer::getInstance().set((ZKey)idx, (int32_t)config.setValue);
             ZKeyBuffer::getInstance().notifyChange((ZKey)idx);
-            ZENO_LOG("ScheduleExecutor", "✅ Z Key SET: Z%d = %lld", idx, config.setValue);
+            ZENO_LOG("ScheduleExecutor", "Z Key SET: Z%d = %lld", idx, config.setValue);
             _publishExecutionReport(config.id, ExecutionStatus::SUCCESS, config.setValue);
             if (_onExecutedCallback)
                 _onExecutedCallback(config.id, ExecutionStatus::SUCCESS, config.setValue, "");
             return true;
         }
 
-        // ── Modbus path ───────────────────────────────────────────────
+        // Modbus path 
 #if defined(ESP32)
         bool callbackFired = false;
 
@@ -416,7 +416,7 @@ namespace ZenoPCB
                 callbackFired = true;
                 if (success)
                 {
-                    ZENO_LOG("ScheduleExecutor", "✅ Schedule %s executed successfully", config.id);
+                    ZENO_LOG("ScheduleExecutor", "Schedule %s executed successfully", config.id);
                     _publishExecutionReport(config.id, ExecutionStatus::SUCCESS, config.setValue);
 
                     if (_onExecutedCallback)
@@ -426,7 +426,7 @@ namespace ZenoPCB
                 }
                 else
                 {
-                    ZENO_LOG("ScheduleExecutor", "❌ Schedule %s execution failed: %s",
+                    ZENO_LOG("ScheduleExecutor", "Schedule %s execution failed: %s",
                              config.id, error.c_str());
                     _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
 
@@ -440,7 +440,7 @@ namespace ZenoPCB
         if (!enqueued && !callbackFired)
         {
             String error = "Write queue full";
-            ZENO_LOG("ScheduleExecutor", "❌ %s", error.c_str());
+            ZENO_LOG("ScheduleExecutor", "%s", error.c_str());
             _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
 
             if (_onErrorCallback)
@@ -451,10 +451,10 @@ namespace ZenoPCB
 
         return enqueued;
 #else
-        // ESP8266: Modbus IO subsystem not available — schedule with Modbus rid is a no-op.
+        // ESP8266: Modbus IO subsystem not available schedule with Modbus rid is a no-op.
         // Z Key rids (handled above) remain fully functional.
         ZENO_LOG("ScheduleExecutor",
-                 "⚠️ Modbus SET skipped on this platform (rid=%s) — use Z Key rids on ESP8266",
+                 "Modbus SET skipped on this platform (rid=%s) use Z Key rids on ESP8266",
                  config.rid);
         String error = "Modbus not available on this platform";
         _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
@@ -468,9 +468,9 @@ namespace ZenoPCB
 
     bool ScheduleExecutor::_executeToggleAction(const ScheduleConfig &config)
     {
-        ZENO_LOG("ScheduleExecutor", "🔄 TOGGLE action: flipping register %s", config.rid);
+        ZENO_LOG("ScheduleExecutor", "TOGGLE action: flipping register %s", config.rid);
 
-        // ── Z Key path ────────────────────────────────────────────────
+        // Z Key path 
         if (_isZKeyRid(config.rid))
         {
             int idx = atoi(config.rid + 1);
@@ -479,14 +479,14 @@ namespace ZenoPCB
             int32_t newVal = current ? 0 : 1;
             ZKeyBuffer::getInstance().set(key, newVal);
             ZKeyBuffer::getInstance().notifyChange(key);
-            ZENO_LOG("ScheduleExecutor", "✅ Z Key TOGGLE: Z%d: %d → %d", idx, current, newVal);
+            ZENO_LOG("ScheduleExecutor", "Z Key TOGGLE: Z%d: %d %d", idx, current, newVal);
             _publishExecutionReport(config.id, ExecutionStatus::SUCCESS, (int64_t)newVal);
             if (_onExecutedCallback)
                 _onExecutedCallback(config.id, ExecutionStatus::SUCCESS, (int64_t)newVal, "");
             return true;
         }
 
-        // ── Modbus path ───────────────────────────────────────────────
+        // Modbus path 
 #if defined(ESP32)
         // Get current value from ModbusDataBuffer
         RegisterValue currentValue = ModbusDataBuffer::getInstance().getValue(config.rid);
@@ -494,7 +494,7 @@ namespace ZenoPCB
         if (currentValue.status != RegisterValue::VALID)
         {
             String error = "Register not found or not readable";
-            ZENO_LOG("ScheduleExecutor", "❌ %s: %s", error.c_str(), config.rid);
+            ZENO_LOG("ScheduleExecutor", "%s: %s", error.c_str(), config.rid);
             _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
 
             if (_onErrorCallback)
@@ -511,7 +511,7 @@ namespace ZenoPCB
         double currentScaled = ModbusDataBuffer::getInstance().getScaledValue(config.rid);
         double newValue = (currentScaled == 0.0) ? 1.0 : 0.0;
 
-        ZENO_LOG("ScheduleExecutor", "🔄 Toggle: %.0f -> %.0f", currentScaled, newValue);
+        ZENO_LOG("ScheduleExecutor", "Toggle: %.0f -> %.0f", currentScaled, newValue);
 
         // Enqueue write
         bool callbackFired = false;
@@ -523,7 +523,7 @@ namespace ZenoPCB
                 callbackFired = true;
                 if (success)
                 {
-                    ZENO_LOG("ScheduleExecutor", "✅ Toggle schedule %s executed successfully", config.id);
+                    ZENO_LOG("ScheduleExecutor", "Toggle schedule %s executed successfully", config.id);
                     _publishExecutionReport(config.id, ExecutionStatus::SUCCESS, (int64_t)newValue);
 
                     if (_onExecutedCallback)
@@ -533,7 +533,7 @@ namespace ZenoPCB
                 }
                 else
                 {
-                    ZENO_LOG("ScheduleExecutor", "❌ Toggle schedule %s failed: %s",
+                    ZENO_LOG("ScheduleExecutor", "Toggle schedule %s failed: %s",
                              config.id, error.c_str());
                     _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
 
@@ -547,7 +547,7 @@ namespace ZenoPCB
         if (!enqueued && !callbackFired)
         {
             String error = "Failed to enqueue toggle write";
-            ZENO_LOG("ScheduleExecutor", "❌ %s", error.c_str());
+            ZENO_LOG("ScheduleExecutor", "%s", error.c_str());
             _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
 
             if (_onErrorCallback)
@@ -560,10 +560,10 @@ namespace ZenoPCB
 
         return true;
 #else
-        // ESP8266: Modbus IO subsystem not available — TOGGLE on a Modbus rid is a no-op.
+        // ESP8266: Modbus IO subsystem not available TOGGLE on a Modbus rid is a no-op.
         // Z Key TOGGLE (handled above) remains fully functional.
         ZENO_LOG("ScheduleExecutor",
-                 "⚠️ Modbus TOGGLE skipped on this platform (rid=%s) — use Z Key rids on ESP8266",
+                 "Modbus TOGGLE skipped on this platform (rid=%s) use Z Key rids on ESP8266",
                  config.rid);
         String error = "Modbus not available on this platform";
         _publishExecutionReport(config.id, ExecutionStatus::FAILED, 0, error);
@@ -584,7 +584,7 @@ namespace ZenoPCB
         // This will be integrated when connecting to ZenoPCB main class
 
         // For now, just log
-        ZENO_LOG("ScheduleExecutor", "📊 Execution report: id=%s, status=%s, value=%lld, error=%s",
+        ZENO_LOG("ScheduleExecutor", "Execution report: id=%s, status=%s, value=%lld, error=%s",
                  scheduleId.c_str(),
                  executionStatusToString(status),
                  valueWritten,

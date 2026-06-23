@@ -11,11 +11,11 @@
  * `esp_task_wdt_reset()` on ESP32. Phase 6/7 ports forward to their
  * platform equivalents.
  *
- * `restart()` is `[[noreturn]]` — execution does not return; the chip
+ * `restart()` is `[[noreturn]]`  execution does not return; the chip
  * resets within ~1 ms. Callers should not write code after the call
  * (per Pitfall 4). If the toolchain rejects `[[noreturn]]` on a pure
  * virtual, the attribute will be dropped and behaviour remains the
- * same — see action note in 04-01-PLAN Task 2 (A8 MEDIUM risk).
+ * same  see action note in 04-01-PLAN Task 2 (A8 MEDIUM risk).
  *
  * `getTotalHeap()` is required by DiagnosticsCollector which computes
  * used memory as `getTotalHeap() - getFreeHeap()`. Matches existing
@@ -27,7 +27,7 @@
  * Caller buffer must be at least 13 bytes for ESP32 (8 hex + NUL with
  * a small margin). Returns the number of bytes written excluding NUL.
  *
- * No exceptions — fallible methods return bool. Callers check.
+ * No exceptions  fallible methods return bool. Callers check.
  */
 
 #include <stddef.h>
@@ -44,7 +44,7 @@ struct IZenoSystem {
     [[noreturn]] virtual void restart() = 0;
 
     /**
-     * Free heap in bytes (smallest free block + free list total —
+     * Free heap in bytes (smallest free block + free list total 
      * platform-defined; on ESP32 = ESP.getFreeHeap()).
      */
     virtual uint32_t getFreeHeap() = 0;

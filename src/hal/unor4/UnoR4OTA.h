@@ -3,19 +3,19 @@
 
 /**
  * @file UnoR4OTA.h
- * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoOTA —
+ * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoOTA 
  *        CUSTOM implementation authored from scratch per D-16 RESCOPED.
  *
  * Pattern A mirror of Esp8266OTA.h (Plan 06-01) only at the IZenoOTA
  * contract shape (7 public methods); the bodies diverge entirely.
  * See .planning/phases/07-uno-r4-stm32-ports-capability-matrix/07-PATTERNS.md
- * §"UnoR4OTA" (lines 485-579).
+ * "UnoR4OTA" (lines 485-579).
  *
  * **D-16 RESCOPED rationale (CONTEXT line 89):**
- *   - `Arduino_ESP32_OTA` — REJECTED (GPL-3.0 license + esp32-only HAL
+ *   - `Arduino_ESP32_OTA`  REJECTED (GPL-3.0 license + esp32-only HAL
  *     surface; license-incompatible with the MIT OSS lib that consumes
  *     this HAL).
- *   - `jandrassy/ArduinoOTA` — REJECTED (LGPL — not vendored under
+ *   - `jandrassy/ArduinoOTA`  REJECTED (LGPL  not vendored under
  *     D-15/16 LGPL isolation rule).
  *   - **Decision:** author UnoR4OTA from scratch using `WiFiClient`
  *     (WiFiS3) for HTTP firmware download + Renesas RA4M1 FSP
@@ -31,7 +31,7 @@
  * API sequence. This mirrors the Phase 6 D-19 pattern where Esp8266OTA
  * shipped with PENDING hardware soak.
  *
- * Deleted copy semantics per Pitfall 3 — when the opt-in flag is on,
+ * Deleted copy semantics per Pitfall 3  when the opt-in flag is on,
  * UnoR4OTA wraps shared Renesas FSP Flash open-handle state; cloning
  * the wrapper would let two writers race over the same flash region.
  */
@@ -49,7 +49,7 @@
 // is the cross-platform contract type.
 #if defined(ARDUINO_UNOR4_WIFI)
 
-#include <Arduino.h>           // size_t, uint8_t — also drags Renesas FSP
+#include <Arduino.h>           // size_t, uint8_t also drags Renesas FSP
                                // headers when -DZENOPCB_ENABLE_UNOR4_OTA
                                // is on (FSP Flash API umbrella).
 
@@ -60,7 +60,7 @@ public:
     UnoR4OTA() = default;
     ~UnoR4OTA() override = default;
 
-    // Deleted copy semantics (Pitfall 3 — shared Renesas FSP Flash
+    // Deleted copy semantics (Pitfall 3 shared Renesas FSP Flash
     // open-handle state when -DZENOPCB_ENABLE_UNOR4_OTA is on).
     UnoR4OTA(const UnoR4OTA&) = delete;
     UnoR4OTA& operator=(const UnoR4OTA&) = delete;

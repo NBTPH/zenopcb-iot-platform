@@ -20,7 +20,7 @@ namespace ZenoPCB
     /**
      * @brief Irrigation scenario + schedule persistence (via HAL).
      *
-     * Plan 04-03 — all file I/O routes through `IZenoStorage` injected via
+     * Plan 04-03  all file I/O routes through `IZenoStorage` injected via
      * `setHal(IZenoHal*)`. Plan 04-05 wires the canonical ESP32 HAL from
      * `Zeno::begin()`. Until then methods early-return when no HAL is set.
      */
@@ -42,7 +42,7 @@ namespace ZenoPCB
         static uint8_t getScenarioCount();
         static bool isMaxScenariosReached();
 
-        // Schedule CRUD (V3 — separate entity)
+        // Schedule CRUD (V3 separate entity)
         static bool saveSchedule(const IrrigationScheduleConfig &config);
         static bool loadSchedule(const String &id, IrrigationScheduleConfig &out);
         static bool deleteSchedule(const String &id);

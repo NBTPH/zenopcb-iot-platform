@@ -4,7 +4,7 @@
 
 namespace ZenoPCB {
 
-// Pitfall 7 — Meyers singleton. Lazy, thread-safe in C++11+, and lives
+// Pitfall 7 Meyers singleton. Lazy, thread-safe in C++11+, and lives
 // as a single symbol in this translation unit so the instance is shared
 // across every consumer that includes Esp8266Hal.h. Crucially, the static
 // is FUNCTION-local, not file-scope, so no constructor runs before

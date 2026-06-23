@@ -6,22 +6,22 @@
  * @brief STM32 (F1 + F4) concrete facade implementing IZenoHal.
  *
  * Unified F1+F4 class per Phase 7 D-02 (07-CONTEXT). Mechanical mirror of
- * `Esp8266Hal.{h,cpp}` Pattern A — see Phase 7 07-PATTERNS.md §"Stm32Hal".
+ * `Esp8266Hal.{h,cpp}` Pattern A  see Phase 7 07-PATTERNS.md "Stm32Hal".
  *
  * Composes the five Stm32* sub-impls by value and exposes them via the
  * IZenoHal sub-getters. Per-family divergence is concentrated inside
  * `capabilities()` (F4 adds CAP_DIAGNOSTICS per D-12 OQ-1 RESOLVED;
  * F1 MICRO drops it pre-emptively) and inside Stm32NVS partition size
- * and Stm32System heap totals — all via `#if defined(STM32F4xx)` /
+ * and Stm32System heap totals  all via `#if defined(STM32F4xx)` /
  * `#elif defined(STM32F1xx)` internal switches.
  *
- * Pattern D — deleted copy semantics. The contained Stm32System wraps the
+ * Pattern D  deleted copy semantics. The contained Stm32System wraps the
  * NVIC + IWatchdog process-global singletons; the contained Stm32NVS wraps
  * the global ZenoFlashStorage RAM mirror. Cloning Stm32Hal would create
  * a second wrapper sharing state. Deleting copy + assign makes that a
  * compile error.
  *
- * The canonical instance is obtained via `getStm32Hal()` — a Meyers
+ * The canonical instance is obtained via `getStm32Hal()`  a Meyers
  * singleton implemented in Stm32Hal.cpp (lazy function-local static,
  * thread-safe in C++11+, no eager file-scope global; same pattern as
  * `getEsp32Hal()` / `getEsp8266Hal()`).
@@ -55,7 +55,7 @@ public:
     Stm32Hal() = default;
     ~Stm32Hal() override = default;
 
-    // Deleted copy semantics (Pattern D — contained Stm32System wraps
+    // Deleted copy semantics (Pattern D contained Stm32System wraps
     // NVIC + IWatchdog process-global singletons; contained Stm32NVS
     // wraps the ZenoFlashStorage RAM mirror).
     Stm32Hal(const Stm32Hal&) = delete;
@@ -70,7 +70,7 @@ public:
     uint32_t capabilities() const override {
         // STM32 baseline: NVS (ZenoFlashStorage), NTP (configTime + lwIP),
         // WATCHDOG (IWatchdog). No CAP_FS_FILES (no LittleFS on STM32duino
-        // default), no CAP_OTA (custom bootloader required — D-12).
+        // default), no CAP_OTA (custom bootloader required D-12).
         // D-10 / D-12 OQ-1 RESOLVED: F4 adds CAP_DIAGNOSTICS (heap budget);
         // F1 MICRO drops it pre-emptively.
         uint32_t caps = CAP_NVS | CAP_NTP | CAP_WATCHDOG;

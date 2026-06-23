@@ -5,7 +5,7 @@
  * @author ZenoPCB Development Team
  * @version 1.0.0
  */
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_STORAGE)
 
 #include "DataMonitorMessageHandler.h"
@@ -22,12 +22,12 @@
 
 // Debug logging
 #ifndef ZENOPCB_DEBUG_STORAGE
-#define ZENOPCB_DEBUG_STORAGE 1 // ⚠️ SET TO 1 FOR DEBUG
+#define ZENOPCB_DEBUG_STORAGE 1 // SET TO 1 FOR DEBUG
 #endif
 
-// Phase 7 Plan 07-06.5 — route through ZENOPCB_PRINTF for portability.
+// Phase 7 Plan 07-06.5 route through ZENOPCB_PRINTF for portability.
 #if ZENOPCB_DEBUG_STORAGE
-#define STORAGE_LOG(fmt, ...) ZENOPCB_PRINTF("[DataMonitor] " fmt "\n", ##__VA_ARGS__)
+#define STORAGE_LOG(fmt, ...) ZENOPCB_PRINTF("[DataMonitor]" fmt "\n", ##__VA_ARGS__)
 #else
 #define STORAGE_LOG(fmt, ...)
 #endif
@@ -164,7 +164,7 @@ namespace ZenoPCB
 
         if (jsonError)
         {
-            error = "JSON parse error: " + String(jsonError.c_str());
+            error = "JSON parse error:" + String(jsonError.c_str());
             STORAGE_LOG("Parse error: %s", error.c_str());
             return false;
         }
@@ -200,7 +200,7 @@ namespace ZenoPCB
         outMessage.action = DataMonitorMessage::actionFromChar(actionStr[0]);
         if (outMessage.action == DataMonitorAction::UNKNOWN)
         {
-            error = "Unknown action: " + actionStr;
+            error = "Unknown action:" + actionStr;
             return false;
         }
 
@@ -216,8 +216,8 @@ namespace ZenoPCB
         else if (outMessage.action == DataMonitorAction::DELETE || outMessage.action == DataMonitorAction::TOGGLE)
         {
             // For DELETE/TOGGLE, also accept:
-            //   1. d is a string: {"t":"dm","a":"d","d":"123456"}
-            //   2. id/key at top-level: {"t":"dm","a":"d","id":"123456"}
+            // 1. d is a string: {"t":"dm","a":"d","d":"123456"}
+            // 2. id/key at top-level: {"t":"dm","a":"d","id":"123456"}
             String resolvedKey;
 
             if (doc["d"].is<const char *>())
@@ -240,14 +240,14 @@ namespace ZenoPCB
             if (resolvedKey.length() > 0)
             {
                 // Build normalized dataJson so _handleDelete/_handleToggle can read it uniformly
-                outMessage.dataJson = "{\"id\":\"" + resolvedKey + "\"}";
+                outMessage.dataJson = "{\"id\":\""+ resolvedKey +"\"}";
                 STORAGE_LOG("DELETE/TOGGLE: resolved key from alternate field: %s", resolvedKey.c_str());
             }
-            // else: dataJson stays empty — _handleDelete will return "Missing mqttKey" error
+            // else: dataJson stays empty _handleDelete will return "Missing mqttKey" error
         }
         else
         {
-            error = "Missing 'd' (data) field for " + actionStr + " action";
+            error = "Missing 'd' (data) field for" + actionStr + "action";
             return false;
         }
 
@@ -274,7 +274,7 @@ namespace ZenoPCB
         // mqttKey must be 6 digits (000000-999999)
         if (mqttKey.length() != 6)
         {
-            error = "mqttKey must be 6 digits (got " + String(mqttKey.length()) + " chars)";
+            error = "mqttKey must be 6 digits (got" + String(mqttKey.length()) + "chars)";
             return false;
         }
 
@@ -298,7 +298,7 @@ namespace ZenoPCB
                 regType != "h" && regType != "i" && regType != "c" && regType != "d" &&
                 regType != "holding" && regType != "input" && regType != "coil" && regType != "discrete")
             {
-                error = "Invalid register type: " + regType + " (must be H/I/C/D or HOLDING/INPUT/COIL/DISCRETE)";
+                error = "Invalid register type:" + regType + "(must be H/I/C/D or HOLDING/INPUT/COIL/DISCRETE)";
                 return false;
             }
         }
@@ -322,7 +322,7 @@ namespace ZenoPCB
                 dataType != "float64" && dataType != "double" &&
                 dataType != "boolean" && dataType != "bool_coil")
             {
-                error = "Invalid data type: " + dataType + " (valid: i16/u16/i32/u32/f32/i64/u64/f64/bool)";
+                error = "Invalid data type:" + dataType + "(valid: i16/u16/i32/u32/f32/i64/u64/f64/bool)";
                 return false;
             }
         }
@@ -394,36 +394,36 @@ namespace ZenoPCB
         // Check if already exists
         if (LittleFSManager::dataMonitorExists(String(config.mqttKey)))
         {
-            return _errorResult(String("Monitor already exists: ") + config.mqttKey, DataMonitorAction::CREATE);
+            return _errorResult(String("Monitor already exists:") + config.mqttKey, DataMonitorAction::CREATE);
         }
 
         // Create in storage
         if (!LittleFSManager::createDataMonitor(config))
         {
             String lastError = LittleFSManager::getLastError();
-            return _errorResult(String("Storage error: ") + lastError, DataMonitorAction::CREATE);
+            return _errorResult(String("Storage error:") + lastError, DataMonitorAction::CREATE);
         }
 
         STORAGE_LOG("Monitor created: %s", config.mqttKey);
 
-        // ⭐ Add to RegisterPollingEngine and DataBuffer
+        // Add to RegisterPollingEngine and DataBuffer
 #if defined(ESP32)
-        Serial.println("🔌 Adding register to Polling Engine...");
+        ZENO_LOG_RAW("Adding register to Polling Engine...\n");
         if (RegisterPollingEngine::getInstance().addRegister(config))
         {
-            ZENOPCB_PRINTF("✅ Register added for polling: %s\n", config.mqttKey);
+            ZENOPCB_PRINTF("Register added for polling: %s\n", config.mqttKey);
         }
         else
         {
-            ZENOPCB_PRINTF("❌ Failed to add register: %s\n", config.mqttKey);
+            ZENOPCB_PRINTF("Failed to add register: %s\n", config.mqttKey);
         }
 
         // Add to data buffer
         ModbusDataBuffer::getInstance().addRegister(config);
-        ZENOPCB_PRINTF("📊 Register added to data buffer: %s\n", config.mqttKey);
+        ZENOPCB_PRINTF("Register added to data buffer: %s\n", config.mqttKey);
 #else
         // ESP8266: Modbus subsystem not available; monitor stays only in LittleFS storage
-        STORAGE_LOG("Modbus polling not available on this platform — monitor %s persisted only",
+        STORAGE_LOG("Modbus polling not available on this platform monitor %s persisted only",
                     config.mqttKey);
 #endif
 
@@ -470,34 +470,34 @@ namespace ZenoPCB
             return _errorResult("Failed to parse monitor config data", DataMonitorAction::UPDATE);
         }
 
-        // ⭐ UPSERT: If monitor doesn't exist → create it (backend may send "u" for new monitors)
+        // UPSERT: If monitor doesn't exist create it (backend may send "u" for new monitors)
         bool isNewMonitor = !LittleFSManager::dataMonitorExists(mqttKey);
 
         if (isNewMonitor)
         {
-            STORAGE_LOG("Monitor %s not found — UPSERT: creating new", mqttKey.c_str());
+            STORAGE_LOG("Monitor %s not found UPSERT: creating new", mqttKey.c_str());
 
             if (!LittleFSManager::createDataMonitor(config))
             {
                 String lastError = LittleFSManager::getLastError();
-                return _errorResult(String("Storage create error: ") + lastError, DataMonitorAction::UPDATE);
+                return _errorResult(String("Storage create error:") + lastError, DataMonitorAction::UPDATE);
             }
 
             // Add to RegisterPollingEngine
 #if defined(ESP32)
             if (RegisterPollingEngine::getInstance().addRegister(config))
             {
-                ZENOPCB_PRINTF("✅ [UPSERT] Register created & added: %s\n", config.mqttKey);
+                ZENOPCB_PRINTF("[UPSERT] Register created & added: %s\n", config.mqttKey);
             }
             else
             {
-                ZENOPCB_PRINTF("❌ [UPSERT] Failed to add register: %s\n", config.mqttKey);
+                ZENOPCB_PRINTF("[UPSERT] Failed to add register: %s\n", config.mqttKey);
             }
 
             // Add to data buffer
             ModbusDataBuffer::getInstance().addRegister(config);
 #else
-            STORAGE_LOG("[UPSERT] Modbus polling not available on this platform — %s persisted only",
+            STORAGE_LOG("[UPSERT] Modbus polling not available on this platform %s persisted only",
                         config.mqttKey);
 #endif
 
@@ -513,26 +513,26 @@ namespace ZenoPCB
             if (!LittleFSManager::updateDataMonitor(config))
             {
                 String lastError = LittleFSManager::getLastError();
-                return _errorResult(String("Storage error: ") + lastError, DataMonitorAction::UPDATE);
+                return _errorResult(String("Storage error:") + lastError, DataMonitorAction::UPDATE);
             }
 
             STORAGE_LOG("Monitor updated: %s", config.mqttKey);
 
-            // ⭐ Update in RegisterPollingEngine (uses updateRegister which handles remove+add)
+            // Update in RegisterPollingEngine (uses updateRegister which handles remove+add)
 #if defined(ESP32)
             if (RegisterPollingEngine::getInstance().updateRegister(config))
             {
-                ZENOPCB_PRINTF("✅ Register updated: %s (enabled=%d)\n", config.mqttKey, config.enabled);
+                ZENOPCB_PRINTF("Register updated: %s (enabled=%d)\n", config.mqttKey, config.enabled);
             }
             else
             {
-                ZENOPCB_PRINTF("❌ Failed to update register: %s\n", config.mqttKey);
+                ZENOPCB_PRINTF("Failed to update register: %s\n", config.mqttKey);
             }
 
-            // ⭐ Update config in data buffer (enabled flag, etc.)
+            // Update config in data buffer (enabled flag, etc.)
             ModbusDataBuffer::getInstance().updateRegisterConfig(config);
 #else
-            STORAGE_LOG("Modbus polling not available — monitor %s update persisted only",
+            STORAGE_LOG("Modbus polling not available monitor %s update persisted only",
                         config.mqttKey);
 #endif
 
@@ -575,11 +575,11 @@ namespace ZenoPCB
             return _errorResult("Missing mqttKey for delete", DataMonitorAction::DELETE);
         }
 
-        // Check if exists — idempotent: already gone is still success
+        // Check if exists idempotent: already gone is still success
         if (!LittleFSManager::dataMonitorExists(mqttKey))
         {
-            STORAGE_LOG("DELETE: monitor %s not found — treating as already deleted (idempotent)", mqttKey.c_str());
-            ZENOPCB_PRINTF("[DataMonitor] ⚠️ DELETE %s — not found, ACK success (idempotent)\n", mqttKey.c_str());
+            STORAGE_LOG("DELETE: monitor %s not found treating as already deleted (idempotent)", mqttKey.c_str());
+            ZENOPCB_PRINTF("[DataMonitor] DELETE %s not found, ACK success (idempotent)\n", mqttKey.c_str());
             return _successResult(mqttKey, DataMonitorAction::DELETE, 0);
         }
 
@@ -587,24 +587,24 @@ namespace ZenoPCB
         if (!LittleFSManager::deleteDataMonitor(mqttKey))
         {
             String lastError = LittleFSManager::getLastError();
-            return _errorResult("Storage error: " + lastError, DataMonitorAction::DELETE);
+            return _errorResult("Storage error:" + lastError, DataMonitorAction::DELETE);
         }
 
         STORAGE_LOG("Monitor deleted: %s", mqttKey.c_str());
 
-        // ⭐ Remove from RegisterPollingEngine
+        // Remove from RegisterPollingEngine
 #if defined(ESP32)
-        Serial.println("🔌 Removing register from Polling Engine...");
+        ZENO_LOG_RAW("Removing register from Polling Engine...\n");
         if (RegisterPollingEngine::getInstance().removeRegister(mqttKey.c_str()))
         {
-            ZENOPCB_PRINTF("✅ Register removed: %s\n", mqttKey.c_str());
+            ZENOPCB_PRINTF("Register removed: %s\n", mqttKey.c_str());
         }
         else
         {
-            ZENOPCB_PRINTF("⚠️ Register not found in polling engine: %s\n", mqttKey.c_str());
+            ZENOPCB_PRINTF("Register not found in polling engine: %s\n", mqttKey.c_str());
         }
 #else
-        STORAGE_LOG("Modbus polling not available — %s removed only from storage", mqttKey.c_str());
+        STORAGE_LOG("Modbus polling not available %s removed only from storage", mqttKey.c_str());
 #endif
 
         // Notify callback
@@ -656,10 +656,10 @@ namespace ZenoPCB
             return _errorResult("Missing mqttKey for toggle", DataMonitorAction::TOGGLE);
         }
 
-        // Check if exists — TOGGLE on non-existent key: ACK success (no-op)
+        // Check if exists TOGGLE on non-existent key: ACK success (no-op)
         if (!LittleFSManager::dataMonitorExists(mqttKey))
         {
-            STORAGE_LOG("TOGGLE: monitor %s not found — no-op, ACK success", mqttKey.c_str());
+            STORAGE_LOG("TOGGLE: monitor %s not found no-op, ACK success", mqttKey.c_str());
             return _successResult(mqttKey, DataMonitorAction::TOGGLE, 0);
         }
 
@@ -667,14 +667,14 @@ namespace ZenoPCB
         if (!LittleFSManager::toggleDataMonitor(mqttKey, enabled))
         {
             String lastError = LittleFSManager::getLastError();
-            return _errorResult("Storage error: " + lastError, DataMonitorAction::TOGGLE);
+            return _errorResult("Storage error:" + lastError, DataMonitorAction::TOGGLE);
         }
 
         STORAGE_LOG("Monitor toggled: %s -> %s", mqttKey.c_str(), enabled ? "enabled" : "disabled");
 
-        // ⭐ Enable/Disable in RegisterPollingEngine
+        // Enable/Disable in RegisterPollingEngine
 #if defined(ESP32)
-        ZENOPCB_PRINTF("⚙️ %s register: %s\n", enabled ? "Enabling" : "Disabling", mqttKey.c_str());
+        ZENOPCB_PRINTF("%s register: %s\n", enabled ? "Enabling" : "Disabling", mqttKey.c_str());
         if (enabled)
         {
             RegisterPollingEngine::getInstance().enableRegister(mqttKey.c_str());
@@ -683,9 +683,9 @@ namespace ZenoPCB
         {
             RegisterPollingEngine::getInstance().disableRegister(mqttKey.c_str());
         }
-        ZENOPCB_PRINTF("✅ Register %s: %s\n", enabled ? "enabled" : "disabled", mqttKey.c_str());
+        ZENOPCB_PRINTF("Register %s: %s\n", enabled ? "enabled" : "disabled", mqttKey.c_str());
 #else
-        STORAGE_LOG("Modbus polling not available — %s toggle persisted only (enabled=%d)",
+        STORAGE_LOG("Modbus polling not available %s toggle persisted only (enabled=%d)",
                     mqttKey.c_str(), enabled);
 #endif
 

@@ -3,9 +3,9 @@
 
 /**
  * @file Esp32Storage.h
- * @brief ESP32 concrete impl of IZenoStorage — wraps Arduino-ESP32 LittleFS.
+ * @brief ESP32 concrete impl of IZenoStorage  wraps Arduino-ESP32 LittleFS.
  *
- * Part of Phase 4 HAL (plan 04-02). Confined to hal/esp32/ — no LittleFS
+ * Part of Phase 4 HAL (plan 04-02). Confined to hal/esp32/  no LittleFS
  * include leaks into the interface layer or into consumer code. Deleted
  * copy semantics per Pitfall 3 (avoid duplicated wrappers around the
  * underlying global LittleFS state).
@@ -13,7 +13,7 @@
 
 #include "../IZenoStorage.h"
 
-// Plan 06-03 — TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
+// Plan 06-03 TU-guard-at-header (symmetric to Plan 06-2.5d ESP8266
 // mirror). The Arduino-ESP32 `<LittleFS.h>` ABI differs from the
 // ESP8266 LittleFS (e.g. `begin(bool)` vs `begin()`, `File::path()`),
 // so guarding the include is necessary even though the header name
@@ -29,7 +29,7 @@ public:
     Esp32Storage() = default;
     ~Esp32Storage() override = default;
 
-    // Deleted copy semantics (Pitfall 3 — LittleFS is process-global state).
+    // Deleted copy semantics (Pitfall 3 LittleFS is process-global state).
     Esp32Storage(const Esp32Storage&) = delete;
     Esp32Storage& operator=(const Esp32Storage&) = delete;
 

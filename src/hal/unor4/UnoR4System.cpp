@@ -25,7 +25,7 @@ void UnoR4System::restart() {
     // Renesas reset controller honours within microseconds.
     NVIC_SystemReset();
     // Defense for toolchains that drop [[noreturn]] on virtual methods.
-    // The loop is unreachable in practice — included so the compiler
+    // The loop is unreachable in practice included so the compiler
     // proves the function body cannot fall through.
     for (;;) {
         // Spin until the chip resets.
@@ -40,7 +40,7 @@ uint32_t UnoR4System::getFreeHeap() {
     struct mallinfo info = mallinfo();
     return static_cast<uint32_t>(info.fordblks);
 #else
-    // PLACEHOLDER — surface 0 so consumers see a "no heap stats
+    // PLACEHOLDER surface 0 so consumers see a "no heap stats
     // available" signal rather than a stale-but-plausible number.
     // Plan 07-09 UAT hardware spike replaces this if mallinfo is
     // unavailable on the shipped Renesas core.
@@ -61,7 +61,7 @@ uint32_t UnoR4System::getMaxAllocHeap() {
 }
 
 uint32_t UnoR4System::getTotalHeap() {
-    // RA4M1 DRAM total is 32 KB (hardcoded, RESEARCH §UNO R4 spike).
+    // RA4M1 DRAM total is 32 KB (hardcoded, RESEARCH UNO R4 spike).
     // Same pattern as Esp8266System::getTotalHeap() Pitfall 4: there is
     // no `ESP.getHeapSize()` analog and the link-time partition is
     // platform-fixed. The DiagnosticsCollector formula
@@ -82,7 +82,7 @@ size_t UnoR4System::getUniqueId(char *out, size_t outSize) {
     // WiFiProvisioning + DeviceCredentials call sites expecting an
     // 8-hex-char unique identifier get a stable string.
     //
-    // snprintf only (CLAUDE.md memory rule — no sprintf). Width matches
+    // snprintf only (CLAUDE.md memory rule no sprintf). Width matches
     // the ESP32 / ESP8266 8-hex-char output surface.
     const uint32_t placeholderId = 0xDEADBEEFu;
     int written = snprintf(out, outSize, "%08X", placeholderId);
@@ -108,7 +108,7 @@ void UnoR4System::feedWatchdog() {
     // `WatchdogTimer.begin(...)`.
     //
     // Wave 1 spike confirms exact symbol name + header path
-    // (07-RESEARCH §Standard Stack row 143 logs `WatchdogTimer` as the
+    // (07-RESEARCH Standard Stack row 143 logs `WatchdogTimer` as the
     // observed symbol on the shipped ArduinoCore-renesas). Until the
     // spike confirms the include path, we leave this body as a
     // no-op-compatible placeholder so the surface compiles and the

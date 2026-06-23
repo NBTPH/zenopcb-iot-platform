@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
 	Modbus public API implementation
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 Andr Sarmento Barbosa
                   2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once

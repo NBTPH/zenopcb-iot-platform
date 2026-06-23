@@ -3,11 +3,11 @@
 
 /**
  * @file Stm32NVS.h
- * @brief STM32 (F1 + F4) concrete impl of IZenoNVS — wraps the vendored
+ * @brief STM32 (F1 + F4) concrete impl of IZenoNVS  wraps the vendored
  *        ZenoFlashStorage (MIT, Plan 07-03) as a length-prefixed KV walker.
  *
- * Mechanical mirror of `Esp8266NVS.{h,cpp}` Pattern A — see Phase 7
- * 07-PATTERNS.md §"Stm32NVS". Where Esp8266NVS delegates to the vendored
+ * Mechanical mirror of `Esp8266NVS.{h,cpp}` Pattern A  see Phase 7
+ * 07-PATTERNS.md "Stm32NVS". Where Esp8266NVS delegates to the vendored
  * ZenoPreferences (Arduino-ESP32-style namespace KV API), Stm32NVS wraps
  * the upstream `ZenoFlashStorage` from `lib/ZenoPCB/src/vendor/FlashStorage/`
  * (renamed in Plan 07-03 per D-14). The underlying emulated-EEPROM surface
@@ -15,7 +15,7 @@
  * / `put<T>(addr, T&)` / `commit()`) so we build the namespace + key-string
  * semantics on top via a linear length-prefixed record walker.
  *
- * Per-family partition byte budget (07-RESEARCH §Pattern 2 lines 476-480):
+ * Per-family partition byte budget (07-RESEARCH Pattern 2 lines 476-480):
  *   - STM32F4: 8 KB walk window (Plan 07-09 hardware UAT validates)
  *   - STM32F1: 2 KB walk window per D-12 MICRO profile (CAP_DIAGNOSTICS off)
  *
@@ -34,7 +34,7 @@
  * methods (putUChar/getUChar/remove/clear) with explicit TODO comments
  * pointing at Plan 07-09 hardware UAT.
  *
- * Pattern D — deleted copy semantics (ZenoFlashStorage wraps a single
+ * Pattern D  deleted copy semantics (ZenoFlashStorage wraps a single
  * underlying RAM mirror via `static ZenoFlashStorage ZenoEEPROM;` in
  * vendor/FlashStorage/FlashStorage_STM32.hpp:211; duplicating the wrapper
  * duplicates the handle reference).
@@ -42,7 +42,7 @@
 
 #include "../IZenoNVS.h"
 
-// Pattern B / Pitfall 7 — TU guard at header surface. The vendored
+// Pattern B / Pitfall 7 TU guard at header surface. The vendored
 // `FlashStorage_STM32.h` emits a hard `#error` on non-STM32 targets
 // (vendor/FlashStorage/FlashStorage_STM32.h:55-58); guarding the include
 // + class body at the header surface ensures ESP32/ESP8266/UNO R4 envs
@@ -50,7 +50,7 @@
 #if defined(STM32F1xx) || defined(STM32F4xx)
 
 // Relative include into the vendored ZenoFlashStorage (Plan 07-03, MIT,
-// renamed from upstream EEPROMClass → ZenoFlashStorage per D-14). The
+// renamed from upstream EEPROMClass ZenoFlashStorage per D-14). The
 // vendored header itself has a defense-in-depth STM32-family `#error`
 // (see FlashStorage_STM32.h:55-58) so the TU guard above is checked twice.
 #include "../../vendor/FlashStorage/FlashStorage_STM32.hpp"
@@ -69,7 +69,7 @@ public:
         }
     }
 
-    // Deleted copy semantics (Pattern D — ZenoFlashStorage wraps a single
+    // Deleted copy semantics (Pattern D ZenoFlashStorage wraps a single
     // global RAM mirror via the `ZenoEEPROM` static; duplicating the
     // wrapper duplicates the reference).
     Stm32NVS(const Stm32NVS&) = delete;
@@ -95,7 +95,7 @@ public:
     bool clear() override;
 
 private:
-    // Internal helpers — walker primitives below the IZenoNVS surface.
+    // Internal helpers walker primitives below the IZenoNVS surface.
     //
     // `_findRecord(key, recordAddr, valAddr, valLen)` walks the partition
     // and returns true if a non-tombstone record exists for the currently-

@@ -8,7 +8,7 @@ namespace ZenoPCB {
 
 namespace {
 
-// Pitfall 1 — ESP8266 LittleFS requires every parent directory to
+// Pitfall 1 ESP8266 LittleFS requires every parent directory to
 // exist before opening a file in write mode under a sub-directory.
 // (ESP32 LittleFS auto-creates parents; ESP8266 silently returns an
 // invalid File handle if a parent is missing.) Split `path` on '/'
@@ -36,7 +36,7 @@ void ensureParentDirs(const char *path) {
 }  // namespace
 
 bool Esp8266Storage::begin() {
-    // ESP8266 LittleFS.begin() has no boolean overload — it auto-formats
+    // ESP8266 LittleFS.begin() has no boolean overload it auto-formats
     // on first-mount failure natively (per ESP8266 Arduino Core 3.x docs).
     // Behaviour matches `LittleFS.begin(true)` on ESP32.
     return LittleFS.begin();
@@ -72,7 +72,7 @@ size_t Esp8266Storage::readFile(const char *path, char *out, size_t maxLen) {
 size_t Esp8266Storage::writeFile(const char *path, const char *data, size_t len) {
     if (!path || !data || len == 0) return 0;
 
-    ensureParentDirs(path);    // PITFALL 1 fix — ESP8266-only auto-mkdir.
+    ensureParentDirs(path);    // PITFALL 1 fix ESP8266-only auto-mkdir.
 
     File f = LittleFS.open(path, "w");
     if (!f) return 0;
@@ -104,7 +104,7 @@ void Esp8266Storage::listFiles(const char *prefix,
     char dirPath[128];
     const char *lastSlash = strrchr(effectivePrefix, '/');
     if (!lastSlash) {
-        // No slash at all — treat root as the search directory.
+        // No slash at all treat root as the search directory.
         dirPath[0] = '/';
         dirPath[1] = '\0';
     } else {
@@ -112,7 +112,7 @@ void Esp8266Storage::listFiles(const char *prefix,
         // with one). Guard against overrun.
         size_t copyLen = static_cast<size_t>(lastSlash - effectivePrefix);
         if (copyLen == 0) {
-            // Prefix starts with '/', last slash is the first char — root.
+            // Prefix starts with '/', last slash is the first char root.
             dirPath[0] = '/';
             dirPath[1] = '\0';
         } else {
@@ -132,7 +132,7 @@ void Esp8266Storage::listFiles(const char *prefix,
     // Iterate every direct child entry. Each `entry` is closed automatically
     // when it goes out of scope at the bottom of each loop iteration
     // (Arduino-ESP8266 File RAII), but we also close explicitly for clarity
-    // (Pitfall 2 — leaked LittleFS handles exhaust the handle table).
+    // (Pitfall 2 leaked LittleFS handles exhaust the handle table).
     //
     // NOTE: ESP8266 LittleFS exposes a different directory iteration API
     // than ESP32 (Dir/openNextFile vs File/openNextFile). The analog
@@ -148,7 +148,7 @@ void Esp8266Storage::listFiles(const char *prefix,
         File entry = dir.openNextFile();
         if (!entry) break;
 
-        // Plan 06-03 Rule 3 — ESP8266 fs::File lacks path(); use
+        // Plan 06-03 Rule 3 ESP8266 fs::File lacks path(); use
         // fullName() which returns the absolute path within LittleFS
         // root. ESP32 Storage uses entry.path(); both produce the
         // same "/dir/file.ext" shape so the strncmp() comparison

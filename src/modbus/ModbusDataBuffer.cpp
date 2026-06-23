@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only.
+// Plan 06-03 D-03 Modbus subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "ModbusDataBuffer.h"
@@ -9,7 +9,7 @@ static const char *TAG = "ModbusDataBuffer";
 
 namespace ZenoPCB
 {
-    // ⭐ Helper: Convert Modbus error code to human-readable text
+    // Helper: Convert Modbus error code to human-readable text
     static const char *getModbusErrorText(uint8_t errorCode)
     {
         switch (errorCode)
@@ -74,7 +74,7 @@ namespace ZenoPCB
 
         if (_registerConfigs.find(key) != _registerConfigs.end())
         {
-            ZENO_LOG_CORE("⚠️  Register already exists: %s", key.c_str());
+            ZENO_LOG_CORE("Register already exists: %s", key.c_str());
             return false;
         }
 
@@ -86,11 +86,11 @@ namespace ZenoPCB
         value.status = RegisterValue::UNKNOWN;
         _registerValues[key] = value;
 
-        ZENO_LOG_CORE("✅ Added register: %s (addr=%d, enabled=%d)", key.c_str(), config.address, config.enabled);
+        ZENO_LOG_CORE("Added register: %s (addr=%d, enabled=%d)", key.c_str(), config.address, config.enabled);
         return true;
     }
 
-    // ⭐ Update existing register config (e.g., enabled flag changed)
+    // Update existing register config (e.g., enabled flag changed)
     bool ModbusDataBuffer::updateRegisterConfig(const DataMonitorConfig &config)
     {
         String key(config.mqttKey);
@@ -98,15 +98,15 @@ namespace ZenoPCB
         auto it = _registerConfigs.find(key);
         if (it == _registerConfigs.end())
         {
-            // ⭐ Register not found - add it instead
-            ZENO_LOG_CORE("⚠️  Register not found for update, adding: %s", key.c_str());
+            // Register not found - add it instead
+            ZENO_LOG_CORE("Register not found for update, adding: %s", key.c_str());
             return addRegister(config);
         }
 
         // Update config (keep existing value)
         _registerConfigs[key] = config;
 
-        ZENO_LOG_CORE("✅ Updated register config: %s (enabled=%d)", key.c_str(), config.enabled);
+        ZENO_LOG_CORE("Updated register config: %s (enabled=%d)", key.c_str(), config.enabled);
         return true;
     }
 
@@ -144,7 +144,7 @@ namespace ZenoPCB
         if (it != _registerValues.end())
         {
             if (status == RegisterValue::VALID && isWriteHeld(mqttKey))
-                return; // Write-hold active — preserve injected write value
+                return; // Write-hold active preserve injected write value
             it->second.u16Value = u16Value;
             it->second.status = status;
             it->second.lastUpdateTime = millis();
@@ -539,25 +539,25 @@ namespace ZenoPCB
         int errorCount = 0;              // Count failed registers
         int skippedCount = 0;            // Count skipped (disabled) registers
 
-        ZENO_LOG_MODBUS("📤 Building telemetry JSON (%d registers)", _registerConfigs.size());
+        ZENO_LOG_MODBUS("Building telemetry JSON (%d registers)", _registerConfigs.size());
 
         for (const auto &[mqttKey, config] : _registerConfigs)
         {
-            // ⭐ Skip disabled registers (not include in JSON at all)
+            // Skip disabled registers (not include in JSON at all)
             if (!config.enabled)
             {
-                ZENO_LOG_CORE("  ⏸️ [%s] Skipped - register disabled", mqttKey.c_str());
+                ZENO_LOG_CORE("[%s] Skipped - register disabled", mqttKey.c_str());
                 skippedCount++;
                 continue;
             }
 
-            // ⭐ Skip if connection is disabled (check via callback)
+            // Skip if connection is disabled (check via callback)
             if (config.connectionId[0] != '\0' && _connectionEnabledCallback)
             {
                 String connId(config.connectionId);
                 if (!_connectionEnabledCallback(connId))
                 {
-                    ZENO_LOG_CORE("  ⏸️ [%s] Skipped - connection '%s' disabled", mqttKey.c_str(), connId.c_str());
+                    ZENO_LOG_CORE("[%s] Skipped - connection '%s' disabled", mqttKey.c_str(), connId.c_str());
                     skippedCount++;
                     continue;
                 }
@@ -566,17 +566,17 @@ namespace ZenoPCB
             auto it = _registerValues.find(mqttKey);
             if (it == _registerValues.end())
             {
-                ZENO_LOG_CORE("  ⚠️ [%s] No value in buffer", mqttKey.c_str());
+                ZENO_LOG_CORE("[%s] No value in buffer", mqttKey.c_str());
                 continue;
             }
 
             const RegisterValue &value = it->second;
             double scaledValue = value.getScaledValue(config);
 
-            ZENO_LOG_CORE("  📊 [%s] status=%d scaled=%.4f errCode=0x%02X",
+            ZENO_LOG_CORE("[%s] status=%d scaled=%.4f errCode=0x%02X",
                           mqttKey.c_str(), (int)value.status, scaledValue, value.connectionErrorCode);
 
-            // ⭐ Publish if VALID, or if ERROR/TIMEOUT with a fresh enough last-known-good value.
+            // Publish if VALID, or if ERROR/TIMEOUT with a fresh enough last-known-good value.
             // UNKNOWN (never polled) and values stale > STALE_VALUE_MAX_AGE_MS are skipped.
             bool hasLastKnown = (value.status != RegisterValue::UNKNOWN && value.lastUpdateTime > 0);
             bool isFreshEnough = hasLastKnown &&
@@ -647,7 +647,7 @@ namespace ZenoPCB
                 {
                     // get_all: always include failed registers as null (whether never-polled or stale-expired)
                     doc[mqttKey] = nullptr;
-                    ZENO_LOG_CORE("  ❌ [%s] Error (status=%d, lastOK=%lums ago) - published null",
+                    ZENO_LOG_CORE("[%s] Error (status=%d, lastOK=%lums ago) - published null",
                                   mqttKey.c_str(), (int)value.status,
                                   value.lastUpdateTime > 0 ? (unsigned long)(millis() - value.lastUpdateTime) : 0UL);
                 }
@@ -656,14 +656,14 @@ namespace ZenoPCB
                     // Periodic: send null N times so app receives error signal
                     doc[mqttKey] = nullptr;
                     _nullSentCount[mqttKey]++;
-                    ZENO_LOG_CORE("  ❌ [%s] Error (status=%d) - periodic null %d/%d",
+                    ZENO_LOG_CORE("[%s] Error (status=%d) - periodic null %d/%d",
                                   mqttKey.c_str(), (int)value.status,
                                   (int)_nullSentCount[mqttKey], (int)NULL_PERIODIC_SEND_COUNT);
                 }
                 else
                 {
-                    // Periodic: already sent N nulls — omit entirely
-                    ZENO_LOG_CORE("  ⏭️ [%s] Error (status=%d) - omitted (null sent %d times)",
+                    // Periodic: already sent N nulls omit entirely
+                    ZENO_LOG_CORE("[%s] Error (status=%d) - omitted (null sent %d times)",
                                   mqttKey.c_str(), (int)value.status, (int)_nullSentCount[mqttKey]);
                 }
             }
@@ -677,26 +677,26 @@ namespace ZenoPCB
                     connectionError = value.connectionErrorCode;
                     hasConnectionError = true;
                 }
-                ZENO_LOG_CORE("  ⚠️ [%s] Stale value (status=%d errCode=0x%02X) — using last-known %.4f",
+                ZENO_LOG_CORE("[%s] Stale value (status=%d errCode=0x%02X) using last-known %.4f",
                               mqttKey.c_str(), (int)value.status, value.connectionErrorCode, scaledValue);
             }
         }
 
-        // ⭐ DISABLED: Error field không cần thiết cho backend
-        // Nếu cần bật lại, uncomment đoạn dưới:
+        // DISABLED: Error field khng cn thit cho backend
+        // Nu cn bt li, uncomment on di:
         // if (hasConnectionError)
         // {
-        //     // Format: "TIMEOUT", "CONNECTION_LOST", etc. instead of "0xE4"
-        //     doc["error"] = getModbusErrorText(connectionError);
+        // // Format: "TIMEOUT", "CONNECTION_LOST", etc. instead of "0xE4"
+        // doc["error"] = getModbusErrorText(connectionError);
         // }
         // else
         // {
-        //     doc["error"] = "";
+        // doc["error"] = "";
         // }
 
         String result;
         serializeJson(doc, result);
-        ZENO_LOG_MODBUS("📤 JSON: %s (errors=%d, skipped=%d)", result.c_str(), errorCount, skippedCount);
+        ZENO_LOG_MODBUS("JSON: %s (errors=%d, skipped=%d)", result.c_str(), errorCount, skippedCount);
         return result;
     }
 
@@ -709,4 +709,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

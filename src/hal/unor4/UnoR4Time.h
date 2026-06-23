@@ -3,19 +3,19 @@
 
 /**
  * @file UnoR4Time.h
- * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoTime —
+ * @brief Arduino UNO R4 WiFi (Renesas RA4M1) concrete impl of IZenoTime 
  *        wraps WiFiS3's native `WiFi.getTime()` NTP helper.
  *
  * Mechanical Pattern A mirror of Esp8266Time.{h,cpp} (Plan 06-01) with the
  * body diverged entirely: WiFiS3 ships a self-contained NTP path that
  * returns Unix epoch seconds directly from the ESP32-S3 co-processor
- * (UNO R4's onboard companion — see 07-RESEARCH UNO R4 hardware note).
+ * (UNO R4's onboard companion  see 07-RESEARCH UNO R4 hardware note).
  * No `configTime()` / lwIP SNTP boilerplate.
  *
  * See .planning/phases/07-uno-r4-stm32-ports-capability-matrix/07-PATTERNS.md
- * §"UnoR4Time" (lines 624-680).
+ * "UnoR4Time" (lines 624-680).
  *
- * Deleted copy semantics for Pitfall 3 hygiene — global SNTP-style state
+ * Deleted copy semantics for Pitfall 3 hygiene  global SNTP-style state
  * lives inside the WiFiS3 co-processor RPC layer.
  */
 
@@ -40,7 +40,7 @@ public:
     UnoR4Time() = default;
     ~UnoR4Time() override = default;
 
-    // Deleted copy semantics (Pitfall 3 — WiFiS3 RPC state is process-
+    // Deleted copy semantics (Pitfall 3 WiFiS3 RPC state is process-
     // global; duplicating the wrapper risks racing two `syncNTP` callers
     // against the same co-processor link).
     UnoR4Time(const UnoR4Time&) = delete;

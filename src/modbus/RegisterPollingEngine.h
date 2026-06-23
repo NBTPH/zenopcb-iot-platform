@@ -137,11 +137,11 @@ namespace ZenoPCB
         bool enableRegister(const String &mqttKey, bool enable = true);
         bool disableRegister(const String &mqttKey);
 
-        // ⭐ Enable/disable all registers of a specific connection
+        // Enable/disable all registers of a specific connection
         size_t enableRegistersByConnection(const String &connectionId, bool enable = true);
         size_t disableRegistersByConnection(const String &connectionId);
 
-        // ⭐ Force immediate read of all registers
+        // Force immediate read of all registers
         void forceReadAll();
 
         /**
@@ -163,7 +163,7 @@ namespace ZenoPCB
         uint32_t getGlobalPollInterval() const { return _globalPollInterval; }
 
         // ============================================
-        // ⭐ Write Queue API (non-blocking, v2.3)
+        // Write Queue API (non-blocking, v2.3)
         // ============================================
 
         /**
@@ -218,7 +218,7 @@ namespace ZenoPCB
         void _processResponses(); // Check for completed transactions
         void _updateBufferValue(const String &mqttKey, RegisterPollingTask &task);
 
-        // ⭐ Write queue processing (non-blocking state machine)
+        // Write queue processing (non-blocking state machine)
         void _processWriteQueue();
         void _startNextWrite();
         void _processCurrentWrite();
@@ -232,14 +232,14 @@ namespace ZenoPCB
         float _assembleFloat32(const uint16_t *regs, ByteOrder order);
         double _assembleFloat64(const uint16_t *regs, ByteOrder order);
 
-        // ⭐ Byte order disassembly for write (v2.2)
+        // Byte order disassembly for write (v2.2)
         void _disassemble32Bit(uint32_t value, uint16_t *regs, ByteOrder order);
         void _disassemble64Bit(uint64_t value, uint16_t *regs, ByteOrder order);
 
         // Storage
         std::map<String, RegisterPollingTask> _pollingTasks;
 
-        // ⭐ Write queue (using vector for deduplication support)
+        // Write queue (using vector for deduplication support)
         std::vector<WriteRequest> _writeQueue;
         WriteRequest *_currentWrite; // Currently processing write (nullptr if idle)
         static constexpr size_t MAX_WRITE_QUEUE_SIZE = 20;
@@ -259,7 +259,7 @@ namespace ZenoPCB
         uint8_t _pollGeneration;                           // Bumped on watchdog reset to invalidate stale callbacks
         static constexpr uint32_t POLL_WATCHDOG_MS = 3000; // Safety watchdog per request
 
-        // v2.7: Write preemption — abort slow reads when writes are pending
+        // v2.7: Write preemption abort slow reads when writes are pending
         void _preemptReadForWrite(uint32_t now);
         static constexpr uint32_t WRITE_PREEMPT_MS = 100; // Abort read after 100ms if write pending
     };

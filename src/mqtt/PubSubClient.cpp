@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 //
-// knolleary/PubSubClient — vendored from upstream (~v2.8) into ZenoPCB IoT Library
+// knolleary/PubSubClient vendored from upstream (~v2.8) into ZenoPCB IoT Library
 // (https://github.com/knolleary/pubsubclient)
 //
 // Original Copyright (c) Nicholas O'Leary.
-// Licensed under MIT — see lib/ZenoPCB/src/mqtt/VENDORED.md.
+// Licensed under MIT see lib/ZenoPCB/src/mqtt/VENDORED.md.
 
 #include "PubSubClient.h"
 #include "Arduino.h"

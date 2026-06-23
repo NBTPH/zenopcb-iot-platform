@@ -1,9 +1,9 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_OTA)
 
 #include "ZenoPCBOTA.h"
 #include "../core/ZenoPCBDebug.h"
-// Plan 06-03 — platform HAL bridge for static rollback helpers (Plan
+// Plan 06-03 platform HAL bridge for static rollback helpers (Plan
 // 04-05 removes once everything is instance-scoped).
 #if defined(ESP32)
   #include "../hal/esp32/Esp32Hal.h"
@@ -19,7 +19,7 @@ namespace ZenoPCB
           _client(nullptr), _status(OTAStatus::IDLE), _progress(0),
           _stream(nullptr), _fileSize(0), _written(0),
           _port(80),
-          _connectTimeoutMs(10000), _watchdogTimeoutMs(3600000), // 60 min — enough for slow 4G connections
+          _connectTimeoutMs(10000), _watchdogTimeoutMs(3600000), // 60 min enough for slow 4G connections
           _otaStartTime(0),
           _progressCallback(nullptr), _completeCallback(nullptr), _errorCallback(nullptr)
     {
@@ -65,7 +65,7 @@ namespace ZenoPCB
 
     bool ZenoPCBOTA::startOTA(const char *url)
     {
-        // Forward-compat capability gate (RESEARCH §"Forward-Compat Considerations").
+        // Forward-compat capability gate (RESEARCH "Forward-Compat Considerations").
         // ESP32 has CAP_OTA so this branch is never taken; Phase 6/7 ports without
         // OTA partitions will return false here before any flash work.
         if (!(_hal.capabilities() & IZenoHal::CAP_OTA))
@@ -86,7 +86,7 @@ namespace ZenoPCB
         _status = OTAStatus::FLASHING;
         ZENO_LOG_OTA("Downloading firmware: %d bytes", _fileSize);
 
-        // MD5 (optional) is folded into begin() per IZenoOTA contract — the
+        // MD5 (optional) is folded into begin() per IZenoOTA contract the
         // wrapper internally calls Update.setMD5 before Update.begin so the
         // order is identical to the pre-refactor pair of calls.
         const char *md5 = (_expectedMD5.length() == 32) ? _expectedMD5.c_str() : nullptr;
@@ -139,7 +139,7 @@ namespace ZenoPCB
                 {
                     lastReported = pct / 5;
                     unsigned long elapsed = (millis() - _otaStartTime) / 1000;
-                    ZENO_LOG_OTA("Progress: %.1f%% (%d/%d) — %lus elapsed", _progress, _written, _fileSize, elapsed);
+                    ZENO_LOG_OTA("Progress: %.1f%% (%d/%d) %lus elapsed", _progress, _written, _fileSize, elapsed);
                     if (_progressCallback)
                         _progressCallback(_progress);
                 }
@@ -150,13 +150,13 @@ namespace ZenoPCB
         // success we MUST call restart(). Pair kept textually adjacent.
         if (_hal.ota().end()) {
             _status = OTAStatus::COMPLETED;
-            ZENO_LOG_OTA("OTA complete! Version: %s — Restarting...", _newVersion.c_str());
+            ZENO_LOG_OTA("OTA complete! Version: %s Restarting...", _newVersion.c_str());
             if (_completeCallback) _completeCallback(_newVersion);
             _cleanup(); delay(1000); _hal.system().restart();  // [[noreturn]]
         }
         else
         {
-            String err = String("OTA end() failed: ") + _hal.ota().errorString();
+            String err = String("OTA end() failed:") + _hal.ota().errorString();
             _setError(OTAError::UPDATE_END_FAILED, err);
             _cleanup();
             return false;
@@ -170,7 +170,7 @@ namespace ZenoPCB
 
     bool ZenoPCBOTA::beginUpdate(const char *url)
     {
-        // Forward-compat capability gate (RESEARCH §"Forward-Compat Considerations").
+        // Forward-compat capability gate (RESEARCH "Forward-Compat Considerations").
         if (!(_hal.capabilities() & IZenoHal::CAP_OTA))
         {
             ZENO_LOG_OTA("OTA not supported on this platform (CAP_OTA missing)");
@@ -188,7 +188,7 @@ namespace ZenoPCB
 
         _status = OTAStatus::DOWNLOADING;
 
-        // MD5 (optional) folded into begin() — same as startOTA path.
+        // MD5 (optional) folded into begin() same as startOTA path.
         const char *md5 = (_expectedMD5.length() == 32) ? _expectedMD5.c_str() : nullptr;
         if (md5)
         {
@@ -219,9 +219,9 @@ namespace ZenoPCB
             return -1;
         }
 
-        // ⭐ Drain TCP buffer trong tối đa 50ms mỗi lần gọi loop()
-        // 4G: AT command mất 20-50ms/lần → cần ít nhất 50ms cho 1-2 reads
-        // WiFi/ETH: đọc nhanh hơn, 50ms vẫn OK — yield cho MQTT keepalive 15-30s
+        // Drain TCP buffer trong ti a 50ms mi ln gi loop()
+        // 4G: AT command mt 20-50ms/ln cn t nht 50ms cho 1-2 reads
+        // WiFi/ETH: c nhanh hn, 50ms vn OK yield cho MQTT keepalive 15-30s
         unsigned long loopStart = millis();
         const unsigned long MAX_READ_MS = 50; // yield cho MQTT sau 50ms
 
@@ -231,7 +231,7 @@ namespace ZenoPCB
 
             if (avail <= 0)
             {
-                // Không có data, kiểm tra connection
+                // Khng c data, kim tra connection
                 if (!_client->connected() && _written >= _fileSize)
                     goto finalize;
                 if (!_client->connected())
@@ -241,11 +241,11 @@ namespace ZenoPCB
                     _cleanup();
                     return -1;
                 }
-                // ⭐ SAFE POINT: OTA idle (đợi data), AT command đã complete
-                // → An toàn cho MQTT publish (không interleave AT commands)
+                // SAFE POINT: OTA idle (i data), AT command complete
+                // An ton cho MQTT publish (khng interleave AT commands)
                 if (_yieldCallback)
                     _yieldCallback();
-                // Connected nhưng chưa có data — yield, đợi lần sau
+                // Connected nhng cha c data yield, i ln sau
                 return _progress;
             }
 
@@ -261,7 +261,7 @@ namespace ZenoPCB
             }
 
             if (len == 0)
-                continue; // Chưa có data, vẫn trong time budget
+                continue; // Cha c data, vn trong time budget
 
             _written += len;
             if ((size_t)_hal.ota().write(_buff, len) != (size_t)len)
@@ -281,7 +281,7 @@ namespace ZenoPCB
             {
                 lastReported = pct / 5;
                 unsigned long elapsed = (millis() - _otaStartTime) / 1000;
-                ZENO_LOG_OTA("Progress: %.1f%% (%d/%d) — %lus elapsed", _progress, _written, _fileSize, elapsed);
+                ZENO_LOG_OTA("Progress: %.1f%% (%d/%d) %lus elapsed", _progress, _written, _fileSize, elapsed);
                 if (_progressCallback)
                     _progressCallback(_progress);
             }
@@ -291,24 +291,24 @@ namespace ZenoPCB
                 goto finalize;
         }
 
-        // ⭐ SAFE POINT: Time budget hết, AT command đã complete
-        // → An toàn cho MQTT publish
+        // SAFE POINT: Time budget ht, AT command complete
+        // An ton cho MQTT publish
         if (_yieldCallback)
             _yieldCallback();
         return _progress;
 
     finalize:
-        // T-4-OTA-SPLIT: end()/restart() pair — same shape as blocking path.
+        // T-4-OTA-SPLIT: end()/restart() pair same shape as blocking path.
         if (_hal.ota().end())
         {
             _status = OTAStatus::COMPLETED;
             if (_completeCallback) _completeCallback(_newVersion);
             _cleanup(); delay(1000);
-            _hal.system().restart();  // [[noreturn]] — paired with end() above
+            _hal.system().restart();  // [[noreturn]] paired with end() above
         }
         else
         {
-            String err = String("OTA end() failed: ") + _hal.ota().errorString();
+            String err = String("OTA end() failed:") + _hal.ota().errorString();
             _setError(OTAError::UPDATE_END_FAILED, err);
             _cleanup();
         }
@@ -328,14 +328,14 @@ namespace ZenoPCB
             return;
         }
 
-        ZENO_LOG_OTA("⛔ OTA cancelled: %s (progress: %.1f%%)", reason.c_str(), _progress);
+        ZENO_LOG_OTA("OTA cancelled: %s (progress: %.1f%%)", reason.c_str(), _progress);
         _hal.ota().abort();
         _cleanup();
         _setError(OTAError::STREAM_ERROR, reason);
     }
 
     // ============================================
-    // Rollback (static — uses getXxxHal() bridge until Plan 04-05)
+    // Rollback (static uses getXxxHal() bridge until Plan 04-05)
     // ============================================
 
     bool ZenoPCBOTA::canRollBack()
@@ -373,7 +373,7 @@ namespace ZenoPCB
         ZENO_LOG_OTA("Rolling back to previous firmware...");
         if (hal.ota().rollBack())
         {
-            ZENO_LOG_OTA("Rollback successful — Restarting...");
+            ZENO_LOG_OTA("Rollback successful Restarting...");
             delay(1000);
             hal.system().restart();
             return true; // unreachable (restart is [[noreturn]])
@@ -402,7 +402,7 @@ namespace ZenoPCB
         else if (urlStr.startsWith("https://"))
         {
             // HTTPS not supported with raw Client*
-            _setError(OTAError::HTTP_CONNECT_FAILED, "HTTPS not supported — use HTTP");
+            _setError(OTAError::HTTP_CONNECT_FAILED, "HTTPS not supported use HTTP");
             return false;
         }
 
@@ -464,24 +464,24 @@ namespace ZenoPCB
         for (int redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++)
         {
             ZENO_LOG_OTA("Connecting to %s:%d%s%s", _host.c_str(), _port, maskUrl(String(_path)).c_str(),
-                         redirectCount > 0 ? " (redirect)" : "");
+                         redirectCount > 0 ? "(redirect)" : "");
 
             // Set timeout
             _client->setTimeout(_connectTimeoutMs / 1000);
 
             if (!_client->connect(_host.c_str(), _port))
             {
-                _setError(OTAError::HTTP_CONNECT_FAILED, String("Connect failed: ") + _host + ":" + String(_port));
+                _setError(OTAError::HTTP_CONNECT_FAILED, String("Connect failed:") + _host + ":" + String(_port));
                 return false;
             }
 
             // Send HTTP GET request
-            // ⚠️ HTTP/1.0 — QUAN TRỌNG cho 4G OTA:
-            // - HTTP/1.1 cho phép Transfer-Encoding: chunked → chunk framing lẫn vào firmware data
-            // - Cellular proxy thường thêm chunked/gzip vào HTTP/1.1 response
-            // - HTTP/1.0 buộc server trả raw data + Connection: close → an toàn cho binary download
-            _client->print(String("GET ") + _path + " HTTP/1.0\r\n" +
-                           "Host: " + _host + "\r\n" +
+            // HTTP/1.0 QUAN TRNG cho 4G OTA:
+            // - HTTP/1.1 cho php Transfer-Encoding: chunked chunk framing ln vo firmware data
+            // - Cellular proxy thng thm chunked/gzip vo HTTP/1.1 response
+            // - HTTP/1.0 buc server tr raw data + Connection: close an ton cho binary download
+            _client->print(String("GET") + _path + "HTTP/1.0\r\n" +
+                           "Host:" + _host + "\r\n" +
                            "Accept-Encoding: identity\r\n" +
                            "Cache-Control: no-transform\r\n" +
                            "Connection: close\r\n\r\n");
@@ -533,17 +533,17 @@ namespace ZenoPCB
 
                 if (location.length() == 0)
                 {
-                    _setError(OTAError::HTTP_ERROR, "Redirect " + String(httpCode) + " but no Location header");
+                    _setError(OTAError::HTTP_ERROR, "Redirect" + String(httpCode) + "but no Location header");
                     return false;
                 }
 
-                ZENO_LOG_OTA("HTTP %d redirect → %s", httpCode, location.c_str());
+                ZENO_LOG_OTA("HTTP %d redirect %s", httpCode, location.c_str());
 
                 // Check if redirect is to HTTPS (not supported)
                 if (location.startsWith("https://"))
                 {
                     _setError(OTAError::HTTP_ERROR,
-                              "Server redirected to HTTPS which is not supported for OTA. "
+                              "Server redirected to HTTPS which is not supported for OTA."
                               "Use direct HTTP URL or configure server to serve without redirect.");
                     return false;
                 }
@@ -551,18 +551,18 @@ namespace ZenoPCB
                 // Parse new URL from Location (could be absolute or relative)
                 if (location.startsWith("http://"))
                 {
-                    // Absolute URL — re-parse completely
+                    // Absolute URL re-parse completely
                     if (!_parseUrl(location.c_str()))
                         return false;
                 }
                 else if (location.startsWith("/"))
                 {
-                    // Relative path — same host
+                    // Relative path same host
                     _path = location;
                 }
                 else
                 {
-                    _setError(OTAError::HTTP_ERROR, "Unsupported redirect Location: " + location);
+                    _setError(OTAError::HTTP_ERROR, "Unsupported redirect Location:" + location);
                     return false;
                 }
 
@@ -572,7 +572,7 @@ namespace ZenoPCB
             // === Non-redirect: must be 200 OK ===
             if (httpCode != 200)
             {
-                String err = "HTTP error: " + String(httpCode) + " (" + statusLine + ")";
+                String err = "HTTP error:" + String(httpCode) + "(" + statusLine + ")";
                 _setError(OTAError::HTTP_ERROR, err);
                 _client->stop();
                 return false;
@@ -594,7 +594,7 @@ namespace ZenoPCB
                     _fileSize = line.substring(line.indexOf(':') + 1).toInt();
                 }
 
-                // Detect chunked encoding — firmware binary sẽ bị corrupt nếu chunked
+                // Detect chunked encoding firmware binary s b corrupt nu chunked
                 String lineLower = line;
                 lineLower.toLowerCase();
                 if (lineLower.indexOf("transfer-encoding") >= 0 && lineLower.indexOf("chunked") >= 0)
@@ -606,7 +606,7 @@ namespace ZenoPCB
             if (isChunked)
             {
                 _setError(OTAError::HTTP_ERROR,
-                          "Server sent Transfer-Encoding: chunked — not supported for OTA binary download. "
+                          "Server sent Transfer-Encoding: chunked not supported for OTA binary download."
                           "Use HTTP/1.0 or configure server to send Content-Length only.");
                 _client->stop();
                 return false;
@@ -614,17 +614,17 @@ namespace ZenoPCB
 
             if (_fileSize <= 0)
             {
-                _setError(OTAError::HTTP_ERROR, "Invalid Content-Length: " + String(_fileSize));
+                _setError(OTAError::HTTP_ERROR, "Invalid Content-Length:" + String(_fileSize));
                 _client->stop();
                 return false;
             }
 
-            ZENO_LOG_OTA("HTTP OK — File size: %d bytes", _fileSize);
+            ZENO_LOG_OTA("HTTP OK File size: %d bytes", _fileSize);
             return true;
         }
 
         // Exhausted redirect limit
-        _setError(OTAError::HTTP_ERROR, "Too many redirects (max " + String(MAX_REDIRECTS) + ")");
+        _setError(OTAError::HTTP_ERROR, "Too many redirects (max" + String(MAX_REDIRECTS) + ")");
         return false;
     }
 

@@ -15,7 +15,7 @@
  * `capabilities()` returns a bitmask of `Capability` values. ESP32
  * returns all 5; Phase 6/7 ports return fewer. Consumers should gate
  * optional features with `if (hal.capabilities() & CAP_X) { ... }`
- * even on ESP32 where the branch is always taken — forward-compat for
+ * even on ESP32 where the branch is always taken  forward-compat for
  * Phase 6/7 ports without a second refactor pass.
  *
  * Sub-getters return non-const references because consumers mutate
@@ -43,12 +43,12 @@ namespace ZenoPCB {
  * Replaces `bool` returns on the new `Zeno::ota(const char*)` and
  * `Zeno::wifiProvisioning(const char*, const char*)` overloads so callers can
  * distinguish four distinct outcomes:
- *   - `OK`           — operation succeeded (or was queued successfully).
- *   - `Unavailable`  — platform does not support this feature
+ *   - `OK`            operation succeeded (or was queued successfully).
+ *   - `Unavailable`   platform does not support this feature
  *                     (`hal.capabilities() & CAP_X == 0`); single warn log emitted.
- *   - `Error`        — operation attempted but failed at runtime
+ *   - `Error`         operation attempted but failed at runtime
  *                     (network down, MD5 mismatch, write failure, etc.).
- *   - `Pending`      — operation in progress (e.g., OTA download streaming;
+ *   - `Pending`       operation in progress (e.g., OTA download streaming;
  *                     a second call while the first is still active).
  *
  * Pattern G differs from Phase 6 Pattern F (silent no-op + `return *this` on
@@ -76,9 +76,9 @@ public:
         CAP_NVS             = 1u << 2,  ///< Has persistent namespaced KV store.
         CAP_NTP             = 1u << 3,  ///< Can sync wall-clock via NTP.
         CAP_WATCHDOG        = 1u << 4,  ///< Has task / hardware watchdog.
-        CAP_CAPTIVE_PORTAL  = 1u << 5,  ///< NEW Phase 7 — AP-mode WiFi captive-portal supported (UNO R4/STM32 opt-out per D-09/D-10).
-        CAP_TLS             = 1u << 6,  ///< NEW Phase 7 — runtime introspection of -DZENOPCB_ENABLE_TLS opt-in (D-13/D-27).
-        CAP_DIAGNOSTICS     = 1u << 7,  ///< NEW Phase 7 — F1 MICRO profile drops Diagnostics per D-12.
+        CAP_CAPTIVE_PORTAL  = 1u << 5,  ///< NEW Phase 7 AP-mode WiFi captive-portal supported (UNO R4/STM32 opt-out per D-09/D-10).
+        CAP_TLS             = 1u << 6,  ///< NEW Phase 7 runtime introspection of -DZENOPCB_ENABLE_TLS opt-in (D-13/D-27).
+        CAP_DIAGNOSTICS     = 1u << 7,  ///< NEW Phase 7 F1 MICRO profile drops Diagnostics per D-12.
     };
 
     // ---- Sub-interface accessors --------------------------------------
@@ -95,7 +95,7 @@ public:
      * Bitmask of `Capability` values. ESP32 returns all 5; Phase 6/7
      * ports return fewer. Consumers should gate optional features with
      * `if (hal.capabilities() & CAP_X) { ... }` even on ESP32 where the
-     * branch is always taken — forward-compat for Phase 6/7.
+     * branch is always taken  forward-compat for Phase 6/7.
      */
     virtual uint32_t capabilities() const = 0;
 };

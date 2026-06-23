@@ -1,4 +1,4 @@
-// Phase 7 Plan 07-06.6 — TU guard for ZENOPCB_MICRO_BASIC profile.
+// Phase 7 Plan 07-06.6 TU guard for ZENOPCB_MICRO_BASIC profile.
 #if !defined(ZENOPCB_DISABLE_DIAGNOSTICS)
 
 #include "DiagnosticsHandler.h"
@@ -159,7 +159,7 @@ namespace ZenoPCB
 
     String DiagnosticsHandler::_formatJson(const DiagnosticsData &data)
     {
-        // Use elastic JsonDocument (ArduinoJson v7 — capacity grows from heap)
+        // Use elastic JsonDocument (ArduinoJson v7 capacity grows from heap)
         JsonDocument doc;
 
         // Add requestId only if present (on-demand response)

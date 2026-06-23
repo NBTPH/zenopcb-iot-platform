@@ -17,7 +17,7 @@
 namespace ZenoPCB {
 
 // ============================================================================
-// Per-family partition byte budget (07-RESEARCH §Pattern 2 lines 476-480).
+// Per-family partition byte budget (07-RESEARCH Pattern 2 lines 476-480).
 // `kPartitionBytes` is the upper bound of the linear walker scan; it does
 // NOT change the underlying ZenoFlashStorage `length()` (which is board-
 // defined via E2END). Clamping below `length()` keeps NVS usage within
@@ -54,7 +54,7 @@ size_t writeDefault(char *out, size_t maxLen, const char *defaultValue) {
 
 uint8_t Stm32NVS::_hashNs(const char *ns) {
     if (!ns) return 0x01;
-    // 8-bit djb2 — folds 32-bit djb2 output to a single byte via XOR.
+    // 8-bit djb2 folds 32-bit djb2 output to a single byte via XOR.
     uint32_t h = 5381u;
     for (const char *p = ns; *p; ++p) {
         h = ((h << 5) + h) + static_cast<uint8_t>(*p);   // h*33 + c
@@ -84,7 +84,7 @@ bool Stm32NVS::_findRecord(const char *key, size_t &recordAddr,
     while (addr + 3 < kPartitionBytes) {
         const uint8_t ns = _flash->read(static_cast<int>(addr));
         if (ns == kSlotEmpty) {
-            // Empty terminator — no more records past this point.
+            // Empty terminator no more records past this point.
             return false;
         }
         const uint8_t kLen = _flash->read(static_cast<int>(addr + 1));
@@ -128,18 +128,18 @@ bool Stm32NVS::_appendRecord(const char *key, const uint8_t *val, uint8_t valLen
     while (addr + 3 < kPartitionBytes) {
         const uint8_t ns = _flash->read(static_cast<int>(addr));
         if (ns == kSlotEmpty) {
-            // Found the first empty slot — write here.
+            // Found the first empty slot write here.
             break;
         }
         const uint8_t kLen = _flash->read(static_cast<int>(addr + 1));
         const uint8_t vLen = _flash->read(static_cast<int>(addr + 2));
         const size_t recordSize = 3u + kLen + vLen;
         if (addr + recordSize > kPartitionBytes) {
-            // Malformed — bail.
+            // Malformed bail.
             return false;
         }
         if (ns == _nsHash && kLen == keyLen) {
-            // Check for prior record with same key → tombstone it.
+            // Check for prior record with same key tombstone it.
             bool match = true;
             for (uint8_t i = 0; i < kLen; ++i) {
                 if (_flash->read(static_cast<int>(addr + 3u + i)) != static_cast<uint8_t>(key[i])) {
@@ -190,7 +190,7 @@ bool Stm32NVS::begin(const char *namespaceName, bool readOnly) {
     _nsHash = _hashNs(_namespace);
     _readOnly = readOnly;
     _flash = &ZenoEEPROM;
-    // Disable auto-commit-on-put — batch writes per begin/end pair.
+    // Disable auto-commit-on-put batch writes per begin/end pair.
     _flash->setCommitASAP(false);
     _open = true;
     return _open;
@@ -279,14 +279,14 @@ bool Stm32NVS::getBool(const char *key, bool defaultValue) {
 }
 
 // ============================================================================
-// PLACEHOLDER — Plan 07-04 W-5 fix narrows working-body scope to 8 core
+// PLACEHOLDER Plan 07-04 W-5 fix narrows working-body scope to 8 core
 // methods; the 4 below are deferred to Plan 07-09 hardware UAT per the plan.
 // Each returns the IZenoNVS-contract default on failure (false / defaultValue).
 // ============================================================================
 
 bool Stm32NVS::putUChar(const char *, uint8_t) {
     // TODO Plan 07-09 hardware UAT: route through _appendRecord with 1-byte
-    // value, mirroring putBool. Trivial body — held back from Task 2 only
+    // value, mirroring putBool. Trivial body held back from Task 2 only
     // to keep the W-5 scope mitigation honest (working bodies for the 8
     // most-used IZenoNVS surfaces; deferred for 4 less-used).
     return false;
@@ -307,7 +307,7 @@ bool Stm32NVS::clear() {
     // TODO Plan 07-09 hardware UAT: walk the partition and tombstone every
     // record belonging to _nsHash, then commit. Alternative full-wipe
     // (write 0x00 across [0, kPartitionBytes)) destroys data in other
-    // namespaces — not what IZenoNVS::clear() promises.
+    // namespaces not what IZenoNVS::clear() promises.
     return false;
 }
 

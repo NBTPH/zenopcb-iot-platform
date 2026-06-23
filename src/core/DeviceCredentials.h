@@ -9,14 +9,14 @@ namespace ZenoPCB
     /**
      * @brief Device Credentials Manager
      *
-     * Quản lý DEVICE_ID và TOKEN (32 ký tự):
-     * - Khai báo 1 lần trong main
-     * - Tự động lưu vào NVS
-     * - Đọc từ NVS khi khởi động
+     * Qun l DEVICE_ID v TOKEN (32 k t):
+     * - Khai bo 1 ln trong main
+     * - T ng lu vo NVS
+     * - c t NVS khi khi ng
      *
-     * Plan 04-03 — NVS access routes through `IZenoNVS` via constructor
+     * Plan 04-03  NVS access routes through `IZenoNVS` via constructor
      * injection. The legacy default-constructor is retained as a thin
-     * wrapper that uses the canonical ESP32 HAL singleton — preserves
+     * wrapper that uses the canonical ESP32 HAL singleton  preserves
      * source compatibility for existing main.cpp / zf01_main.cpp callers
      * (`DeviceCredentials credentials;`).
      *
@@ -29,12 +29,12 @@ namespace ZenoPCB
      *     creds.provision("ABCD1234...", "TOKEN1234...");
      * }
      *
-     * // Don't println(getToken()) — it identifies the device on the
+     * // Don't println(getToken()) it identifies the device on the
      * // cloud and lets anyone reading the serial log impersonate it.
      * ```
      *
      * NVS namespace + keys preserved byte-for-byte from pre-refactor
-     * code (T-4-02 — see 04-03-AUDIT.md §1.2).
+     * code (T-4-02  see 04-03-AUDIT.md 1.2).
      */
     class DeviceCredentials
     {
@@ -49,7 +49,7 @@ namespace ZenoPCB
         explicit DeviceCredentials(IZenoHal &hal);
 
         /**
-         * @brief Default constructor — uses the ESP32 HAL singleton.
+         * @brief Default constructor  uses the ESP32 HAL singleton.
          *
          * Retained for backward compatibility (existing `DeviceCredentials
          * credentials;` declarations in main.cpp / zf01_main.cpp continue
@@ -61,7 +61,7 @@ namespace ZenoPCB
 
         /**
          * @brief Initialize credentials manager
-         * Đọc credentials từ NVS nếu đã có
+         * c credentials t NVS nu  c
          * @return true if credentials exist in NVS
          */
         bool begin();
@@ -74,7 +74,7 @@ namespace ZenoPCB
 
         /**
          * @brief Provision device with new credentials
-         * Lưu vào NVS và memory
+         * Lu vo NVS v memory
          * @param deviceId 32-character device ID
          * @param token 32-character token
          * @return true if saved successfully

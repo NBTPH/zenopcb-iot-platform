@@ -1,12 +1,13 @@
 /*
     Modbus Library for Arduino
     ModbusTCP general implementation
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 Andr Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 
 #pragma once
 #include "Modbus.h"
+#include "../core/ZenoPCBDebug.h"
 
 #define BIT_SET(a,b) ((a) |= (1ULL<<(b)))
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
@@ -216,13 +217,13 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		// WiFiServer.available() != Ethernet.available() internally
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->accept())) {
 #if defined(MODBUSIP_DEBUG)
-			Serial.println("IP: Accepted");
+			ZENO_LOG_RAW("IP: Accepted\n");
 #endif
 			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())
 				continue;
 #if defined(MODBUSRTU_DEBUG)
-			Serial.println("IP: Connected");
+			ZENO_LOG_RAW("IP: Connected\n");
 #endif
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#if defined(MODBUSIP_UNIQUE_CLIENTS)
@@ -239,7 +240,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 					tcpclient[n] = currentClient;
 					BIT_SET(tcpServerConnection, n);
 #if defined(MODBUSIP_DEBUG)
-					Serial.print("IP: Conn ");
+					Serial.print("IP: Conn");
 					Serial.println(n);
 #endif
 					continue; // while
@@ -255,7 +256,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		while (millis() - taskStart < MODBUSIP_MAX_READMS &&  (size_t)tcpclient[n]->available() > sizeof(_MBAP)) {
 #if defined(MODBUSIP_DEBUG)
 			Serial.print(n);
-			Serial.print(": Bytes available ");
+			Serial.print(": Bytes available");
 			Serial.println(tcpclient[n]->available());
 #endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP

@@ -2,7 +2,7 @@
  * @file LittleFSManager.h
  * @brief Connection + DataMonitor config persistence (via HAL).
  *
- * Plan 04-03 — file I/O now routes through `IZenoStorage` injected via
+ * Plan 04-03  file I/O now routes through `IZenoStorage` injected via
  * `setHal(IZenoHal*)`. The class name is retained for caller compatibility
  * (`zeno.enableStorage()` and `LittleFSManager::*` calls in main.cpp /
  * zf01_main.cpp); only the implementation backend has changed.
@@ -25,7 +25,7 @@ namespace ZenoPCB
      * @brief Static class for connection + data-monitor file operations.
      *
      * Uses static-pointer HAL injection (see RESEARCH "Dependency Injection
-     * Pattern" — minimal blast radius for static classes).
+     * Pattern"  minimal blast radius for static classes).
      */
     class LittleFSManager
     {

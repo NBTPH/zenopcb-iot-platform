@@ -12,6 +12,7 @@
 #include <Arduino.h>
 #include "../ZenoJson.h"  // ArduinoJson API from vendored copy (namespace ZenoJson; see vendor/ArduinoJson/LICENSE.md)
 #include <vector>
+#include "../core/ZenoPCBDebug.h"
 
 namespace ZenoPCB
 {
@@ -221,7 +222,7 @@ namespace ZenoPCB
             strncpy(shortId, id, SHORTID_LENGTH);
             shortId[SHORTID_LENGTH] = '\0';
 
-            // Note: "nm" (name) field removed - MQTT không gửi nữa
+            // Note: "nm" (name) field removed - MQTT khng gi na
             name[0] = '\0';
 
             const char *pr = obj["pr"] | obj["protocol"] | "S";
@@ -234,7 +235,7 @@ namespace ZenoPCB
                 protocol = ConnectionProtocol::MODBUS_RTU;
             }
 
-            // ⭐ Fix: ArduinoJson operator | treats 0 as falsy, must check explicitly
+            // Fix: ArduinoJson operator | treats 0 as falsy, must check explicitly
             if (obj["en"].is<int>() || obj["enabled"].is<int>())
             {
                 int en = obj["en"] | obj["enabled"];
@@ -289,7 +290,7 @@ namespace ZenoPCB
         }
 
         // === Debug Output ===
-        // Phase 7 Plan 07-05 — body guarded to ESP32/ESP8266 only because
+        // Phase 7 Plan 07-05 body guarded to ESP32/ESP8266 only because
         // `Serial.printf` is not portable: UNO R4 (Renesas `UART` class) and
         // STM32duino (`HardwareSerial`) do not expose it. The function stays
         // declared on all platforms (ABI/call-site preserved) but the body is
@@ -299,40 +300,40 @@ namespace ZenoPCB
         void printDebug() const
         {
 #if defined(ESP32) || defined(ESP8266)
-            Serial.println("╔════════════════════════════════════════════════════════════════╗");
-            Serial.printf("║ ConnectionConfig: [%s]                                         \n", shortId);
-            Serial.println("╠════════════════════════════════════════════════════════════════╣");
-            Serial.printf("║ Protocol: %-10s  Enabled: %-3s                              \n",
+            ZENO_LOG_RAW("\n");
+            ZENO_LOG_RAW("ConnectionConfig: [%s] \n", shortId);
+            ZENO_LOG_RAW("\n");
+            ZENO_LOG_RAW("Protocol: %-10s Enabled: %-3s \n",
                           protocolToString(protocol), enabled ? "Yes" : "No");
-            Serial.println("╠════════════════════════════════════════════════════════════════╣");
+            ZENO_LOG_RAW("\n");
 
             if (protocol == ConnectionProtocol::MODBUS_RTU)
             {
-                Serial.println("║ [Serial/RTU Parameters]                                        ║");
-                Serial.printf("║   Baud Rate: %-8lu  Data Bits: %d  Stop Bits: %d              \n",
+                ZENO_LOG_RAW("[Serial/RTU Parameters]\n");
+                ZENO_LOG_RAW("Baud Rate: %-8lu Data Bits: %d Stop Bits: %d \n",
                               baudRate, dataBits, stopBits);
-                Serial.printf("║   Parity: %-4s  Port Index: %d  COM Port: %-10s             \n",
+                ZENO_LOG_RAW("Parity: %-4s Port Index: %d COM Port: %-10s \n",
                               parityToDisplayString(parity), portIndex, comPort[0] ? comPort : "(none)");
-                Serial.printf("║   Inter Frame Delay: %d ms                                    \n", interFrameDelay);
+                ZENO_LOG_RAW("Inter Frame Delay: %d ms \n", interFrameDelay);
             }
             else if (protocol == ConnectionProtocol::MODBUS_TCP)
             {
-                Serial.println("║ [TCP Parameters]                                               ║");
-                Serial.printf("║   IP Address: %-15s  Port: %-5d                        \n",
+                ZENO_LOG_RAW("[TCP Parameters]\n");
+                ZENO_LOG_RAW("IP Address: %-15s Port: %-5d \n",
                               ipAddress[0] ? ipAddress : "(none)", port);
-                Serial.printf("║   Connect Timeout: %d ms  Reconnect Interval: %d ms          \n",
+                ZENO_LOG_RAW("Connect Timeout: %d ms Reconnect Interval: %d ms \n",
                               connectTimeout, reconnectInterval);
-                Serial.printf("║   Keep Alive: %-3s  Keep Alive Interval: %lu ms               \n",
+                ZENO_LOG_RAW("Keep Alive: %-3s Keep Alive Interval: %lu ms \n",
                               keepAlive ? "Yes" : "No", keepAliveInterval);
             }
 
-            Serial.println("╠════════════════════════════════════════════════════════════════╣");
-            Serial.println("║ [Common Modbus Parameters]                                     ║");
-            Serial.printf("║   Unit ID: %-3d  Response Timeout: %d ms                       \n",
+            ZENO_LOG_RAW("\n");
+            ZENO_LOG_RAW("[Common Modbus Parameters]\n");
+            ZENO_LOG_RAW("Unit ID: %-3d Response Timeout: %d ms \n",
                           unitId, responseTimeout);
-            Serial.printf("║   Delay Between Polls: %d ms  Max Retries: %d                  \n",
+            ZENO_LOG_RAW("Delay Between Polls: %d ms Max Retries: %d \n",
                           delayBetweenPolls, maxRetries);
-            Serial.println("╚════════════════════════════════════════════════════════════════╝");
+            ZENO_LOG_RAW("\n");
 #else
             // Body intentionally empty on UNO R4 / STM32 (no portable
             // Serial.printf). Debug output for these platforms lives in
@@ -403,14 +404,14 @@ namespace ZenoPCB
 
     /**
      * @brief MQTT config message structure
-     * NOTE: Lưu dataJson string thay vì JsonObject để tránh dangling reference
-     * khi JsonDocument bị destroy sau khi parse
+     * NOTE: Lu dataJson string thay v JsonObject  trnh dangling reference
+     * khi JsonDocument b destroy sau khi parse
      */
     struct ConfigMessage
     {
         String type; // "cc" = connection-config
         ConfigAction action;
-        String dataJson; // Raw JSON string của data object (thay vì JsonObject)
+        String dataJson; // Raw JSON string ca data object (thay v JsonObject)
 
         static ConfigAction actionFromChar(char c)
         {

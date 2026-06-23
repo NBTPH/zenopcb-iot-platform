@@ -6,7 +6,7 @@
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
 
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only.
+// Plan 06-03 D-03 Modbus subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "ModbusRTU.h"
@@ -145,9 +145,8 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t *frame, uint8_t len)
 	for (uint8_t i = 0; i < _len; i++)
 	{
 		Serial.print(_frame[i], HEX);
-		Serial.print(" ");
+		Serial.print("");
 	}
-	Serial.println();
 #endif
 #if defined(MODBUSRTU_REDE)
 	if (_txPin >= 0 || _rxPin >= 0)
@@ -302,11 +301,10 @@ void ModbusRTUTemplate::task()
 		_frame[i] = _port->read(); // read data + crc
 #if defined(MODBUSRTU_DEBUG)
 		Serial.print(_frame[i], HEX);
-		Serial.print(" ");
+		Serial.print("");
 #endif
 	}
 #if defined(MODBUSRTU_DEBUG)
-	Serial.println();
 #endif
 	//_port->readBytes(_frame, _len);
 	uint16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
@@ -383,4 +381,4 @@ bool ModbusRTUTemplate::cleanup()
 	return false;
 }
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

@@ -50,14 +50,14 @@ namespace ZenoPCB
     using OTAYieldCallback = std::function<void()>; // Called at safe points (OTA idle, safe for MQTT)
 
     /**
-     * @brief ZenoPCBOTA — OTA firmware update for all network types
+     * @brief ZenoPCBOTA  OTA firmware update for all network types
      *
      * Supports WiFi, Ethernet (W5500), 4G (A7680C/SIM7600) via
      * generic Client* from ZenoNetworkProvider::getClient().
      *
      * Two modes:
-     * - Blocking: startOTA(url) — downloads + flashes in one call
-     * - Non-blocking: beginUpdate(url) + loop() — 2 bytes/tick
+     * - Blocking: startOTA(url)  downloads + flashes in one call
+     * - Non-blocking: beginUpdate(url) + loop()  2 bytes/tick
      *
      * Features:
      * - MD5 hash verification
@@ -72,7 +72,7 @@ namespace ZenoPCB
          * @brief Construct ZenoPCBOTA with an injected HAL.
          * @param hal Hardware abstraction layer (provides ota() + system()).
          *            Defaults to the canonical ESP32 HAL singleton via the
-         *            inline default in ZenoPCBOTA.cpp (bridge — Plan 04-05
+         *            inline default in ZenoPCBOTA.cpp (bridge  Plan 04-05
          *            will swap callers to pass `_hal` explicitly).
          */
         ZenoPCBOTA(IZenoHal &hal);
@@ -198,7 +198,7 @@ namespace ZenoPCB
         Stream *_stream; // points to _client during download
         int _fileSize;
         int _written;
-        uint8_t _buff[4096]; // read buffer — 128 bytes, tối ưu cho 4G AT command (ít roundtrip)
+        uint8_t _buff[4096]; // read buffer 128 bytes, ti u cho 4G AT command (t roundtrip)
 
         // HTTP parsing
         String _host;

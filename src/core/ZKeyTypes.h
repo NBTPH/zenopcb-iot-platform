@@ -5,14 +5,14 @@
  * @file ZKeyTypes.h
  * @brief Z Key system types (Z0-Z254) for user-defined telemetry & control
  *
- * Hệ thống Z Key cho phép user tự code gửi/nhận dữ liệu qua 255 key cố định.
- * Dùng song song với hệ thống Modbus gateway (mqttKey 6-digit).
+ * H thng Z Key cho php user t code gi/nhn d liu qua 255 key c nh.
+ * Dng song song vi h thng Modbus gateway (mqttKey 6-digit).
  *
  * @example
- * zeno.set(ZKey::Z0, 25.5);        // Gửi float
- * zeno.set(ZKey::Z1, "RUNNING");   // Gửi string
- * zeno.set(ZKey::Z2, true);        // Gửi bool
- * float temp = zeno.getFloat(ZKey::Z0);  // Đọc giá trị
+ * zeno.set(ZKey::Z0, 25.5);        // Gi float
+ * zeno.set(ZKey::Z1, "RUNNING");   // Gi string
+ * zeno.set(ZKey::Z2, true);        // Gi bool
+ * float temp = zeno.getFloat(ZKey::Z0);  // c gi tr
  *
  * @author ZenoPCB Development Team
  * @version 1.0.0

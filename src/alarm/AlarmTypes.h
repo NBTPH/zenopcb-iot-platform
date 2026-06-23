@@ -25,11 +25,11 @@ namespace ZenoPCB
         GREATER_THAN = 0,          // >
         LESS_THAN = 1,             // <
         EQUAL = 2,                 // =
-        NOT_EQUAL = 3,             // ≠
-        GREATER_THAN_OR_EQUAL = 4, // ≥
-        LESS_THAN_OR_EQUAL = 5,    // ≤
+        NOT_EQUAL = 3,             // 
+        GREATER_THAN_OR_EQUAL = 4, // 
+        LESS_THAN_OR_EQUAL = 5,    // 
         BETWEEN = 6,               // [lo, hi]
-        OUTSIDE_RANGE = 7          // ∉[lo, hi]
+        OUTSIDE_RANGE = 7          // [lo, hi]
     };
 
     /**
@@ -46,7 +46,7 @@ namespace ZenoPCB
     /**
      * @brief Single alarm rule (stored in memory)
      *
-     * Size: ~145 bytes/rule  × 20 rules = ~2.9 KB RAM
+     * Size: ~145 bytes/rule   20 rules = ~2.9 KB RAM
      */
     struct AlarmRule
     {
@@ -59,7 +59,7 @@ namespace ZenoPCB
         uint8_t severity;        // 1-4 (AlarmSeverity)
         uint32_t cooldownSec;    // Cooldown in seconds (10-3600)
         bool enabled;
-        uint32_t lastTriggeredMs; // millis() at last trigger — for cooldown tracking only
+        uint32_t lastTriggeredMs; // millis() at last trigger for cooldown tracking only
     };
 
     /**

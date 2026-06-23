@@ -66,7 +66,7 @@ namespace ZenoPCB
             {
                 ZENO_LOG("MULTI", "[%d] Initializing %s...", (int)i, _providers[i]->getName());
                 bool ok = _providers[i]->begin(config);
-                ZENO_LOG("MULTI", "[%d] %s → %s", (int)i, _providers[i]->getName(),
+                ZENO_LOG("MULTI", "[%d] %s %s", (int)i, _providers[i]->getName(),
                          ok ? "OK" : "FAILED");
                 if (ok)
                     anyOK = true;
@@ -158,7 +158,7 @@ namespace ZenoPCB
             {
                 if (_activeProvider && newActive)
                 {
-                    ZENO_LOG("MULTI", "Failover: %s → %s (IP: %s)",
+                    ZENO_LOG("MULTI", "Failover: %s %s (IP: %s)",
                              _activeProvider->getName(),
                              newActive->getName(),
                              newActive->getLocalIP().c_str());

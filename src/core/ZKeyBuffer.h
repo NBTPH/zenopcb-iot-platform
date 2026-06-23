@@ -152,10 +152,10 @@ namespace ZenoPCB
         void requestInstantPublish() { _instantPublishPending = true; }
 
         /**
-         * @brief Mark publish as done — resets timer AND clears all dirty flags.
+         * @brief Mark publish as done  resets timer AND clears all dirty flags.
          *
          * Call this AFTER a successful publish has consumed the dirty values.
-         * Do NOT call this BEFORE publishing — it will wipe values that the
+         * Do NOT call this BEFORE publishing  it will wipe values that the
          * user set in `loop()` between intervals, causing them to never reach
          * the cloud. Use `markPublishTimer()` instead for pre-publish throttle.
          */
@@ -172,7 +172,7 @@ namespace ZenoPCB
         void markPublishTimer();
 
         // ============================================
-        // Callbacks (triggered by cloud → device control)
+        // Callbacks (triggered by cloud device control)
         // ============================================
 
         /**

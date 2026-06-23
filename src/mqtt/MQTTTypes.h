@@ -17,8 +17,8 @@ namespace ZenoPCB
 
     constexpr uint16_t MQTT_DEFAULT_PORT = 1883;
     constexpr uint16_t MQTT_DEFAULT_TLS_PORT = 8883;
-    constexpr uint16_t MQTT_DEFAULT_KEEPALIVE = 15;      // Default: 15s — broker detects dead client in ~22s
-    constexpr uint16_t MQTT_CELLULAR_KEEPALIVE = 30;     // 4G: 30s — broker detects in ~45s (modem AT overhead)
+    constexpr uint16_t MQTT_DEFAULT_KEEPALIVE = 15;      // Default: 15s broker detects dead client in ~22s
+    constexpr uint16_t MQTT_CELLULAR_KEEPALIVE = 30;     // 4G: 30s broker detects in ~45s (modem AT overhead)
     constexpr uint16_t MQTT_DEFAULT_SOCKET_TIMEOUT = 5;  // 5s: fail fast when no internet, IO-0 button responsive within ~10s
     constexpr uint16_t MQTT_CELLULAR_SOCKET_TIMEOUT = 5; // 4G socket timeout: 5s
     constexpr uint16_t ZENOPCB_MQTT_BUFFER_SIZE = 4096;  // Large buffer: supports 50+ registers JSON + diagnostics over 4G
@@ -64,7 +64,7 @@ namespace ZenoPCB
         bool useTLS = false;                                  // Use TLS/SSL
         uint16_t keepAlive = MQTT_DEFAULT_KEEPALIVE;          // Keep alive interval (seconds)
         uint16_t socketTimeout = MQTT_DEFAULT_SOCKET_TIMEOUT; // TCP socket timeout (seconds)
-        bool cleanSession = false;                            // ⚡ false để LWT hoạt động + giữ session
+        bool cleanSession = false;                            // false LWT hot ng + gi session
         bool autoReconnect = true;                            // Auto reconnect on disconnect
         uint8_t maxReconnectAttempts = MQTT_MAX_RECONNECT_ATTEMPTS;
         uint32_t reconnectInterval = MQTT_RECONNECT_INTERVAL_MS;

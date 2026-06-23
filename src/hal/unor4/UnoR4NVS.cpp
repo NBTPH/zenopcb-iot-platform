@@ -23,7 +23,7 @@ uint8_t fnv1a8(const char *s) {
         h ^= static_cast<uint8_t>(*s++);
         h *= 16777619u;
     }
-    // XOR-fold 32 → 8 to spread entropy into the byte we keep.
+    // XOR-fold 32 8 to spread entropy into the byte we keep.
     uint8_t b = static_cast<uint8_t>((h >> 24) ^ (h >> 16) ^ (h >> 8) ^ h);
     // Reserve 0x00 as the empty-slot / end-of-store marker.
     return (b == 0) ? 1u : b;
@@ -60,11 +60,11 @@ size_t findRecord(uint8_t nsHash, const char *key, size_t keyLen) {
     size_t i = 0;
     while (i + 3 <= kEepromMax) {
         uint8_t recNs  = EEPROM.read(i);
-        if (recNs == 0) return kEepromMax;   // empty slot — end of store
+        if (recNs == 0) return kEepromMax;   // empty slot end of store
         uint8_t recKL  = EEPROM.read(i + 1);
         uint8_t recVL  = EEPROM.read(i + 2);
         if (recKL == kTombKeyLen) {
-            // Tombstone — value length still tracks the slot footprint so
+            // Tombstone value length still tracks the slot footprint so
             // we can skip past it without leaking the original key bytes.
             i += 3 + recVL;
             continue;
@@ -94,14 +94,14 @@ size_t findFreeSlot(size_t keyLen, size_t valLen) {
     while (i + 3 <= kEepromMax) {
         uint8_t recNs = EEPROM.read(i);
         if (recNs == 0) {
-            // Empty slot — check we have room.
+            // Empty slot check we have room.
             if (i + needed > kEepromMax) return kEepromMax;
             return i;
         }
         uint8_t recKL = EEPROM.read(i + 1);
         uint8_t recVL = EEPROM.read(i + 2);
         // Treat tombstones as occupied during forward scan (no compaction
-        // pass in v1.0 — see TODO note in plan SUMMARY for compaction
+        // pass in v1.0 see TODO note in plan SUMMARY for compaction
         // follow-up if RA4M1 EEPROM emulation reports byte exhaustion in
         // long-running deployments).
         if (recKL == kTombKeyLen) {
@@ -162,7 +162,7 @@ bool UnoR4NVS::putString(const char *key, const char *value) {
     if (valLen > 254) return false;
 
     // If the key exists, tombstone the old record before writing the new
-    // one (simple O(n) update — no in-place value replacement). Per the
+    // one (simple O(n) update no in-place value replacement). Per the
     // CAP_NVS contract we keep the surface minimal; compaction is a v1.1
     // follow-up.
     size_t existing = findRecord(_nsHash, key, keyLen);

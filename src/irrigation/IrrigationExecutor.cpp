@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Irrigation subsystem is ESP32-only.
+// Plan 06-03 D-03 Irrigation subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "IrrigationExecutor.h"
@@ -30,7 +30,7 @@ namespace ZenoPCB
         _execution.reset();
         _phase = StepPhase::IDLE;
         _initialized = true;
-        ZENO_LOG("IrrigationExecutor", "✅ Initialized");
+        ZENO_LOG("IrrigationExecutor", "Initialized");
     }
 
     // ============================================
@@ -48,19 +48,19 @@ namespace ZenoPCB
 
         if (isRunning())
         {
-            ZENO_LOG("IrrigationExecutor", "❌ Already running scenario %s", _execution.scenarioId);
+            ZENO_LOG("IrrigationExecutor", "Already running scenario %s", _execution.scenarioId);
             return false;
         }
 
         if (stepCount == 0 || stepCount > MAX_IRRIGATION_STEPS)
         {
-            ZENO_LOG("IrrigationExecutor", "❌ Invalid step count: %d", stepCount);
+            ZENO_LOG("IrrigationExecutor", "Invalid step count: %d", stepCount);
             return false;
         }
 
         if (!_writeFn)
         {
-            ZENO_LOG("IrrigationExecutor", "❌ No write function set");
+            ZENO_LOG("IrrigationExecutor", "No write function set");
             return false;
         }
 
@@ -83,7 +83,7 @@ namespace ZenoPCB
 
         _phase = StepPhase::EXECUTING;
 
-        ZENO_LOG("IrrigationExecutor", "▶️ Starting scenario %s (%d steps)",
+        ZENO_LOG("IrrigationExecutor", "Starting scenario %s (%d steps)",
                  scenarioId, stepCount);
 
         // Execute first step immediately
@@ -102,7 +102,7 @@ namespace ZenoPCB
         IrrigationScenarioConfig config;
         if (!IrrigationStorage::loadScenario(scenarioId, config))
         {
-            ZENO_LOG("IrrigationExecutor", "❌ Failed to load scenario %s from storage",
+            ZENO_LOG("IrrigationExecutor", "Failed to load scenario %s from storage",
                      scenarioId);
             return false;
         }
@@ -113,7 +113,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Stop execution — safe state
+    // Stop execution safe state
     // ============================================
 
     void IrrigationExecutor::stopExecution()
@@ -121,7 +121,7 @@ namespace ZenoPCB
         if (!isRunning())
             return;
 
-        ZENO_LOG("IrrigationExecutor", "⏹️ Stopping scenario %s", _execution.scenarioId);
+        ZENO_LOG("IrrigationExecutor", "Stopping scenario %s", _execution.scenarioId);
 
         _safeStopAllOutputs();
 
@@ -137,7 +137,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Main loop — non-blocking state machine
+    // Main loop non-blocking state machine
     // ============================================
 
     void IrrigationExecutor::loop()
@@ -153,7 +153,7 @@ namespace ZenoPCB
 
             if (elapsed >= step.waitDuration * 1000UL)
             {
-                ZENO_LOG("IrrigationExecutor", "⏰ WAIT step %d done (%ds)",
+                ZENO_LOG("IrrigationExecutor", "WAIT step %d done (%ds)",
                          step.order, step.waitDuration);
                 _advanceToNextStep();
             }
@@ -177,8 +177,8 @@ namespace ZenoPCB
 
         if (isWaitAction(step.action))
         {
-            // WAIT step — report then start timer
-            ZENO_LOG("IrrigationExecutor", "⏳ Step %d: WAIT %ds",
+            // WAIT step report then start timer
+            ZENO_LOG("IrrigationExecutor", "Step %d: WAIT %ds",
                      step.order, step.waitDuration);
 
             if (_onStepCb)
@@ -193,10 +193,10 @@ namespace ZenoPCB
         }
         else
         {
-            // Non-WAIT step — write all targets immediately
+            // Non-WAIT step write all targets immediately
             int value = irrigationActionValue(step.action);
 
-            ZENO_LOG("IrrigationExecutor", "⚡ Step %d: %s → %d (%d targets)",
+            ZENO_LOG("IrrigationExecutor", "Step %d: %s %d (%d targets)",
                      step.order, irrigationActionToCode(step.action),
                      value, step.keyCount);
 
@@ -220,7 +220,7 @@ namespace ZenoPCB
                           step.action, step);
             }
 
-            // Non-WAIT fires instantly → advance immediately
+            // Non-WAIT fires instantly advance immediately
             _advanceToNextStep();
         }
     }
@@ -263,7 +263,7 @@ namespace ZenoPCB
             }
         }
 
-        ZENO_LOG("IrrigationExecutor", "✅ Scenario %s completed (%d steps, %ds total)",
+        ZENO_LOG("IrrigationExecutor", "Scenario %s completed (%d steps, %ds total)",
                  _execution.scenarioId, _execution.stepCount, totalWaitSec);
 
         if (_onCompletedCb)
@@ -274,12 +274,12 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Fail execution — safe state
+    // Fail execution safe state
     // ============================================
 
     void IrrigationExecutor::_failExecution(const char *error)
     {
-        ZENO_LOG("IrrigationExecutor", "❌ Error at step %d: %s",
+        ZENO_LOG("IrrigationExecutor", "Error at step %d: %s",
                  _execution.steps[_execution.currentStep].order, error);
 
         _safeStopAllOutputs();
@@ -299,7 +299,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Safe stop — write 0 to all targets used in scenario
+    // Safe stop write 0 to all targets used in scenario
     // ============================================
 
     void IrrigationExecutor::_safeStopAllOutputs()
@@ -307,7 +307,7 @@ namespace ZenoPCB
         if (!_writeFn)
             return;
 
-        ZENO_LOG("IrrigationExecutor", "🛑 Safe stop — turning off all outputs");
+        ZENO_LOG("IrrigationExecutor", "Safe stop turning off all outputs");
 
         // Collect unique keys and write 0
         for (uint8_t i = 0; i < _execution.stepCount; i++)
@@ -325,4 +325,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

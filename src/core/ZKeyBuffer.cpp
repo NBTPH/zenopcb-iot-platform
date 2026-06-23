@@ -207,7 +207,7 @@ namespace ZenoPCB
             // String concatenation, which incurred 2x heap allocations per
             // dirty key and up to 255x per merge cycle.
             // Buffer size 8 = "Z" + up to 3 digits + NUL = 5 bytes, with safe
-            // headroom — matches the sister-file convention at
+            // headroom matches the sister-file convention at
             // ZKeyTypes.h:430 (char check[8]; snprintf(check, sizeof check,
             // "Z%d", val)). %d, not %u, to match that existing convention.
             char keyBuf[8];
@@ -215,12 +215,12 @@ namespace ZenoPCB
 
             // ArduinoJson v7 quirk (RESEARCH.md Pitfall #1): doc[const char*]
             // stores the pointer by reference, NOT a copy. keyBuf goes out of
-            // scope on the next loop iteration — passing it as a raw char*
+            // scope on the next loop iteration passing it as a raw char*
             // would dangle when serializeJson runs later.
             //
             // Forcing the key through String(keyBuf) makes ArduinoJson v7
             // copy the key at assignment time. Net cost: 1 short heap alloc
-            // per dirty key (was: 2) — ~50% reduction in merge-cycle heap
+            // per dirty key (was: 2) ~50% reduction in merge-cycle heap
             // traffic.
             switch (_values[i].type)
             {
@@ -255,7 +255,7 @@ namespace ZenoPCB
             if (_values[i].type == ZValueType::NONE)
                 continue; // Key never set
 
-            // Same refactor as mergeIntoJson above — char keyBuf[8] + snprintf
+            // Same refactor as mergeIntoJson above char keyBuf[8] + snprintf
             // + doc[String(keyBuf)] forces ArduinoJson v7 to copy the key so
             // the loop-local buffer never dangles past the iteration.
             // Sister method shares the allocator pattern; verify gate covers
@@ -326,7 +326,7 @@ namespace ZenoPCB
 
     bool ZKeyBuffer::isPublishDue() const
     {
-        // Hard min-interval floor — applies to BOTH instant and timer mode.
+        // Hard min-interval floor applies to BOTH instant and timer mode.
         // Prevents runaway publish when user calls set() (e.g. ZENO_WRITE)
         // from a tight loop() with setZInstantPublish(true): without this
         // guard, ESP32 would publish on every loop iteration (~thousands
@@ -356,7 +356,7 @@ namespace ZenoPCB
     {
         _lastPublishTime = millis();
         _instantPublishPending = false;
-        // Intentionally NOT calling clearDirtyFlags() — keeps values set from
+        // Intentionally NOT calling clearDirtyFlags() keeps values set from
         // loop() (e.g. `ZENO_WRITE(Z0, x)` outside ZENO_READ_ALL) alive so
         // _publishZKeyTelemetry() picks them up on this cycle.
     }

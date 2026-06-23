@@ -16,13 +16,13 @@
  * forward to a custom bootloader / IAP flash writer.
  *
  * Optional MD5: pass via begin(); impl forwards to Update.setMD5 before
- * Update.begin (per RESEARCH Pitfall 2 — Option b, single call).
+ * Update.begin (per RESEARCH Pitfall 2  Option b, single call).
  *
  * Rollback: canRollBack()/rollBack() let the device revert to the previous
  * bootable partition on ESP32 (Update.canRollBack / Update.rollBack).
  *
- * No Arduino heap-allocated text type in signatures — char buffers only.
- * No exceptions — fallible methods return bool / size_t. Callers check.
+ * No Arduino heap-allocated text type in signatures  char buffers only.
+ * No exceptions  fallible methods return bool / size_t. Callers check.
  */
 
 #include <stddef.h>

@@ -6,14 +6,14 @@
  * @brief Pure-virtual interface for namespaced non-volatile key/value storage.
  *
  * Surface mirrors Arduino-ESP32 `Preferences` exactly so refactored
- * consumers preserve byte-for-byte NVS storage compatibility — devices
+ * consumers preserve byte-for-byte NVS storage compatibility  devices
  * keep their saved Wi-Fi config across the refactor (per 04-RESEARCH.md
  * Pitfall 6 / A9).
  *
  * Lifecycle:
  *  - begin(ns, readOnly) opens a namespace handle.
  *  - end() releases the handle. ESP32 NVS supports ~4 simultaneously
- *    open namespaces — every begin() must be paired with an end() to
+ *    open namespaces  every begin() must be paired with an end() to
  *    prevent handle table exhaustion (per Pitfall 1).
  *  - Multiple sequential namespaces are fine: begin("a")...end(),
  *    begin("b")...end().
@@ -23,8 +23,8 @@
  * putULong/getULong, remove, clear. Plan 04-03 will refactor consumers
  * to this surface; signature parity matters.
  *
- * No Arduino heap-allocated text type in signatures — char buffers only
- * (CLAUDE.md memory rule). No exceptions — fallible methods return bool.
+ * No Arduino heap-allocated text type in signatures  char buffers only
+ * (CLAUDE.md memory rule). No exceptions  fallible methods return bool.
  * Callers check.
  */
 
@@ -70,7 +70,7 @@ struct IZenoNVS {
 
     // --- Bool -----------------------------------------------------------
     // Required by WiFiProvisioning.cpp (lines 136, 1732, 1748, 1760, 1775,
-    // 1789, 1801) — without this consumers cannot preserve byte-compat.
+    // 1789, 1801) without this consumers cannot preserve byte-compat.
 
     virtual bool putBool(const char *key, bool value) = 0;
     virtual bool getBool(const char *key, bool defaultValue) = 0;

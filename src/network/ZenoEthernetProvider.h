@@ -4,18 +4,18 @@
  *
  * Implements ZenoNetworkProvider interface for wired Ethernet
  * via the W5500 SPI module using ESP32's native ETH.h library.
- * No external Ethernet library required — uses ESP-IDF driver directly.
+ * No external Ethernet library required  uses ESP-IDF driver directly.
  *
- * Ưu điểm so với thư viện Ethernet cũ:
- * - Dùng driver native ESP-IDF, hiệu suất cao hơn
- * - DHCP tự động (không cần gọi maintain())
+ * u im so vi th vin Ethernet c:
+ * - Dng driver native ESP-IDF, hiu sut cao hn
+ * - DHCP t ng (khng cn gi maintain())
  * - Event-driven (link up/down, got IP)
- * - Chia sẻ lwIP stack với WiFi → WiFiClient dùng được cho MQTT
- * - Không cần thêm lib_deps
+ * - Chia s lwIP stack vi WiFi  WiFiClient dng c cho MQTT
+ * - Khng cn thm lib_deps
  *
  * @note Requires build flag: -DZENOPCB_ENABLE_ETHERNET
  * @note Requires Arduino ESP32 Core 3.0+ (pioarduino platform, ESP-IDF 5.x)
- *       ETH_PHY_W5500 và SPI Ethernet support chỉ có từ Core 3.x trở lên
+ *       ETH_PHY_W5500 v SPI Ethernet support ch c t Core 3.x tr ln
  *
  * @author ZenoPCB Team
  */
@@ -36,8 +36,8 @@ namespace ZenoPCB
     /**
      * @brief Ethernet W5500 network provider (ESP32 native ETH driver)
      *
-     * Sử dụng ETH.h built-in của ESP32 Arduino Core.
-     * Kết nối W5500 qua SPI, hỗ trợ DHCP tự động và Static IP.
+     * S dng ETH.h built-in ca ESP32 Arduino Core.
+     * Kt ni W5500 qua SPI, h tr DHCP t ng v Static IP.
      *
      * Usage:
      * @code
@@ -75,8 +75,8 @@ namespace ZenoPCB
         bool begin(const DeviceConfig &config) override
         {
             ZENO_LOG("ETH", "Initializing W5500 (native ETH driver)");
-            ZENO_LOG("ETH", "  CS=%d, RST=%d, IRQ=%d", _csPin, _rstPin, _irqPin);
-            ZENO_LOG("ETH", "  SCK=%d, MISO=%d, MOSI=%d", _sckPin, _misoPin, _mosiPin);
+            ZENO_LOG("ETH", "CS=%d, RST=%d, IRQ=%d", _csPin, _rstPin, _irqPin);
+            ZENO_LOG("ETH", "SCK=%d, MISO=%d, MOSI=%d", _sckPin, _misoPin, _mosiPin);
 
             // Store static IP config for event handler
             _useDHCP = config.ethernetDHCP;
@@ -112,13 +112,13 @@ namespace ZenoPCB
                 return false;
             }
 
-            ZENO_LOG("ETH", "ETH.begin() OK — waiting for link + IP...");
+            ZENO_LOG("ETH", "ETH.begin() OK waiting for link + IP...");
             return true;
         }
 
         void loop() override
         {
-            // Nothing needed — ESP-IDF handles DHCP renewal and link monitoring
+            // Nothing needed ESP-IDF handles DHCP renewal and link monitoring
             // State changes come through WiFi.onEvent() callbacks
         }
 
@@ -129,14 +129,14 @@ namespace ZenoPCB
 
         Client *getClient() override
         {
-            // ETH shares lwIP stack with WiFi → WiFiClient routes through ETH
+            // ETH shares lwIP stack with WiFi WiFiClient routes through ETH
             // when Ethernet is the active interface
             return &_ethClient;
         }
 
         Client *getOTAClient() override
         {
-            // OTA dùng client riêng — tránh kill TCP connection của MQTT
+            // OTA dng client ring trnh kill TCP connection ca MQTT
             return &_ethOTAClient;
         }
 
@@ -203,7 +203,7 @@ namespace ZenoPCB
                 break;
 
             case ARDUINO_EVENT_ETH_GOT_IP:
-                ZENO_LOG("ETH", "Got IP: %s  GW: %s  Mask: %s",
+                ZENO_LOG("ETH", "Got IP: %s GW: %s Mask: %s",
                          ETH.localIP().toString().c_str(),
                          ETH.gatewayIP().toString().c_str(),
                          ETH.subnetMask().toString().c_str());
@@ -243,8 +243,8 @@ namespace ZenoPCB
         IPAddress _staticSN;
         IPAddress _staticDNS;
 
-        WiFiClient _ethClient;    // MQTT client — shares lwIP stack, routes via ETH
-        WiFiClient _ethOTAClient; // OTA client riêng — không ảnh hưởng MQTT
+        WiFiClient _ethClient;    // MQTT client shares lwIP stack, routes via ETH
+        WiFiClient _ethOTAClient; // OTA client ring khng nh hng MQTT
     };
 
 } // namespace ZenoPCB

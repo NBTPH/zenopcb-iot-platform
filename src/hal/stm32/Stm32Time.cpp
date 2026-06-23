@@ -14,7 +14,7 @@ void Stm32Time::syncNTP(const char *server,
     // TimeManager::syncNTP has additional secondary/tertiary server
     // defaults; pass through the primary and let the defaults supply
     // fallbacks. STM32duino exposes the same `<time.h>` + `configTime`
-    // surface as ESP32 / ESP8266 (07-PATTERNS §"Stm32Time"); the lone
+    // surface as ESP32 / ESP8266 (07-PATTERNS "Stm32Time"); the lone
     // ESP32-only `esp_sntp.h` include in TimeManager.h is already guarded
     // under `#if defined(ESP32)` from Plan 06-03.
     TimeManager::syncNTP(server ? server : "pool.ntp.org",

@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Irrigation subsystem is ESP32-only.
+// Plan 06-03 D-03 Irrigation subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "IrrigationStorage.h"
@@ -17,7 +17,7 @@ namespace ZenoPCB
     namespace
     {
         // Per-scenario file may grow to ~1.2 KB worst case (MAX_IRRIGATION_STEPS
-        // × keyCount × IRRIGATION_KEY_LEN). 2 KB leaves headroom.
+        // keyCount IRRIGATION_KEY_LEN). 2 KB leaves headroom.
         constexpr size_t SCENARIO_FILE_BUF_SIZE = 2048;
         // Per-schedule file is small (id + sid + flags + executeTime + 7 days).
         constexpr size_t SCHEDULE_FILE_BUF_SIZE = 1024;
@@ -74,13 +74,13 @@ namespace ZenoPCB
 
         if (!ensureDirectory())
         {
-            ZENO_LOG("IrrigationStorage", "❌ Failed to create directory");
+            ZENO_LOG("IrrigationStorage", "Failed to create directory");
             return false;
         }
 
         if (!scenarioExists(config.scenarioId) && isMaxScenariosReached())
         {
-            ZENO_LOG("IrrigationStorage", "❌ Max scenarios reached (%d)", MAX_IRRIGATION_SCENARIOS);
+            ZENO_LOG("IrrigationStorage", "Max scenarios reached (%d)", MAX_IRRIGATION_SCENARIOS);
             return false;
         }
 
@@ -118,7 +118,7 @@ namespace ZenoPCB
         String jsonStr;
         if (serializeJson(doc, jsonStr) == 0)
         {
-            ZENO_LOG("IrrigationStorage", "❌ Failed to serialize");
+            ZENO_LOG("IrrigationStorage", "Failed to serialize");
             return false;
         }
 
@@ -127,7 +127,7 @@ namespace ZenoPCB
                                                    jsonStr.length());
         if (written != jsonStr.length())
         {
-            ZENO_LOG("IrrigationStorage", "❌ Short write: %s (%u/%u)",
+            ZENO_LOG("IrrigationStorage", "Short write: %s (%u/%u)",
                      filePath.c_str(), (unsigned)written, (unsigned)jsonStr.length());
             return false;
         }
@@ -139,7 +139,7 @@ namespace ZenoPCB
         meta.lastUpdated = (uint32_t)time(nullptr);
         writeMetadata(meta);
 
-        ZENO_LOG("IrrigationStorage", "✅ Saved: %s (%d steps)", config.scenarioId, config.stepCount);
+        ZENO_LOG("IrrigationStorage", "Saved: %s (%d steps)", config.scenarioId, config.stepCount);
         return true;
     }
 
@@ -159,7 +159,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("IrrigationStorage", "❌ Not found: %s", sid.c_str());
+            ZENO_LOG("IrrigationStorage", "Not found: %s", sid.c_str());
             return false;
         }
 
@@ -167,7 +167,7 @@ namespace ZenoPCB
         size_t bytesRead = _hal->storage().readFile(filePath.c_str(), buf, sizeof(buf));
         if (bytesRead == 0)
         {
-            ZENO_LOG("IrrigationStorage", "❌ Failed to read: %s", filePath.c_str());
+            ZENO_LOG("IrrigationStorage", "Failed to read: %s", filePath.c_str());
             return false;
         }
 
@@ -176,7 +176,7 @@ namespace ZenoPCB
 
         if (error)
         {
-            ZENO_LOG("IrrigationStorage", "❌ JSON parse error: %s", error.c_str());
+            ZENO_LOG("IrrigationStorage", "JSON parse error: %s", error.c_str());
             return false;
         }
 
@@ -222,7 +222,7 @@ namespace ZenoPCB
 
         out.enabled = doc["en"] | true;
 
-        ZENO_LOG("IrrigationStorage", "✅ Loaded: %s (%d steps)", sid.c_str(), out.stepCount);
+        ZENO_LOG("IrrigationStorage", "Loaded: %s (%d steps)", sid.c_str(), out.stepCount);
         return true;
     }
 
@@ -241,7 +241,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("IrrigationStorage", "⚠️ Not found for deletion: %s", sid.c_str());
+            ZENO_LOG("IrrigationStorage", "Not found for deletion: %s", sid.c_str());
             return false;
         }
 
@@ -255,11 +255,11 @@ namespace ZenoPCB
             meta.lastUpdated = (uint32_t)time(nullptr);
             writeMetadata(meta);
 
-            ZENO_LOG("IrrigationStorage", "✅ Deleted: %s", sid.c_str());
+            ZENO_LOG("IrrigationStorage", "Deleted: %s", sid.c_str());
         }
         else
         {
-            ZENO_LOG("IrrigationStorage", "❌ Failed to delete: %s", sid.c_str());
+            ZENO_LOG("IrrigationStorage", "Failed to delete: %s", sid.c_str());
         }
 
         return result;
@@ -296,7 +296,7 @@ namespace ZenoPCB
 
         if (!_hal->storage().exists(DIR_PATH))
         {
-            ZENO_LOG("IrrigationStorage", "⚠️ Directory not found, returning empty");
+            ZENO_LOG("IrrigationStorage", "Directory not found, returning empty");
             return true;
         }
 
@@ -372,7 +372,7 @@ namespace ZenoPCB
         meta.lastUpdated = (uint32_t)time(nullptr);
         writeMetadata(meta);
 
-        ZENO_LOG("IrrigationStorage", "✅ Cleared all scenarios");
+        ZENO_LOG("IrrigationStorage", "Cleared all scenarios");
         return true;
     }
 
@@ -411,7 +411,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // Schedule CRUD (V3 — separate entity)
+    // Schedule CRUD (V3 separate entity)
     // ============================================
 
     bool IrrigationStorage::saveSchedule(const IrrigationScheduleConfig &config)
@@ -426,7 +426,7 @@ namespace ZenoPCB
 
         if (!scheduleExists(config.scheduleId) && isMaxSchedulesReached())
         {
-            ZENO_LOG("IrrigationStorage", "❌ Max schedules reached (%d)", MAX_IRRIGATION_SCHEDULES);
+            ZENO_LOG("IrrigationStorage", "Max schedules reached (%d)", MAX_IRRIGATION_SCHEDULES);
             return false;
         }
 
@@ -456,7 +456,7 @@ namespace ZenoPCB
         String jsonStr;
         if (serializeJson(doc, jsonStr) == 0)
         {
-            ZENO_LOG("IrrigationStorage", "❌ Failed to serialize schedule");
+            ZENO_LOG("IrrigationStorage", "Failed to serialize schedule");
             return false;
         }
 
@@ -465,12 +465,12 @@ namespace ZenoPCB
                                                    jsonStr.length());
         if (written != jsonStr.length())
         {
-            ZENO_LOG("IrrigationStorage", "❌ Short write schedule: %s (%u/%u)",
+            ZENO_LOG("IrrigationStorage", "Short write schedule: %s (%u/%u)",
                      filePath.c_str(), (unsigned)written, (unsigned)jsonStr.length());
             return false;
         }
 
-        ZENO_LOG("IrrigationStorage", "✅ Schedule saved: %s → scenario %s",
+        ZENO_LOG("IrrigationStorage", "Schedule saved: %s scenario %s",
                  config.scheduleId, config.scenarioId);
         return true;
     }
@@ -497,7 +497,7 @@ namespace ZenoPCB
 
         if (error)
         {
-            ZENO_LOG("IrrigationStorage", "❌ Schedule JSON error: %s", error.c_str());
+            ZENO_LOG("IrrigationStorage", "Schedule JSON error: %s", error.c_str());
             return false;
         }
 
@@ -526,7 +526,7 @@ namespace ZenoPCB
             out.executeAt = doc["ea"] | (uint32_t)0;
         }
 
-        ZENO_LOG("IrrigationStorage", "✅ Schedule loaded: %s (type=%c)", id.c_str(), (char)out.scheduleType);
+        ZENO_LOG("IrrigationStorage", "Schedule loaded: %s (type=%c)", id.c_str(), (char)out.scheduleType);
         return true;
     }
 
@@ -540,12 +540,12 @@ namespace ZenoPCB
         String filePath = getScheduleFilePath(id);
         if (!_hal->storage().exists(filePath.c_str()))
         {
-            ZENO_LOG("IrrigationStorage", "⚠️ Schedule not found: %s", id.c_str());
+            ZENO_LOG("IrrigationStorage", "Schedule not found: %s", id.c_str());
             return false;
         }
         bool result = _hal->storage().deleteFile(filePath.c_str());
         if (result)
-            ZENO_LOG("IrrigationStorage", "✅ Schedule deleted: %s", id.c_str());
+            ZENO_LOG("IrrigationStorage", "Schedule deleted: %s", id.c_str());
         return result;
     }
 
@@ -632,7 +632,7 @@ namespace ZenoPCB
             _hal->storage().deleteFile(path.c_str());
         }
 
-        ZENO_LOG("IrrigationStorage", "✅ Cleared all schedules (%d)", filesToDelete.size());
+        ZENO_LOG("IrrigationStorage", "Cleared all schedules (%d)", filesToDelete.size());
         return true;
     }
 
@@ -674,7 +674,7 @@ namespace ZenoPCB
             ok = false;
         if (!clearAllSchedules())
             ok = false;
-        ZENO_LOG("IrrigationStorage", "🗑️ Clear all: %s", ok ? "OK" : "PARTIAL");
+        ZENO_LOG("IrrigationStorage", "Clear all: %s", ok ? "OK" : "PARTIAL");
         return ok;
     }
 
@@ -746,4 +746,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif  // Plan 06-03 D-03 defined(ESP32)

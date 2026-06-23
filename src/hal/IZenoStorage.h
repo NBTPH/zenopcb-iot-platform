@@ -13,7 +13,7 @@
  * Design notes:
  *  - All path / data parameters are `const char*` and bounded buffers
  *    (no Arduino heap-allocated text type) per CLAUDE.md memory rule.
- *  - readFile / writeFile are "atomic read all / write all" — they hide
+ *  - readFile / writeFile are "atomic read all / write all"  they hide
  *    file-handle lifetime entirely so callers cannot leak descriptors.
  *  - listFiles uses a callback invoked synchronously per matching file.
  *    The callback MUST NOT store the path pointer beyond the call;
@@ -21,7 +21,7 @@
  *  - writeFile returns the number of bytes written (not bool) so the
  *    caller can detect a short write (disk full) by comparing to `len`.
  *
- * No exceptions — fallible methods return bool / size_t. Callers must
+ * No exceptions  fallible methods return bool / size_t. Callers must
  * check return values.
  */
 
@@ -61,7 +61,7 @@ struct IZenoStorage {
 
     /**
      * Delete the file at `path`. Returns true if removed (or did not
-     * exist on platforms whose unlink is idempotent — impl-defined).
+     * exist on platforms whose unlink is idempotent  impl-defined).
      */
     virtual bool deleteFile(const char *path) = 0;
 
@@ -75,7 +75,7 @@ struct IZenoStorage {
     /**
      * Iterate files whose path begins with `prefix`. The callback runs
      * synchronously per file. Do not store the path pointer beyond the
-     * callback — implementations may reuse the buffer.
+     * callback  implementations may reuse the buffer.
      */
     virtual void listFiles(const char *prefix,
                            std::function<void(const char *)> callback) = 0;

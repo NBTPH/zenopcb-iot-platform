@@ -82,7 +82,8 @@ ZENO_READ_ALL
     float raw = (float)analogRead(SENSOR_PIN);
     float scaled = raw / SENSOR_MAX * 100.0f; // per-platform ADC resolution (see #defines above)
     ZENO_WRITE(Z0, scaled);
-    Serial.printf("[Z0] sensor = %.2f\n", scaled);
+    Serial.print("[Z0] sensor = ");
+    Serial.println(scaled);
 }
 
 // ============================================
@@ -98,7 +99,8 @@ ZENO_READ(Z1)
 #else
     digitalWrite(LED_PIN, on ? HIGH : LOW);
 #endif
-    Serial.printf("[Z1] LED %s\n", on ? "ON" : "OFF");
+    Serial.print("[Z1] LED ");
+    Serial.println(on ? "ON" : "OFF");
 }
 
 // ============================================
