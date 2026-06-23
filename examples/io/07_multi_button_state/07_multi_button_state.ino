@@ -92,7 +92,7 @@ void loop()
                 case ZKey::Z3: ZENO_WRITE(Z3, pressed); break;
                 default: break;
             }
-            ZENOPCB_PRINTF("[btn %d] %s\n", i, pressed ? "PRESS" : "RELEASE");
+            Serial.printf("[btn %d] %s\n", i, pressed ? "PRESS" : "RELEASE");
         }
     }
     zeno.loop();

@@ -63,11 +63,11 @@ void onScheduleExecuted(const String &id,
 {
     if (status != ExecutionStatus::SUCCESS)
     {
-        ZENOPCB_PRINTF("[Cron] %s FAIL: %s\n", id.c_str(), error.c_str());
+        Serial.printf("[Cron] %s FAIL: %s\n", id.c_str(), error.c_str());
         return;
     }
     ++s_fireCount;
-    ZENOPCB_PRINTF("[Cron] %s fire #%lu (value=%lld)\n",
+    Serial.printf("[Cron] %s fire #%lu (value=%lld)\n",
                    id.c_str(), (unsigned long)s_fireCount, (long long)value);
     ZENO_WRITE(Z0, (int32_t)s_fireCount);
     ZENO_WRITE(Z1, true);

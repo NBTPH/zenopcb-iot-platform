@@ -65,7 +65,7 @@ static void writeValve(bool on)
     s_valveOn      = on;
     s_valveStartMs = on ? millis() : 0;
     ZENO_WRITE(Z0, on); // echo state back to cloud
-    ZENOPCB_PRINTF("[VALVE] %s\n", on ? "OPEN" : "CLOSED");
+    Serial.printf("[VALVE] %s\n", on ? "OPEN" : "CLOSED");
 }
 
 ZENO_READ(Z0)
@@ -92,7 +92,7 @@ void loop()
     // Safety auto-off
     if (s_valveOn && (millis() - s_valveStartMs >= MAX_ON_MS))
     {
-        ZENOPCB_PRINTF("[VALVE] safety auto-off after %lu ms\n",
+        Serial.printf("[VALVE] safety auto-off after %lu ms\n",
                        (unsigned long)MAX_ON_MS);
         writeValve(false);
     }

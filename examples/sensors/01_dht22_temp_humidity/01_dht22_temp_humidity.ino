@@ -79,11 +79,11 @@ void loop()
         {
             ZENO_WRITE(Z0, t);
             ZENO_WRITE(Z1, h);
-            ZENOPCB_PRINTF("[DHT22] T=%.1fC H=%.1f%%\n", t, h);
+            Serial.printf("[DHT22] T=%.1fC H=%.1f%%\n", t, h);
         }
         else
         {
-            ZENOPCB_PRINTF("[DHT22] read failed\n");
+            Serial.printf("[DHT22] read failed\n");
         }
     }
     zeno.loop();

@@ -52,7 +52,7 @@ static void scanAndPublish()
     }
     if (found == 0) csv = "(none)";
     ZENO_WRITE(Z0, csv);
-    ZENOPCB_PRINTF("[I2C] scan: %u device(s) -> %s\n",
+    Serial.printf("[I2C] scan: %u device(s) -> %s\n",
                    (unsigned)found, csv.c_str());
 }
 
@@ -60,7 +60,7 @@ ZENO_READ(Z1)
 {
     if (param.toBool())
     {
-        ZENOPCB_PRINTF("[I2C] rescan triggered by cloud\n");
+        Serial.printf("[I2C] rescan triggered by cloud\n");
         scanAndPublish();
     }
 }

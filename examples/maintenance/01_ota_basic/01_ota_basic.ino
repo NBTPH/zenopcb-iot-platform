@@ -45,17 +45,17 @@ Zeno zeno;
 void setup()
 {
     Serial.begin(115200);
-    ZENOPCB_PRINTF("[OTA] Boot, firmware v%s\n", FIRMWARE_VER);
+    Serial.printf("[OTA] Boot, firmware v%s\n", FIRMWARE_VER);
 
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableOTA()
         .onOTAProgress([](float pct)
-                       { ZENOPCB_PRINTF("[OTA] progress %.1f%%\n", pct); })
+                       { Serial.printf("[OTA] progress %.1f%%\n", pct); })
         .onOTAComplete([](const String &ver)
-                       { ZENOPCB_PRINTF("[OTA] complete, now v%s — rebooting\n", ver.c_str()); })
+                       { Serial.printf("[OTA] complete, now v%s rebooting\n", ver.c_str()); })
         .onOTAError([](OTAError code, const String &msg)
-                    { ZENOPCB_PRINTF("[OTA] error %d: %s\n", (int)code, msg.c_str()); })
+                    { Serial.printf("[OTA] error %d: %s\n", (int)code, msg.c_str()); })
         .begin();
 }
 
@@ -94,7 +94,7 @@ void loop()
                 Serial.println(F("[OTA] not available on this platform"));
                 break;
             case ZenoCapability::Error:
-                Serial.println(F("[OTA] download failed — check URL or network"));
+                Serial.println(F("[OTA] download failed check URL or network"));
                 break;
             case ZenoCapability::Pending:
                 Serial.println(F("[OTA] already in progress, ignoring duplicate request"));

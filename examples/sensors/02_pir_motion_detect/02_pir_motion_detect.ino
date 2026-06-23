@@ -65,7 +65,7 @@ void loop()
         s_lastState = s;
         const bool motion = (s == HIGH);
         ZENO_WRITE(Z0, motion);
-        ZENOPCB_PRINTF("[PIR] %s\n", motion ? "MOTION" : "quiet");
+        Serial.printf("[PIR] %s\n", motion ? "MOTION" : "quiet");
     }
     zeno.loop();
 }

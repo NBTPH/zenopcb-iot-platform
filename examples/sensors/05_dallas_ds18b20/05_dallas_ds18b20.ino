@@ -81,7 +81,7 @@ void loop()
         if (t != DEVICE_DISCONNECTED_C)
         {
             ZENO_WRITE(Z0, t);
-            ZENOPCB_PRINTF("[DS18B20] T = %.2f C\n", t);
+            Serial.printf("[DS18B20] T = %.2f C\n", t);
         }
     }
     zeno.loop();

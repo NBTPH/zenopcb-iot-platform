@@ -67,7 +67,7 @@ ZENO_READ_ALL
 void onAlarmTriggered(const String &ruleId, const String &key,
                       double value, uint8_t severity)
 {
-    ZENOPCB_PRINTF("[ALARM] %s %s=%.2f sev=%u\n",
+    Serial.printf("[ALARM] %s %s=%.2f sev=%u\n",
                    ruleId.c_str(), key.c_str(), value, (unsigned)severity);
     digitalWrite(LED_PIN, HIGH);
     s_alarmLitUntilMs = millis() + LIT_MS;

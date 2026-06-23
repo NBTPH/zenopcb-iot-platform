@@ -70,7 +70,7 @@ void setup()
     Wire.begin();
     if (!oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR))
     {
-        ZENOPCB_PRINTF("[OLED] init failed @ 0x%02X\n", OLED_ADDR);
+        Serial.printf("[OLED] init failed @ 0x%02X\n", OLED_ADDR);
     }
     render();
 

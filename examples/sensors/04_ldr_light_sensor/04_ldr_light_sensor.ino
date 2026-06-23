@@ -68,7 +68,7 @@ void loop()
         const float raw = (float)analogRead(LDR_PIN);
         const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
         ZENO_WRITE(Z0, pct);
-        ZENOPCB_PRINTF("[LDR] brightness = %.1f%%\n", pct);
+        Serial.printf("[LDR] brightness = %.1f%%\n", pct);
     }
     zeno.loop();
 }

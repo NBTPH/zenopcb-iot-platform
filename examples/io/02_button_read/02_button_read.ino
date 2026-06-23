@@ -63,7 +63,7 @@ void loop()
         s_lastReading = reading;
         const bool pressed = (reading == LOW); // active-low button
         ZENO_WRITE(Z1, pressed);
-        ZENOPCB_PRINTF("[Z1] button %s\n", pressed ? "PRESSED" : "RELEASED");
+        Serial.printf("[Z1] button %s\n", pressed ? "PRESSED" : "RELEASED");
     }
 
     zeno.loop();

@@ -63,7 +63,7 @@ ZENO_READ_ALL
 void onAlarmTriggered(const String &ruleId, const String &key,
                       double value, uint8_t severity)
 {
-    ZENOPCB_PRINTF("[ALARM->BUZZER] %s %s=%.2f\n",
+    Serial.printf("[ALARM->BUZZER] %s %s=%.2f\n",
                    ruleId.c_str(), key.c_str(), value);
     digitalWrite(BUZZER_PIN, HIGH);
     s_buzzerOffMs = millis() + PULSE_MS;

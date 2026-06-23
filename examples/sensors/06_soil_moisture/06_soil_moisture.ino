@@ -81,7 +81,7 @@ void loop()
         const int raw = analogRead(SOIL_PIN);
         const float pct = toPercent(raw);
         ZENO_WRITE(Z0, pct);
-        ZENOPCB_PRINTF("[Soil] raw=%d pct=%.1f%%\n", raw, pct);
+        Serial.printf("[Soil] raw=%d pct=%.1f%%\n", raw, pct);
     }
     zeno.loop();
 }

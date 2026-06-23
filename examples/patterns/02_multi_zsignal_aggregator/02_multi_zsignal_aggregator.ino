@@ -95,7 +95,7 @@ void loop()
         }
         json += "]}";
         ZENO_WRITE(Z5, json);
-        ZENOPCB_PRINTF("[Aggregator] %s\n", json.c_str());
+        Serial.printf("[Aggregator] %s\n", json.c_str());
     }
 
     zeno.loop();

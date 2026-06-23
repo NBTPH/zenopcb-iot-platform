@@ -69,7 +69,7 @@ void loop()
         const float raw = (float)analogRead(SENSOR_PIN);
         const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
         ZENO_WRITE(Z2, pct);
-        ZENOPCB_PRINTF("[Z2] analog = %.1f%%\n", pct);
+        Serial.printf("[Z2] analog = %.1f%%\n", pct);
     }
     zeno.loop();
 }

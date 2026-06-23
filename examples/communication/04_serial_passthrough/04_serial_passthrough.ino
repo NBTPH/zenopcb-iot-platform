@@ -66,7 +66,7 @@ ZENO_READ(Z0)
 {
     const String out = param.toString();
     DEV_SERIAL.print(out);
-    ZENOPCB_PRINTF("[Serial] tx (%u bytes)\n", (unsigned)out.length());
+    Serial.printf("[Serial] tx (%u bytes)\n", (unsigned)out.length());
 }
 
 void setup()
@@ -95,7 +95,7 @@ void loop()
         {
             s_rxBuf[s_rxLen] = '\0';
             ZENO_WRITE(Z1, String(s_rxBuf));
-            ZENOPCB_PRINTF("[Serial] rx -> Z1: %s\n", s_rxBuf);
+            Serial.printf("[Serial] rx -> Z1: %s\n", s_rxBuf);
             s_rxLen = 0;
         }
         else if (c != '\r')

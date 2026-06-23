@@ -49,7 +49,7 @@ ZENO_READ(Z3)
     if (duty < 0)   duty = 0;
     if (duty > 255) duty = 255;
     analogWrite(PWM_PIN, duty);
-    ZENOPCB_PRINTF("[Z3] PWM duty = %d/255\n", duty);
+    Serial.printf("[Z3] PWM duty = %d/255\n", duty);
 }
 
 void setup()

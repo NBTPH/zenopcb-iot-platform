@@ -44,10 +44,10 @@ ZENO_READ(Z0)
 {
     const String s = param.toString();
     lcd.setCursor(0, 1);
-    lcd.print("                "); // clear line 2
+    lcd.print(" "); // clear line 2
     lcd.setCursor(0, 1);
     lcd.print(s.substring(0, 16));
-    ZENOPCB_PRINTF("[LCD] Z0 -> %s\n", s.c_str());
+    Serial.printf("[LCD] Z0 -> %s\n", s.c_str());
 }
 
 void setup()

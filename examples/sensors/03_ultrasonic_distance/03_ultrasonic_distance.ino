@@ -89,7 +89,7 @@ void loop()
         if (d > 0.0f)
         {
             ZENO_WRITE(Z0, d);
-            ZENOPCB_PRINTF("[HC-SR04] d=%.1f cm\n", d);
+            Serial.printf("[HC-SR04] d=%.1f cm\n", d);
         }
     }
     zeno.loop();

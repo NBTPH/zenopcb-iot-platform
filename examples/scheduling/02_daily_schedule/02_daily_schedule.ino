@@ -54,7 +54,7 @@ static void setRelay(bool on)
     s_relayState = on;
     digitalWrite(RELAY_PIN, on ? HIGH : LOW);
     ZENO_WRITE(Z0, (int32_t)(on ? 1 : 0));
-    ZENOPCB_PRINTF("[Relay] %s\n", on ? "ON" : "OFF");
+    Serial.printf("[Relay] %s\n", on ? "ON" : "OFF");
 }
 
 void onScheduleExecuted(const String &id,
@@ -64,13 +64,13 @@ void onScheduleExecuted(const String &id,
 {
     if (status == ExecutionStatus::SUCCESS)
     {
-        ZENOPCB_PRINTF("[Schedule] %s fired value=%lld\n",
+        Serial.printf("[Schedule] %s fired value=%lld\n",
                        id.c_str(), (long long)value);
         setRelay(value != 0);
     }
     else
     {
-        ZENOPCB_PRINTF("[Schedule] %s FAILED: %s\n",
+        Serial.printf("[Schedule] %s FAILED: %s\n",
                        id.c_str(), error.c_str());
     }
 }

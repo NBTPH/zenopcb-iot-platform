@@ -64,7 +64,7 @@ ZENO_READ(Z0)
 {
     const bool on = param.toBool();
     writeLed(on);
-    ZENOPCB_PRINTF("[Z0] cloud LED %s\n", on ? "ON" : "OFF");
+    Serial.printf("[Z0] cloud LED %s\n", on ? "ON" : "OFF");
 }
 
 void setup()

@@ -68,7 +68,7 @@ ZENO_READ_ALL
 void onAlarmTriggered(const String &ruleId, const String &key,
                       double value, uint8_t severity)
 {
-    ZENOPCB_PRINTF("[ALARM] rule=%s key=%s value=%.2f sev=%u\n",
+    Serial.printf("[ALARM] rule=%s key=%s value=%.2f sev=%u\n",
                    ruleId.c_str(), key.c_str(), value, (unsigned)severity);
     if (ruleId.indexOf("low") >= 0)
     {

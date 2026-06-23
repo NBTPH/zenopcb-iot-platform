@@ -55,7 +55,7 @@ ZENO_READ(Z0)
     if (deg < 0)   deg = 0;
     if (deg > 180) deg = 180;
     servo.write(deg);
-    ZENOPCB_PRINTF("[Z0] servo -> %d deg\n", deg);
+    Serial.printf("[Z0] servo -> %d deg\n", deg);
 }
 
 void setup()

@@ -61,7 +61,7 @@ ZENO_READ(Z0)
     if (v >  9999) v =  9999;
     if (v < -999)  v = -999;
     display.showNumberDec((int)v, false);
-    ZENOPCB_PRINTF("[7SEG] Z0 -> %ld\n", v);
+    Serial.printf("[7SEG] Z0 -> %ld\n", v);
 }
 
 void setup()

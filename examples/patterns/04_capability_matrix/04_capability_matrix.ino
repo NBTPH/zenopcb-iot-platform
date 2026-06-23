@@ -63,14 +63,14 @@ void setup()
     uint32_t caps = hal.capabilities();
 
     // ---- Bitmask dump (matches IZenoHal::Capability enum, Phase 7 D-09/D-10) --
-    printCapRow(F("CAP_FS_FILES      "), caps, IZenoHal::CAP_FS_FILES);
-    printCapRow(F("CAP_OTA           "), caps, IZenoHal::CAP_OTA);
-    printCapRow(F("CAP_NVS           "), caps, IZenoHal::CAP_NVS);
-    printCapRow(F("CAP_NTP           "), caps, IZenoHal::CAP_NTP);
-    printCapRow(F("CAP_WATCHDOG      "), caps, IZenoHal::CAP_WATCHDOG);
+    printCapRow(F("CAP_FS_FILES "), caps, IZenoHal::CAP_FS_FILES);
+    printCapRow(F("CAP_OTA "), caps, IZenoHal::CAP_OTA);
+    printCapRow(F("CAP_NVS "), caps, IZenoHal::CAP_NVS);
+    printCapRow(F("CAP_NTP "), caps, IZenoHal::CAP_NTP);
+    printCapRow(F("CAP_WATCHDOG "), caps, IZenoHal::CAP_WATCHDOG);
     printCapRow(F("CAP_CAPTIVE_PORTAL"), caps, IZenoHal::CAP_CAPTIVE_PORTAL);
-    printCapRow(F("CAP_TLS           "), caps, IZenoHal::CAP_TLS);
-    printCapRow(F("CAP_DIAGNOSTICS   "), caps, IZenoHal::CAP_DIAGNOSTICS);
+    printCapRow(F("CAP_TLS "), caps, IZenoHal::CAP_TLS);
+    printCapRow(F("CAP_DIAGNOSTICS "), caps, IZenoHal::CAP_DIAGNOSTICS);
 
     // ---- D-08 + D-21 CI assertion sketch --------------------------------
     // When the capability bit is 0, the Pattern G surface MUST return
@@ -90,7 +90,7 @@ void setup()
     }
     else
     {
-        Serial.println(F("SKIP: zeno.ota assertion (CAP_OTA=1 — not tested by this probe)"));
+        Serial.println(F("SKIP: zeno.ota assertion (CAP_OTA=1 not tested by this probe)"));
     }
 
     if (!(caps & IZenoHal::CAP_CAPTIVE_PORTAL))
@@ -107,7 +107,7 @@ void setup()
     }
     else
     {
-        Serial.println(F("SKIP: zeno.wifiProvisioning assertion (CAP_CAPTIVE_PORTAL=1 — not tested by this probe)"));
+        Serial.println(F("SKIP: zeno.wifiProvisioning assertion (CAP_CAPTIVE_PORTAL=1 not tested by this probe)"));
     }
 
     Serial.println(F("[07_CapabilityMatrix] probe complete"));

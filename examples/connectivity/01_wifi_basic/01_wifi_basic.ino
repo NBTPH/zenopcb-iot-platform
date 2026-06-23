@@ -72,7 +72,7 @@ void loop()
         s_lastBeat = now;
         s_beatCount++;
         ZENO_WRITE(Z0, (int32_t)s_beatCount);
-        ZENOPCB_PRINTF("[01_wifi_basic] heartbeat %lu\n", (unsigned long)s_beatCount);
+        Serial.printf("[01_wifi_basic] heartbeat %lu\n", (unsigned long)s_beatCount);
     }
 
     zeno.loop();

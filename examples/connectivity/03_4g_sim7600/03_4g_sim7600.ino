@@ -106,8 +106,8 @@ void setup()
         .begin();
 #else
     Serial.println(F("[03_4g_sim7600] Cellular not available on this platform."));
-    Serial.println(F("                Cellular is ESP32-only in v0.3.0."));
-    Serial.println(F("                Use connectivity/01_wifi_basic instead."));
+    Serial.println(F(" Cellular is ESP32-only in v0.3.0."));
+    Serial.println(F(" Use connectivity/01_wifi_basic instead."));
 #endif
 }
 
@@ -120,7 +120,7 @@ void loop()
         s_lastBeat = now;
         s_beatCount++;
         ZENO_WRITE(Z0, (int32_t)s_beatCount);
-        ZENOPCB_PRINTF("[03_4g_sim7600] heartbeat %lu (signal=%d, IP=%s)\n",
+        Serial.printf("[03_4g_sim7600] heartbeat %lu (signal=%d, IP=%s)\n",
                        (unsigned long)s_beatCount,
                        cellProvider.getSignalQuality(),
                        cellProvider.getLocalIP().c_str());

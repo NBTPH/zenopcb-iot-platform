@@ -54,10 +54,10 @@ static inline void writeRelay(uint8_t idx, bool on)
     digitalWrite(RELAY_PINS[idx], v);
 }
 
-ZENO_READ(Z0) { bool on = param.toBool(); writeRelay(0, on); ZENOPCB_PRINTF("[Z0] CH1 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z1) { bool on = param.toBool(); writeRelay(1, on); ZENOPCB_PRINTF("[Z1] CH2 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z2) { bool on = param.toBool(); writeRelay(2, on); ZENOPCB_PRINTF("[Z2] CH3 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z3) { bool on = param.toBool(); writeRelay(3, on); ZENOPCB_PRINTF("[Z3] CH4 %s\n", on ? "ON" : "OFF"); }
+ZENO_READ(Z0) { bool on = param.toBool(); writeRelay(0, on); Serial.printf("[Z0] CH1 %s\n", on ? "ON" : "OFF"); }
+ZENO_READ(Z1) { bool on = param.toBool(); writeRelay(1, on); Serial.printf("[Z1] CH2 %s\n", on ? "ON" : "OFF"); }
+ZENO_READ(Z2) { bool on = param.toBool(); writeRelay(2, on); Serial.printf("[Z2] CH3 %s\n", on ? "ON" : "OFF"); }
+ZENO_READ(Z3) { bool on = param.toBool(); writeRelay(3, on); Serial.printf("[Z3] CH4 %s\n", on ? "ON" : "OFF"); }
 
 void setup()
 {

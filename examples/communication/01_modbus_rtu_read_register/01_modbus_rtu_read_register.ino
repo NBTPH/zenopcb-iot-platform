@@ -87,12 +87,12 @@ void loop()
                 if (event == Modbus::EX_SUCCESS)
                 {
                     ZENO_WRITE(Z0, (int32_t)s_lastValue);
-                    ZENOPCB_PRINTF("[Modbus] hreg[%u] = %u\n",
+                    Serial.printf("[Modbus] hreg[%u] = %u\n",
                                    REGISTER_ADDR, s_lastValue);
                 }
                 else
                 {
-                    ZENOPCB_PRINTF("[Modbus] read err = 0x%02X\n", event);
+                    Serial.printf("[Modbus] read err = 0x%02X\n", event);
                 }
                 return true;
             });
@@ -106,7 +106,7 @@ void loop()
 void setup()
 {
     Serial.begin(115200);
-    Serial.println(F("[INFO] Modbus RTU stack is ESP32-only — see sketch header."));
+    Serial.println(F("[INFO] Modbus RTU stack is ESP32-only see sketch header."));
 }
 
 void loop()

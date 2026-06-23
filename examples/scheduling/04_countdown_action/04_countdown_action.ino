@@ -64,14 +64,14 @@ ZENO_READ(Z1)
     {
         s_running = false;
         writeLed(false);
-        ZENOPCB_PRINTF("[Countdown] cancelled\n");
+        Serial.printf("[Countdown] cancelled\n");
         return;
     }
     s_durationMs = (uint32_t)secs * 1000UL;
     s_startMs    = millis();
     s_running    = true;
     writeLed(true);
-    ZENOPCB_PRINTF("[Countdown] start %ld s\n", secs);
+    Serial.printf("[Countdown] start %ld s\n", secs);
 }
 
 void setup()
@@ -94,7 +94,7 @@ void loop()
         s_running = false;
         writeLed(false);
         ZENO_WRITE(Z0, true);  // pulse a "fire" event
-        ZENOPCB_PRINTF("[Countdown] FIRE\n");
+        Serial.printf("[Countdown] FIRE\n");
         ZENO_WRITE(Z0, false); // reset edge
     }
     zeno.loop();

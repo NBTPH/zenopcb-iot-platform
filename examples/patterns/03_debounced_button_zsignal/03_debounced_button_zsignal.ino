@@ -90,7 +90,7 @@ void loop()
             {
                 ++s_clickCount;
                 ZENO_WRITE(Z0, (int32_t)s_clickCount);
-                ZENOPCB_PRINTF("[Click] count = %lu\n",
+                Serial.printf("[Click] count = %lu\n",
                                (unsigned long)s_clickCount);
             }
         }
@@ -102,7 +102,7 @@ void loop()
     {
         s_longSent = true;
         ZENO_WRITE(Z1, String("long"));
-        ZENOPCB_PRINTF("[LongHold] fired\n");
+        Serial.printf("[LongHold] fired\n");
     }
 
     zeno.loop();

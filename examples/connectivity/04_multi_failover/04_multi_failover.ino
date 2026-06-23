@@ -115,8 +115,8 @@ void setup()
         .begin();
 #else
     Serial.println(F("[04_multi_failover] Multi-connectivity not available on this platform."));
-    Serial.println(F("                    Ethernet + Cellular providers are ESP32-only in v0.3.0."));
-    Serial.println(F("                    Use connectivity/01_wifi_basic for plain WiFi."));
+    Serial.println(F(" Ethernet + Cellular providers are ESP32-only in v0.3.0."));
+    Serial.println(F(" Use connectivity/01_wifi_basic for plain WiFi."));
 #endif
 }
 
@@ -133,7 +133,7 @@ void loop()
         String      activeIP   = multiProvider.getLocalIP();
         ZENO_WRITE(Z0, String(activeName));
         ZENO_WRITE(Z1, activeIP);
-        ZENOPCB_PRINTF("[04_multi_failover] active=%s ip=%s\n",
+        Serial.printf("[04_multi_failover] active=%s ip=%s\n",
                        activeName, activeIP.c_str());
     }
     zeno.loop();

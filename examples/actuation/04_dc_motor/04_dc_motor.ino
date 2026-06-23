@@ -92,7 +92,7 @@ ZENO_READ(Z0)
 {
     const int v = (int)param.toLong();
     driveMotor(v);
-    ZENOPCB_PRINTF("[Z0] motor %s duty=%d\n",
+    Serial.printf("[Z0] motor %s duty=%d\n",
         v == 0 ? "STOP" : (v > 0 ? "FWD" : "REV"), v);
 }
 

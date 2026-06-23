@@ -96,13 +96,13 @@ void setup()
     // first-class ethernet provider; native STM32Ethernet adapter is on the
     // backlog. For now, fall through with an explanatory notice.
     Serial.println(F("[02_ethernet_w5500] STM32 F4 native Ethernet provider"));
-    Serial.println(F("                    is not bundled in v0.3.0 — see backlog."));
-    Serial.println(F("                    Use connectivity/01_wifi_basic instead"));
-    Serial.println(F("                    or wire a W5500 module if you need wired."));
+    Serial.println(F(" is not bundled in v0.3.0 see backlog."));
+    Serial.println(F(" Use connectivity/01_wifi_basic instead"));
+    Serial.println(F(" or wire a W5500 module if you need wired."));
 #else
     Serial.println(F("[02_ethernet_w5500] Ethernet not available on this platform."));
-    Serial.println(F("                    Build for ESP32 (-DZENOPCB_ENABLE_ETHERNET)"));
-    Serial.println(F("                    or use connectivity/01_wifi_basic."));
+    Serial.println(F(" Build for ESP32 (-DZENOPCB_ENABLE_ETHERNET)"));
+    Serial.println(F(" or use connectivity/01_wifi_basic."));
 #endif
 }
 
@@ -115,7 +115,7 @@ void loop()
         s_lastBeat = now;
         s_beatCount++;
         ZENO_WRITE(Z0, (int32_t)s_beatCount);
-        ZENOPCB_PRINTF("[02_ethernet_w5500] heartbeat %lu (IP=%s)\n",
+        Serial.printf("[02_ethernet_w5500] heartbeat %lu (IP=%s)\n",
                        (unsigned long)s_beatCount, ethProvider.getLocalIP().c_str());
     }
     zeno.loop();

@@ -80,7 +80,7 @@ static void applyStateLeds(State s)
 static void transition(State next)
 {
     if (next == s_state) return;
-    ZENOPCB_PRINTF("[FSM] %s -> %s\n", stateName(s_state), stateName(next));
+    Serial.printf("[FSM] %s -> %s\n", stateName(s_state), stateName(next));
     s_state = next;
     applyStateLeds(s_state);
     ZENO_WRITE(Z1, String(stateName(s_state)));

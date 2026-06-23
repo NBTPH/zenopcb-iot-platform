@@ -74,7 +74,7 @@ void loop()
         s_stableRaw = raw;
         const bool pressed = (s_stableRaw == LOW);
         ZENO_WRITE(Z1, pressed);
-        ZENOPCB_PRINTF("[Z1] debounced %s\n", pressed ? "PRESSED" : "RELEASED");
+        Serial.printf("[Z1] debounced %s\n", pressed ? "PRESSED" : "RELEASED");
     }
 
     zeno.loop();

@@ -74,7 +74,7 @@ void onAlarmTriggered(const String &ruleId, const String &key,
     if (s_lastFireMs != 0 && (now - s_lastFireMs) < DEVICE_COOLDOWN_MS)
     {
         ++s_skippedCount;
-        ZENOPCB_PRINTF("[ALARM] %s SKIPPED (cooldown), %lu remaining ms\n",
+        Serial.printf("[ALARM] %s SKIPPED (cooldown), %lu remaining ms\n",
                        ruleId.c_str(),
                        (unsigned long)(DEVICE_COOLDOWN_MS - (now - s_lastFireMs)));
         return;
@@ -84,7 +84,7 @@ void onAlarmTriggered(const String &ruleId, const String &key,
     digitalWrite(LED_PIN, HIGH);
     delay(100);                  // a brief pulse (acceptable here — not in main loop)
     digitalWrite(LED_PIN, LOW);
-    ZENOPCB_PRINTF("[ALARM] %s FIRED #%lu (%lu skipped so far)\n",
+    Serial.printf("[ALARM] %s FIRED #%lu (%lu skipped so far)\n",
                    ruleId.c_str(), (unsigned long)s_firedCount,
                    (unsigned long)s_skippedCount);
 }

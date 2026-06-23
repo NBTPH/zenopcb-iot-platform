@@ -50,7 +50,7 @@ ZENO_READ(Z0)
 {
     const bool on = param.toBool();
     mb.writeCoil(SLAVE_ID, COIL_ADDR, on, nullptr);
-    ZENOPCB_PRINTF("[Modbus] writeCoil[%u] = %s\n",
+    Serial.printf("[Modbus] writeCoil[%u] = %s\n",
                    COIL_ADDR, on ? "ON" : "OFF");
 }
 
@@ -79,7 +79,7 @@ void loop()
 void setup()
 {
     Serial.begin(115200);
-    Serial.println(F("[INFO] Modbus RTU stack is ESP32-only — see sketch header."));
+    Serial.println(F("[INFO] Modbus RTU stack is ESP32-only see sketch header."));
 }
 
 void loop() {}
