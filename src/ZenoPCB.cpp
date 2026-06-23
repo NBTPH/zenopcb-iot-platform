@@ -1087,13 +1087,23 @@ namespace ZenoPCB
                     handled = true;
                 }
                 
-#if defined(ESP32)
-                // 5. Control Handler (Modbus write — ESP32-only per Plan 06-03 D-03)
+                // 5. Control Handler — /control topic
+                //
+                // Platform split:
+                //   - ZKey dispatch (Z0..Z254 → ZKeyBuffer → onZKeyChange callbacks)
+                //     runs on EVERY platform. Earlier the entire `/control` block
+                //     was wrapped in `#if defined(ESP32)` because it coupled with
+                //     Modbus write and GET_ALL telemetry, which silently dropped
+                //     every cloud-down ZKey command on ESP8266 / UNO R4 / STM32.
+                //   - Modbus writes + GET_ALL polling stay ESP32-only (Plan 06-03
+                //     D-03 — RegisterPollingEngine is ESP32-only).
                 else if (topic.endsWith("/control")) {
-                    ZENO_LOG_VERBOSE("Routing to MQTTControlHandler");
+                    ZENO_LOG_VERBOSE("Routing /control message");
+
+#if defined(ESP32)
+                    // Full handler on ESP32: ZKey + Modbus writes + GET_ALL
                     MQTTControlHandler &handler = MQTTControlHandler::getInstance();
 
-                    // Set callback for get_all telemetry publishing
                     handler.onGetAllTelemetry([this](const String &telemetryJson) {
                         if (_mqtt && _mqtt->isConnected()) {
                             String telemetryTopic = String("v1/devices/") + _deviceToken + "/telemetry";
@@ -1104,25 +1114,52 @@ namespace ZenoPCB
 
                     ControlMessageResult result = handler.handleMessage(payload);
 
-                    // ⭐ Immediately publish updated Z Key values back so app sees new state right away
-                    // (instead of waiting up to 5s for next periodic publish)
+                    // Immediately publish updated Z Key values back so the app
+                    // sees new state right away (instead of waiting up to 5s for
+                    // the next periodic publish).
                     if (_zKeysEnabled) {
-                        if (_zKeyReadCallback) _zKeyReadCallback(); // refresh all keys first
+                        if (_zKeyReadCallback) _zKeyReadCallback();
                         _publishZKeyTelemetry();
                     }
 
-                    // Centralized ACK for control
                     _publishAck("control", "w", "", result.allSuccess(), 0,
                                 result.allSuccess() ? "" : result.toJson());
 
-                    // Publish detailed response
                     if (_mqtt && _mqtt->isConnected()) {
                         String responseTopic = topic + "/response";
                         _mqtt->publish(responseTopic.c_str(), result.toJson().c_str(), MQTTQoS::QOS_1, false);
                     }
+#else
+                    // Non-ESP32: ZKey-only dispatch. No Modbus / GET_ALL here.
+                    // Mirrors the ZKey path in MQTTControlHandler::handleMessage()
+                    // (src/modbus/MQTTControlHandler.cpp) so ESP8266 / UNO R4 /
+                    // STM32 users get the same ZENO_READ(Zx) → onZKeyChange
+                    // dispatch behaviour as ESP32.
+                    if (_zKeysEnabled) {
+                        JsonDocument doc;
+                        DeserializationError err = deserializeJson(doc, payload);
+                        if (!err) {
+                            uint8_t dispatched = 0;
+                            for (JsonPair kv : doc.as<JsonObject>()) {
+                                const char *mqttKey = kv.key().c_str();
+                                if (isZKey(mqttKey)) {
+                                    ZKey zk = stringToZKey(mqttKey);
+                                    ZKeyBuffer::getInstance().setFromJson(zk, kv.value());
+                                    dispatched++;
+                                    ZENO_LOG_VERBOSE("[/control] ZKey %s dispatched", mqttKey);
+                                }
+                            }
+                            if (dispatched > 0) {
+                                if (_zKeyReadCallback) _zKeyReadCallback();
+                                _publishZKeyTelemetry();
+                            }
+                        } else {
+                            ZENO_LOG_VERBOSE("[/control] JSON parse error: %s", err.c_str());
+                        }
+                    }
+#endif  // ESP32
                     handled = true;
                 }
-#endif  // ESP32 — Control Handler
 
                 if (!handled) {
                     ZENO_LOG_VERBOSE("No handler matched topic: %s", maskTopic(topic).c_str());
