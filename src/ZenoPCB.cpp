@@ -1,7 +1,7 @@
 #include "ZenoPCB.h"
 #include "core/ZenoPCBDebug.h"
 #include "core/ZenoPCBCloud.h"
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only. The inline helpers
+// Plan 06-03 D-03 Modbus subsystem is ESP32-only. The inline helpers
 // (initializeModbusSystem, loadSavedModbusConfigs, loopModbusSystem) and
 // MQTTControlHandler stay out of ESP8266 translation units; every call
 // site below is wrapped in a parallel `#if defined(ESP32) ... #endif`.
@@ -19,16 +19,16 @@ namespace ZenoPCB
 
     // ============================================
     // OTA result NVS persistence (T-4-02 byte-compat: namespace="ota_result",
-    // key="payload"). Buffer size justified in 04-05-AUDIT.md §3.
+    // key="payload"). Buffer size justified in 04-05-AUDIT.md 3.
     // ============================================
     static const size_t OTA_PAYLOAD_BUF_SIZE = 512;
 
     // ============================================
     // Claim-ack callback state (file-scope so PubSubClient::setCallback
-    // can be wired with a non-capturing lambda → plain function pointer).
+    // can be wired with a non-capturing lambda plain function pointer).
     // Capturing lambdas don't convert on strict toolchains (Renesas + STM32
     // g++); ESP32 / ESP8266 cores happen to allow the conversion. The
-    // claim flow is sequential single-threaded — at most one claim cycle
+    // claim flow is sequential single-threaded at most one claim cycle
     // is active at a time, so a single static slot is sufficient.
     // ============================================
     static volatile bool s_claimAckReceived = false;
@@ -148,7 +148,7 @@ namespace ZenoPCB
         return *this;
     }
 
-    // Pattern G (Phase 7 D-06) — fallible captive-portal start. Distinct overload
+    // Pattern G (Phase 7 D-06) fallible captive-portal start. Distinct overload
     // from the builder above; ESP32 + ESP8266 advertise CAP_CAPTIVE_PORTAL so they
     // proceed to delegation, STM32 / UNO R4 (Plan 07-02 / 07-04) leave the bit unset
     // and hit the Unavailable arm with a single warn log.
@@ -156,7 +156,7 @@ namespace ZenoPCB
     {
         if (!(_hal.capabilities() & IZenoHal::CAP_CAPTIVE_PORTAL))
         {
-            ZENO_LOG_CORE("[WARN] WiFi provisioning not available on this platform — capabilities() & CAP_CAPTIVE_PORTAL == 0");
+            ZENO_LOG_CORE("[WARN] WiFi provisioning not available on this platform capabilities() & CAP_CAPTIVE_PORTAL == 0");
             return ZenoCapability::Unavailable;
         }
 
@@ -176,7 +176,7 @@ namespace ZenoPCB
 
         // If begin() has already allocated the WiFiProvisioning instance, request
         // an immediate AP-mode start; otherwise the config above is consumed when
-        // begin() runs. Either way we return OK — the call succeeded in the sense
+        // begin() runs. Either way we return OK the call succeeded in the sense
         // that captive-portal mode has been requested on a supported platform.
 #if !defined(ZENOPCB_DISABLE_PROVISIONING)
         if (_wifiProvisioning != nullptr)
@@ -243,7 +243,7 @@ namespace ZenoPCB
         // skipped the auto-MQTT-config block in setDeviceCredentials(),
         // so the example sketch's `.device(DEVICE_ID, DEVICE_TOKEN).begin()`
         // chain left _mqttClientId, _mqttUsername, _mqttPassword empty
-        // → broker rejected with BAD_CREDENTIALS. Delegate to
+        // broker rejected with BAD_CREDENTIALS. Delegate to
         // setDeviceCredentials() once we have both fields so the fluent
         // chain configures MQTT clientId / username / password the same
         // way the non-fluent setter does.
@@ -313,11 +313,11 @@ namespace ZenoPCB
         return *this;
     }
 
-    // Phase 7 D-27 — pin a PEM-encoded root CA for MQTT TLS. Pattern F silent
+    // Phase 7 D-27 pin a PEM-encoded root CA for MQTT TLS. Pattern F silent
     // no-op when ZENOPCB_ENABLE_TLS is not defined; otherwise the stored pointer
     // is consumed inside _initMQTT() to call WiFiClientSecure::setCACert
     // (ESP32). On ESP8266 BearSSL the call site logs a [WARN] and falls back
-    // to setInsecure — full BearSSL X509List integration deferred (D-27 note).
+    // to setInsecure full BearSSL X509List integration deferred (D-27 note).
     Zeno &Zeno::setRootCA(const char *pemBuffer)
     {
 #ifdef ZENOPCB_ENABLE_TLS
@@ -531,11 +531,11 @@ namespace ZenoPCB
     {
         ZENO_LOG_CORE("Initializing...");
 
-        // ── Wire the HAL into static-pointer storage consumers ────────────
-        // (Plan 04-05) — replaces the nullptr default from plans 04-03/04-04.
+        // Wire the HAL into static-pointer storage consumers 
+        // (Plan 04-05) replaces the nullptr default from plans 04-03/04-04.
         // Must run BEFORE any module that uses storage (LittleFSManager,
         // ScheduleStorage, IrrigationStorage). Order is irrelevant within
-        // this block — they are independent statics.
+        // this block they are independent statics.
 #if !defined(ZENOPCB_DISABLE_SCHEDULE)
         ScheduleStorage::setHal(&_hal);
 #endif
@@ -546,11 +546,11 @@ namespace ZenoPCB
         IrrigationStorage::setHal(&_hal);
 #endif
 
-        // Initialize WiFi Provisioning (cần chạy trước để load DeviceConfig từ NVS)
+        // Initialize WiFi Provisioning (cn chy trc load DeviceConfig t NVS)
         _initProvisioning();
 
 #if !defined(ZENOPCB_DISABLE_PROVISIONING)
-        // ── Chọn connection mode dựa trên config đã lưu trong NVS ─────────────
+        // Chn connection mode da trn config lu trong NVS 
         if (_wifiProvisioning && _wifiProvisioning->isConfigured())
         {
             DeviceConfig savedCfg = getConfig();
@@ -558,8 +558,8 @@ namespace ZenoPCB
 
             if (savedConn == ConnectionType::WIFI && _networkProvider)
             {
-                // User đã chọn WiFi qua app → disable external provider, dùng WiFi
-                ZENO_LOG_CORE("📡 Saved connectionType=WIFI → Disabling %s provider, switching to WiFi",
+                // User chn WiFi qua app disable external provider, dng WiFi
+                ZENO_LOG_CORE("Saved connectionType=WIFI Disabling %s provider, switching to WiFi",
                               _networkProvider->getName());
                 _networkProvider = nullptr;
                 _actualConnectionType = "WIFI"; // Track actual connection
@@ -569,31 +569,31 @@ namespace ZenoPCB
             }
             else if (savedConn == ConnectionType::CELLULAR && _registeredNetworkProvider)
             {
-                // User đã chọn Cellular → đảm bảo dùng network provider
+                // User chn Cellular m bo dng network provider
                 _networkProvider = _registeredNetworkProvider;
                 _actualConnectionType = "4G"; // Track actual connection
-                ZENO_LOG_CORE("📡 Saved connectionType=CELLULAR → Using %s provider",
+                ZENO_LOG_CORE("Saved connectionType=CELLULAR Using %s provider",
                               _networkProvider->getName());
             }
             else if (savedConn == ConnectionType::ETHERNET && _registeredNetworkProvider)
             {
-                // User đã chọn Ethernet → dùng network provider
+                // User chn Ethernet dng network provider
                 _networkProvider = _registeredNetworkProvider;
                 _actualConnectionType = "ETHERNET"; // Track actual connection
-                ZENO_LOG_CORE("📡 Saved connectionType=ETHERNET → Using %s provider",
+                ZENO_LOG_CORE("Saved connectionType=ETHERNET Using %s provider",
                               _networkProvider->getName());
             }
             else
             {
                 // Fallback: default to WiFi if no provider
                 _actualConnectionType = _networkProvider ? "ETHERNET" : "WIFI";
-                ZENO_LOG_CORE("📡 Saved connectionType=%d → Using default provider",
+                ZENO_LOG_CORE("Saved connectionType=%d Using default provider",
                               (int)savedConn);
             }
         }
 #endif // !ZENOPCB_DISABLE_PROVISIONING
 
-        // ── Khởi tạo Network Provider nếu được cấu hình ──────────────────────
+        // Khi to Network Provider nu c cu hnh 
         if (_networkProvider)
         {
 #if !defined(ZENOPCB_DISABLE_PROVISIONING)
@@ -607,7 +607,7 @@ namespace ZenoPCB
             bool provOK = _networkProvider->begin(cfg);
             if (!provOK)
             {
-                ZENO_LOG_CORE("⚠️ NetworkProvider(%s)::begin() failed", _networkProvider->getName());
+                ZENO_LOG_CORE("NetworkProvider(%s)::begin() failed", _networkProvider->getName());
             }
         }
 
@@ -636,9 +636,9 @@ namespace ZenoPCB
         _initOTA();
 
 #if defined(ESP32)
-        // ⭐ Initialize Modbus system (ESP32-only per Plan 06-03 D-03)
+        // Initialize Modbus system (ESP32-only per Plan 06-03 D-03)
         //
-        // Gate 2026-06-06: Modbus is the gateway-class feature — only
+        // Gate 2026-06-06: Modbus is the gateway-class feature only
         // useful when the device persists connection configs + register
         // configs (i.e. it actually has Modbus slaves to poll). Tie the
         // init to those storage flags so a generic ESP32 example sketch
@@ -646,28 +646,28 @@ namespace ZenoPCB
         // subsystem init + serial noise. ZMG / ZF / ZenoRTU production
         // firmware already calls `.enableStorage()` and
         // `.enableDataMonitorStorage()`, so this gate is backward-
-        // compatible for those entry points — no src/main.cpp change.
+        // compatible for those entry points no src/main.cpp change.
         if (_storageEnabled || _dataMonitorStorageEnabled)
         {
             ZENO_LOG_CORE("Initializing Modbus System...");
             if (initializeModbusSystem())
             {
-                ZENO_LOG_CORE("✅ Modbus system initialized");
+                ZENO_LOG_CORE("Modbus system initialized");
 
-                // ⭐ Load saved configs from LittleFS
+                // Load saved configs from LittleFS
                 size_t loaded = loadSavedModbusConfigs();
                 if (loaded > 0)
                 {
-                    ZENO_LOG_CORE("✅ Loaded %d saved Modbus configs", loaded);
+                    ZENO_LOG_CORE("Loaded %d saved Modbus configs", loaded);
                 }
                 else
                 {
-                    ZENO_LOG_CORE("ℹ️ No saved Modbus configs found");
+                    ZENO_LOG_CORE("No saved Modbus configs found");
                 }
             }
             else
             {
-                ZENO_LOG_CORE("⚠️ Modbus system initialization failed");
+                ZENO_LOG_CORE("Modbus system initialization failed");
             }
         }
 #endif  // ESP32
@@ -675,14 +675,14 @@ namespace ZenoPCB
         // If WiFi credentials provided directly, use them
         // Pattern H TU gate: WiFi.mode() + WIFI_STA enum are ESP-specific.
         // UNO R4 (CWifi) and STM32 (WiFiEspAT) expose neither; the body is
-        // a no-op on those platforms — the network provider abstraction is
+        // a no-op on those platforms the network provider abstraction is
         // expected to drive connectivity via setNetworkProvider() instead.
 #if defined(ESP32) || defined(ESP8266)
         if (_wifiConfigured && _wifiSSID.length() > 0)
         {
             // Library-standard always-on connect status (matches the
             // [MQTT] connected / not connected pattern). SSID is local
-            // network identity, not a credential — safe to print.
+            // network identity, not a credential safe to print.
             ZENOPCB_PRINTF("[WiFi] connecting to %s\n", _wifiSSID.c_str());
             WiFi.mode(WIFI_STA);
             WiFi.begin(_wifiSSID.c_str(), _wifiPassword.c_str());
@@ -714,7 +714,7 @@ namespace ZenoPCB
             }
             else
             {
-                // Always-on failure log — symmetric with [WiFi] connected.
+                // Always-on failure log symmetric with [WiFi] connected.
                 ZENOPCB_PRINTF("\n[WiFi] not connected\n");
                 _setState(ZenoState::DISCONNECTED);
             }
@@ -744,7 +744,7 @@ namespace ZenoPCB
 
         // ============================================
         // Setup UNIFIED MQTT onConnected Callback
-        // ⚠️ MUST be LAST to avoid overwrite by individual modules
+        // MUST be LAST to avoid overwrite by individual modules
         // ============================================
         ZENO_LOG_VERBOSE("Checking MQTT: ptr=%s enabled=%s",
                          _mqtt ? "SET" : "NULL",
@@ -814,13 +814,13 @@ namespace ZenoPCB
                 }
 
                 // ========================================
-                // 3.1. Time Sync — needed for schedules, diagnostics, timestamps
+                // 3.1. Time Sync needed for schedules, diagnostics, timestamps
                 // ========================================
                 if (!TimeManager::isSynced()) {
                     bool synced = false;
 
                     // Try provider-specific time sync first (4G: reads AT+CCLK? / NITZ)
-                    // configTime()/SNTP only works over WiFi/Ethernet — not 4G
+                    // configTime()/SNTP only works over WiFi/Ethernet not 4G
                     if (_networkProvider) {
                         synced = _networkProvider->syncTime();
                     }
@@ -828,11 +828,11 @@ namespace ZenoPCB
                     if (!synced) {
                         // Fallback: ESP32 SNTP (works for WiFi/Ethernet)
                         TimeManager::syncNTP();
-                        ZENO_LOG_CORE("⏰ NTP sync initiated via SNTP (non-blocking, check in loop)");
+                        ZENO_LOG_CORE("NTP sync initiated via SNTP (non-blocking, check in loop)");
                         _ntpSyncPending = true;
                         _ntpSyncStartMs = millis();
                     } else {
-                        ZENO_LOG_CORE("⏰ Time synced via network provider");
+                        ZENO_LOG_CORE("Time synced via network provider");
                     }
                 } else {
                     time_t now = TimeManager::getUTC();
@@ -875,14 +875,14 @@ namespace ZenoPCB
                 if (_otaEnabled && _pendingOTAErrorPayload.length() > 0) {
                     String respTopic = "v1/devices/" + _deviceToken + "/ota/response";
                     _mqtt->publish(respTopic.c_str(), _pendingOTAErrorPayload.c_str(), MQTTQoS::QOS_1, false);
-                    ZENO_LOG_OTA("📤 Flushed pending OTA error response: %s", _pendingOTAErrorPayload.c_str());
+                    ZENO_LOG_OTA("Flushed pending OTA error response: %s", _pendingOTAErrorPayload.c_str());
                     _pendingOTAErrorPayload = "";
                 }
 
                 // ========================================
                 // 3.9. Flush pending OTA completed (saved to NVS before reboot)
-                // 4G blocking OTA: MQTT was closed during OTA → result saved to NVS
-                // → After reboot + MQTT reconnect → publish here
+                // 4G blocking OTA: MQTT was closed during OTA result saved to NVS
+                // After reboot + MQTT reconnect publish here
                 // ========================================
                 if (_otaEnabled) {
                     // T-4-02: namespace "ota_result" + key "payload" preserved byte-for-byte.
@@ -892,10 +892,10 @@ namespace ZenoPCB
                         _hal.nvs().end();
                         String savedPayload(payloadBuf);
                         if (savedPayload.length() > 0) {
-                            ZENO_LOG_OTA("📦 Found pending OTA result in NVS (%d bytes)", savedPayload.length());
+                            ZENO_LOG_OTA("Found pending OTA result in NVS (%d bytes)", savedPayload.length());
                             String respTopic = "v1/devices/" + _deviceToken + "/ota/response";
 
-                            // Retry publish up to 3 times — 4G TCP may not be ready immediately
+                            // Retry publish up to 3 times 4G TCP may not be ready immediately
                             bool published = false;
                             for (int attempt = 0; attempt < 3 && !published; attempt++) {
                                 if (attempt > 0) {
@@ -903,7 +903,7 @@ namespace ZenoPCB
                                     _mqtt->loop(); // Process TCP buffer
                                 }
                                 published = _mqtt->publish(respTopic.c_str(), savedPayload.c_str(), MQTTQoS::QOS_1, false);
-                                ZENO_LOG_OTA("📤 OTA result publish attempt %d: %s", attempt + 1, published ? "OK" : "FAILED");
+                                ZENO_LOG_OTA("OTA result publish attempt %d: %s", attempt + 1, published ? "OK" : "FAILED");
                             }
 
                             if (published) {
@@ -912,9 +912,9 @@ namespace ZenoPCB
                                 _hal.nvs().begin("ota_result", false);
                                 _hal.nvs().clear();
                                 _hal.nvs().end();
-                                ZENO_LOG_OTA("✅ OTA result published & NVS cleared");
+                                ZENO_LOG_OTA("OTA result published & NVS cleared");
                             } else {
-                                ZENO_LOG_OTA("⚠️ OTA result publish failed — will retry next reconnect");
+                                ZENO_LOG_OTA("OTA result publish failed will retry next reconnect");
                             }
                         }
                     } else {
@@ -924,7 +924,7 @@ namespace ZenoPCB
 
 #if !defined(ZENOPCB_DISABLE_PROVISIONING)
                 // ========================================
-                // 3.10. Deferred claim — for 4G/Ethernet devices that had
+                // 3.10. Deferred claim for 4G/Ethernet devices that had
                 // no WiFi available during provisioning AP mode.
                 // If isClaimed=false but userId is set, publish claim
                 // via the already-connected MQTT session.
@@ -934,13 +934,13 @@ namespace ZenoPCB
                     DeviceConfig cfg = _wifiProvisioning->getConfig();
                     if (!cfg.isClaimed && cfg.userId.length() > 0 && cfg.deviceId.length() > 0)
                     {
-                        ZENO_LOG_CORE("🔑 [3.10] Deferred claim: isClaimed=false, attempting via MQTT...");
-                        ZENO_LOG_CORE("   userId: %s...", cfg.userId.substring(0, 8).c_str());
+                        ZENO_LOG_CORE("[3.10] Deferred claim: isClaimed=false, attempting via MQTT...");
+                        ZENO_LOG_CORE("userId: %s...", cfg.userId.substring(0, 8).c_str());
 
                         // Subscribe to claim ack topic BEFORE publishing
                         String claimAckTopic = "v1/devices/" + String(_deviceToken) + "/claim/ack";
                         _mqtt->subscribe(claimAckTopic.c_str(), MQTTQoS::QOS_1);
-                        ZENO_LOG_CORE("   Subscribed: %s", maskTopic(claimAckTopic).c_str());
+                        ZENO_LOG_CORE("Subscribed: %s", maskTopic(claimAckTopic).c_str());
 
                         // Build & publish claim payload
                         JsonDocument claimDoc;
@@ -952,7 +952,7 @@ namespace ZenoPCB
 
                         String claimTopic = "v1/devices/" + String(_deviceToken) + "/claim";
                         bool pubOK = _mqtt->publish(claimTopic.c_str(), claimPayload.c_str(), MQTTQoS::QOS_1, false);
-                        ZENO_LOG_CORE("   Published claim: %s (ok=%d)", maskTopic(claimTopic).c_str(), pubOK);
+                        ZENO_LOG_CORE("Published claim: %s (ok=%d)", maskTopic(claimTopic).c_str(), pubOK);
                         // Ack is handled in onMessage routing (claim/ack topic)
                     }
                 }
@@ -968,7 +968,7 @@ namespace ZenoPCB
                 }
 
                 // ========================================
-                // 5. Reset ZKey publish timer — stabilization delay
+                // 5. Reset ZKey publish timer stabilization delay
                 // On 4G, publishing immediately after connect causes TCP
                 // buffer overflow (too many AT+CIPSEND in quick succession).
                 // Resetting the timer gives ZenoPubSubClient 1-2 loop() cycles
@@ -986,7 +986,7 @@ namespace ZenoPCB
 
             // ============================================
             // Setup UNIFIED MQTT onMessage Callback
-            // ⚠️ MUST handle ALL message routing in ONE place
+            // MUST handle ALL message routing in ONE place
             // ============================================
             ZENO_LOG_VERBOSE("Setting up unified MQTT onMessage callback...");
             _mqtt->onMessage([this](const String &topic, const String &payload)
@@ -1007,7 +1007,7 @@ namespace ZenoPCB
                 // 1.5. Deferred claim ack handler
                 else if (topic.endsWith("/claim/ack") && _wifiProvisioning)
                 {
-                    ZENO_LOG_CORE("📋 Deferred claim ack received: %s", payload.c_str());
+                    ZENO_LOG_CORE("Deferred claim ack received: %s", payload.c_str());
                     bool claimSuccess = false;
                     JsonDocument ackDoc;
                     DeserializationError err = deserializeJson(ackDoc, payload);
@@ -1017,19 +1017,19 @@ namespace ZenoPCB
                     }
                     else
                     {
-                        claimSuccess = true; // No 'success' field → treat as OK
+                        claimSuccess = true; // No 'success' field treat as OK
                     }
 
                     if (claimSuccess)
                     {
-                        ZENO_LOG_CORE("✅ Deferred claim succeeded — marking device as claimed");
+                        ZENO_LOG_CORE("Deferred claim succeeded marking device as claimed");
                         _wifiProvisioning->markClaimed();
                     }
                     else
                     {
-                        ZENO_LOG_CORE("❌ Deferred claim rejected by server");
+                        ZENO_LOG_CORE("Deferred claim rejected by server");
                     }
-                    // Unsubscribe from claim/ack — no longer needed
+                    // Unsubscribe from claim/ack no longer needed
                     String claimAckTopic = "v1/devices/" + String(_deviceToken) + "/claim/ack";
                     _mqtt->unsubscribe(claimAckTopic.c_str());
                     handled = true;
@@ -1049,7 +1049,7 @@ namespace ZenoPCB
                     handled = true;
                 }
                 
-                // 3.5. (V3: routing moved after /alarm/config — see 4.7)
+                // 3.5. (V3: routing moved after /alarm/config see 4.7)
                 
                 // 4. Diagnostics Request Handler
                 else if (topic.endsWith("/diagnostics/request")) {
@@ -1066,10 +1066,10 @@ namespace ZenoPCB
                 }
                 
 #if defined(ESP32)
-                // 4.7. Irrigation Config Handler (V3: shared /config topic) — ESP32-only (D-03)
+                // 4.7. Irrigation Config Handler (V3: shared /config topic) ESP32-only (D-03)
                 // Must come AFTER /alarm/config check (which also endsWith /config)
                 else if (_irrigationEnabled && topic.endsWith("/config")) {
-                    // Shared /config topic — verify type field
+                    // Shared /config topic verify type field
                     JsonDocument typeDoc;
                     DeserializationError typeErr = deserializeJson(typeDoc, payload);
                     if (!typeErr) {
@@ -1090,16 +1090,16 @@ namespace ZenoPCB
                     handled = true;
                 }
                 
-                // 5. Control Handler — /control topic
+                // 5. Control Handler /control topic
                 //
                 // Platform split:
-                //   - ZKey dispatch (Z0..Z254 → ZKeyBuffer → onZKeyChange callbacks)
-                //     runs on EVERY platform. Earlier the entire `/control` block
-                //     was wrapped in `#if defined(ESP32)` because it coupled with
-                //     Modbus write and GET_ALL telemetry, which silently dropped
-                //     every cloud-down ZKey command on ESP8266 / UNO R4 / STM32.
-                //   - Modbus writes + GET_ALL polling stay ESP32-only (Plan 06-03
-                //     D-03 — RegisterPollingEngine is ESP32-only).
+                // - ZKey dispatch (Z0..Z254 ZKeyBuffer onZKeyChange callbacks)
+                // runs on EVERY platform. Earlier the entire `/control` block
+                // was wrapped in `#if defined(ESP32)` because it coupled with
+                // Modbus write and GET_ALL telemetry, which silently dropped
+                // every cloud-down ZKey command on ESP8266 / UNO R4 / STM32.
+                // - Modbus writes + GET_ALL polling stay ESP32-only (Plan 06-03
+                // D-03 RegisterPollingEngine is ESP32-only).
                 else if (topic.endsWith("/control")) {
                     ZENO_LOG_VERBOSE("Routing /control message");
 
@@ -1136,7 +1136,7 @@ namespace ZenoPCB
                     // Non-ESP32: ZKey-only dispatch. No Modbus / GET_ALL here.
                     // Mirrors the ZKey path in MQTTControlHandler::handleMessage()
                     // (src/modbus/MQTTControlHandler.cpp) so ESP8266 / UNO R4 /
-                    // STM32 users get the same ZENO_READ(Zx) → onZKeyChange
+                    // STM32 users get the same ZENO_READ(Zx) onZKeyChange
                     // dispatch behaviour as ESP32.
                     if (_zKeysEnabled) {
                         JsonDocument doc;
@@ -1184,17 +1184,17 @@ namespace ZenoPCB
 
     void Zeno::loop()
     {
-        // ── AP mode guard: compute once per loop ─────────────────────────────
+        // AP mode guard: compute once per loop 
         // Without this, ZenoPCBDiagnostics::loop() and other subsystems call
-        // isConnected() / publish() → TinyGsmClient AT commands → blocks 1-3s per
-        // iteration → starves _wifiProvisioning->loop() (handleClient) → mobile scan fails.
+        // isConnected() / publish() TinyGsmClient AT commands blocks 1-3s per
+        // iteration starves _wifiProvisioning->loop() (handleClient) mobile scan fails.
 #if defined(ZENOPCB_DISABLE_PROVISIONING)
         const bool apActive = false; // Provisioning subsystem disabled at compile time
 #else
         const bool apActive = _wifiProvisioning && _wifiProvisioning->isAPMode();
 #endif
 
-        // ── 4G OTA Serial2 guard: block MQTT/Network AT commands during OTA on 4G ──
+        // 4G OTA Serial2 guard: block MQTT/Network AT commands during OTA on 4G 
         // On 4G, Serial2 is shared: MQTT (AT+CIPSEND mux 0) + OTA (AT+CIPRXGET mux 1)
         // AT interleaving corrupts data or drops connections. WiFi/ETH are safe.
         const bool otaActive = isOTAInProgress();
@@ -1202,7 +1202,7 @@ namespace ZenoPCB
                                      strcmp(_networkProvider->getName(), "4G") == 0;
 
 #if !defined(ZENOPCB_DISABLE_PROVISIONING)
-        // ── Pause network provider when AP mode is active ─────────────────────
+        // Pause network provider when AP mode is active 
         // 4G/Ethernet reconnection blocks CPU for 15-30s, starving WebServer
         if (_networkProvider && _wifiProvisioning)
         {
@@ -1210,13 +1210,13 @@ namespace ZenoPCB
             {
                 _networkProvider->setPaused(apActive);
                 ZENO_LOG_CORE("%s network provider (AP mode %s)",
-                              apActive ? "⏸️ Pausing" : "▶️ Resuming",
+                              apActive ? "Pausing" : "Resuming",
                               apActive ? "active" : "ended");
             }
         }
 #endif // !ZENOPCB_DISABLE_PROVISIONING
 
-        // ── Network Provider maintenance (block on 4G during OTA — AT cmd conflicts) ──
+        // Network Provider maintenance (block on 4G during OTA AT cmd conflicts) 
         if (_networkProvider && !otaBlockSerial2)
         {
             _networkProvider->loop();
@@ -1229,17 +1229,17 @@ namespace ZenoPCB
             // Case 1: Provider just connected
             if (provNowConnected && !_provWasConnected)
             {
-                ZENO_LOG_CORE("🔗 %s connected — IP: %s",
+                ZENO_LOG_CORE("%s connected IP: %s",
                               _networkProvider->getName(), _networkProvider->getLocalIP().c_str());
                 _setState(ZenoState::CONNECTED);
                 if (_connectedCallback)
                     _connectedCallback();
 
-                // ⚠️ FIX: Give modem TCP/DNS stack time to stabilize after GPRS attach
+                // FIX: Give modem TCP/DNS stack time to stabilize after GPRS attach
                 // A7680C/SIM7600 modems need 2-5s after GPRS before TCP works reliably
                 if (strcmp(_networkProvider->getName(), "4G") == 0)
                 {
-                    ZENO_LOG_CORE("⏳ Waiting 3s for modem TCP stack stability...");
+                    ZENO_LOG_CORE("Waiting 3s for modem TCP stack stability...");
                     delay(3000);
                 }
 
@@ -1249,7 +1249,7 @@ namespace ZenoPCB
                     _mqtt->setClient(provCurrentClient);
                     _mqtt->setNetworkCheck([this]()
                                            { return _networkProvider && _networkProvider->isConnected() && !isAPMode(); });
-                    // Only connect when DISCONNECTED (idle) — không call khi đang RECONNECTING/ERROR
+                    // Only connect when DISCONNECTED (idle) khng call khi ang RECONNECTING/ERROR
                     if (_mqtt->needsManualConnect())
                         _mqtt->connect();
                 }
@@ -1257,14 +1257,14 @@ namespace ZenoPCB
             // Case 2: Provider client switched (MultiConnect failover)
             else if (provNowConnected && provCurrentClient != _provLastClient && _provLastClient != nullptr)
             {
-                ZENO_LOG_CORE("🔄 Provider failover — now: %s (IP: %s)",
+                ZENO_LOG_CORE("Provider failover now: %s (IP: %s)",
                               _networkProvider->getName(), _networkProvider->getLocalIP().c_str());
                 if (_mqtt && _mqttEnabled)
                 {
                     _mqtt->setClient(provCurrentClient);
                     _mqtt->setNetworkCheck([this]()
                                            { return _networkProvider && _networkProvider->isConnected() && !isAPMode(); });
-                    // Only connect when DISCONNECTED (idle) — không call khi đang RECONNECTING/ERROR
+                    // Only connect when DISCONNECTED (idle) khng call khi ang RECONNECTING/ERROR
                     if (_mqtt->needsManualConnect())
                         _mqtt->connect();
                 }
@@ -1272,14 +1272,14 @@ namespace ZenoPCB
             // Case 3: Provider disconnected
             else if (!provNowConnected && _provWasConnected)
             {
-                ZENO_LOG_CORE("🔗 %s connection lost", _networkProvider->getName());
+                ZENO_LOG_CORE("%s connection lost", _networkProvider->getName());
                 _setState(ZenoState::DISCONNECTED);
 
-                // ⭐ Force disconnect MQTT — network already dead, can't send packets
-                // Broker will detect via keepalive timeout (1.5 × keepAlive)
+                // Force disconnect MQTT network already dead, can't send packets
+                // Broker will detect via keepalive timeout (1.5 keepAlive)
                 if (_mqtt && _mqttEnabled)
                 {
-                    ZENO_LOG_CORE("🔌 Force disconnecting MQTT (network lost)");
+                    ZENO_LOG_CORE("Force disconnecting MQTT (network lost)");
                     _mqtt->forceDisconnect();
                 }
 
@@ -1298,7 +1298,7 @@ namespace ZenoPCB
             _wifiProvisioning->loop();
 
             // Update state based on WiFi provisioning state
-            // ⚠️ Only check WiFi state when NOT using external network provider (4G/Ethernet)
+            // Only check WiFi state when NOT using external network provider (4G/Ethernet)
             // External providers manage their own connection state
             if (!_networkProvider)
             {
@@ -1307,7 +1307,7 @@ namespace ZenoPCB
                     // State transition: set CONNECTED once
                     if (_state != ZenoState::CONNECTED)
                     {
-                        ZENO_LOG_CORE("📶 WiFi connected, triggering state change...");
+                        ZENO_LOG_CORE("WiFi connected, triggering state change...");
                         _setState(ZenoState::CONNECTED);
                         if (_connectedCallback)
                         {
@@ -1315,23 +1315,23 @@ namespace ZenoPCB
                         }
                     }
 
-                    // Connect MQTT khi WiFi up và MQTT ở trạng thái DISCONNECTED (idle)
-                    // KHÔNG gọi connect() khi đang RECONNECTING/ERROR (MQTTClient tự retry với backoff)
+                    // Connect MQTT khi WiFi up v MQTT trng thi DISCONNECTED (idle)
+                    // KHNG gi connect() khi ang RECONNECTING/ERROR (MQTTClient t retry vi backoff)
                     if (_mqtt && _mqttEnabled && _mqtt->needsManualConnect())
                     {
-                        ZENO_LOG_CORE("🔌 Attempting MQTT connect...");
+                        ZENO_LOG_CORE("Attempting MQTT connect...");
                         bool result = _mqtt->connect();
-                        ZENO_LOG_CORE("🔌 MQTT connect result: %s", result ? "SUCCESS" : "FAILED");
+                        ZENO_LOG_CORE("MQTT connect result: %s", result ? "SUCCESS" : "FAILED");
                     }
                 }
                 else if (!_wifiProvisioning->isWiFiConnected() && _state == ZenoState::CONNECTED)
                 {
                     _setState(ZenoState::DISCONNECTED);
 
-                    // ⭐ Force disconnect MQTT — WiFi already dead, can't send packets
+                    // Force disconnect MQTT WiFi already dead, can't send packets
                     if (_mqtt && _mqttEnabled)
                     {
-                        ZENO_LOG_CORE("🔌 Force disconnecting MQTT (WiFi lost)");
+                        ZENO_LOG_CORE("Force disconnecting MQTT (WiFi lost)");
                         _mqtt->forceDisconnect();
                     }
 
@@ -1342,10 +1342,10 @@ namespace ZenoPCB
                 }
             }
 
-            // ⭐ LED Status Indicator
-            // AP mode         → 50ms  (fast blink: provisioning mode)
-            // No MQTT         → 200ms  (fast blink: not connected)
-            // MQTT connected  → 1000ms (slow blink: all OK)
+            // LED Status Indicator
+            // AP mode 50ms (fast blink: provisioning mode)
+            // No MQTT 200ms (fast blink: not connected)
+            // MQTT connected 1000ms (slow blink: all OK)
             if (_provConfig.ledPin >= 0)
             {
                 bool apMode = _wifiProvisioning->isAPMode();
@@ -1356,7 +1356,7 @@ namespace ZenoPCB
                 static bool _lastApMode = false;
                 if (mqttOk != _lastMqttOk || apMode != _lastApMode)
                 {
-                    ZENO_LOG_CORE("💡 LED: apMode=%s mqttOk=%s (_mqtt=%s) → %sms",
+                    ZENO_LOG_CORE("LED: apMode=%s mqttOk=%s (_mqtt=%s) %sms",
                                   apMode ? "Y" : "N", mqttOk ? "Y" : "N",
                                   _mqtt ? "exists" : "NULL",
                                   apMode ? "50" : mqttOk ? "1000"
@@ -1375,7 +1375,7 @@ namespace ZenoPCB
         {
             // Simple WiFi monitoring when not using provisioning.
             // Pattern H gate: STM32F4 default-Ethernet has no WiFi.h so
-            // status polling is skipped — provider abstraction is mandatory.
+            // status polling is skipped provider abstraction is mandatory.
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             static bool wasConnected = false;
             bool isNowConnected = WiFi.status() == WL_CONNECTED;
@@ -1389,7 +1389,7 @@ namespace ZenoPCB
                 }
 
                 // Connect MQTT when WiFi becomes connected
-                // Only connect when DISCONNECTED (idle) — không call khi đang RECONNECTING/ERROR
+                // Only connect when DISCONNECTED (idle) khng call khi ang RECONNECTING/ERROR
                 if (_mqtt && _mqttEnabled && _mqtt->needsManualConnect())
                 {
                     _mqtt->connect();
@@ -1404,28 +1404,28 @@ namespace ZenoPCB
                 }
             }
             wasConnected = isNowConnected;
-#endif // ESP32 || ESP8266 || ARDUINO_UNOR4_WIFI || STM32F1 — WiFi.status monitoring
+#endif // ESP32 || ESP8266 || ARDUINO_UNOR4_WIFI || STM32F1 WiFi.status monitoring
         }
-#endif // !ZENOPCB_DISABLE_PROVISIONING — entire `if (_wifiProvisioning)…else…` block
+#endif // !ZENOPCB_DISABLE_PROVISIONING entire `if (_wifiProvisioning)else` block
 
-        // Process MQTT (block on 4G during OTA — AT+CIPSEND conflicts with AT+CIPRXGET)
+        // Process MQTT (block on 4G during OTA AT+CIPSEND conflicts with AT+CIPRXGET)
         if (_mqtt && _mqttEnabled && !otaBlockSerial2)
         {
             _mqtt->loop();
         }
 
 #if defined(ESP32)
-        // ⭐ Process Modbus system + MQTTControlHandler (runs during OTA — RTU=Serial1, TCP=Ethernet)
+        // Process Modbus system + MQTTControlHandler (runs during OTA RTU=Serial1, TCP=Ethernet)
         // ESP32-only per Plan 06-03 D-03 (Modbus subsystem stripped on ESP8266).
         if (!apActive)
         {
             loopModbusSystem();
-            // processGetAll: MQTT publish sẽ tự fail nếu MQTT disconnected
+            // processGetAll: MQTT publish s t fail nu MQTT disconnected
             MQTTControlHandler::getInstance().processGetAll();
         }
 #endif  // ESP32
 
-        // ⭐ Non-blocking NTP sync check
+        // Non-blocking NTP sync check
         if (_ntpSyncPending)
         {
             if (TimeManager::isSynced())
@@ -1434,21 +1434,21 @@ namespace ZenoPCB
                 time_t now = TimeManager::getUTC();
                 struct tm timeinfo;
                 gmtime_r(&now, &timeinfo);
-                ZENO_LOG_CORE("✅ NTP synced! UTC: %04d-%02d-%02d %02d:%02d:%02d (took %lums)",
+                ZENO_LOG_CORE("NTP synced! UTC: %04d-%02d-%02d %02d:%02d:%02d (took %lums)",
                               timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
                               timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec,
                               millis() - _ntpSyncStartMs);
             }
             else if (millis() - _ntpSyncStartMs > 60000)
             {
-                // Give up after 60s — will retry on next MQTT reconnect
+                // Give up after 60s will retry on next MQTT reconnect
                 _ntpSyncPending = false;
-                ZENO_LOG_CORE("⚠️ NTP sync timeout after 60s (will retry on reconnect)");
+                ZENO_LOG_CORE("NTP sync timeout after 60s (will retry on reconnect)");
             }
         }
 
 #if !defined(ZENOPCB_DISABLE_SCHEDULE)
-        // ⭐ Process Schedule Executor (runs during OTA — local timer + GPIO, no Serial2)
+        // Process Schedule Executor (runs during OTA local timer + GPIO, no Serial2)
         // Outer throttle 50ms (just to avoid calling every single loop tick)
         // Inner intervalElapsed() handles the actual precise timing per schedule
         if (!apActive && _scheduleExecutor && _scheduleEnabled)
@@ -1463,7 +1463,7 @@ namespace ZenoPCB
 #endif // !ZENOPCB_DISABLE_SCHEDULE
 
 #if defined(ESP32)
-        // ⭐ Process Irrigation module (scheduler time-checking + executor state machine)
+        // Process Irrigation module (scheduler time-checking + executor state machine)
         // ESP32-only per Plan 06-03 D-03.
         if (!apActive && _irrigationEnabled)
         {
@@ -1483,7 +1483,7 @@ namespace ZenoPCB
 #endif  // ESP32
 
 #if !defined(ZENOPCB_DISABLE_DIAGNOSTICS)
-        // ⭐ Process Diagnostics (runs during OTA — uses cached connection state)
+        // Process Diagnostics (runs during OTA uses cached connection state)
         if (!apActive && _diagnostics && _diagnosticsEnabled)
         {
             _diagnostics->loop();
@@ -1491,13 +1491,13 @@ namespace ZenoPCB
 #endif // !ZENOPCB_DISABLE_DIAGNOSTICS
 
 #if !defined(ZENOPCB_DISABLE_OTA)
-        // ⭐ Process deferred OTA start (tách khỏi MQTT callback → tránh block keepalive)
+        // Process deferred OTA start (tch khi MQTT callback trnh block keepalive)
         if (!apActive && _ota && _otaEnabled && _pendingOTAStart)
         {
             _pendingOTAStart = false;
-            ZENO_LOG_CORE("🚀 Starting deferred OTA: %s", maskUrl(_pendingOTAUrl).c_str());
+            ZENO_LOG_CORE("Starting deferred OTA: %s", maskUrl(_pendingOTAUrl).c_str());
 
-            // Refresh OTA client (có thể đã đổi sau failover)
+            // Refresh OTA client (c th i sau failover)
             if (_networkProvider)
             {
                 Client *provOTAClient = _networkProvider->getOTAClient();
@@ -1510,12 +1510,12 @@ namespace ZenoPCB
             // Record OTA start time
             _otaStartTimeMs = millis();
 
-            // Non-blocking OTA cho TẤT CẢ networks (kể cả 4G)
-            // Mọi subsystem vẫn chạy bình thường — thử nghiệm no-block mode
+            // Non-blocking OTA cho TT C networks (k c 4G)
+            // Mi subsystem vn chy bnh thng th nghim no-block mode
             bool started = _ota->beginUpdate(_pendingOTAUrl.c_str());
             if (!started)
             {
-                ZENO_LOG_CORE("❌ OTA failed to start");
+                ZENO_LOG_CORE("OTA failed to start");
                 _lastFailedOTAPayload = _pendingOTAPayload;
                 _lastFailedOTATime = millis();
                 _otaStartTimeMs = 0;
@@ -1523,14 +1523,14 @@ namespace ZenoPCB
             else
             {
                 _lastFailedOTAPayload = "";
-                ZENO_LOG_CORE("⏱️ OTA started — timer running");
+                ZENO_LOG_CORE("OTA started timer running");
 
-                // ⭐ 4G: Enable MQTT queue mode — messages queued, flushed at yield points
+                // 4G: Enable MQTT queue mode messages queued, flushed at yield points
                 bool is4G = _networkProvider && strcmp(_networkProvider->getName(), "4G") == 0;
                 if (is4G)
                 {
                     _mqttQueueEnabled = true;
-                    ZENO_LOG_OTA("📦 4G OTA: MQTT queue mode ENABLED — messages will be flushed at yield points");
+                    ZENO_LOG_OTA("4G OTA: MQTT queue mode ENABLED messages will be flushed at yield points");
                 }
             }
 
@@ -1540,7 +1540,7 @@ namespace ZenoPCB
             _pendingOTAPayload = "";
         }
 
-        // ⭐ Process OTA non-blocking mode (skip during AP)
+        // Process OTA non-blocking mode (skip during AP)
         if (!apActive && _ota && _otaEnabled && _ota->isInProgress())
         {
             _ota->loop();
@@ -1571,21 +1571,21 @@ namespace ZenoPCB
                 }
             }
         }
-        // else // Tắt debug này - quá verbose
+        // else // Tt debug ny - qu verbose
         // {
-        //     static unsigned long lastDiagDebug = 0;
-        //     if (millis() - lastDiagDebug > 60000) // Every 60 seconds
-        //     {
-        //         lastDiagDebug = millis();
-        //         ZENO_LOG_CORE("[MAIN-LOOP] Diagnostics NOT running: ptr=%p, enabled=%d",
-        //                       _diagnostics,
-        //                       _diagnosticsEnabled);
-        //     }
+        // static unsigned long lastDiagDebug = 0;
+        // if (millis() - lastDiagDebug > 60000) // Every 60 seconds
+        // {
+        // lastDiagDebug = millis();
+        // ZENO_LOG_CORE("[MAIN-LOOP] Diagnostics NOT running: ptr=%p, enabled=%d",
+        // _diagnostics,
+        // _diagnosticsEnabled);
+        // }
         // }
 #endif // !ZENOPCB_DISABLE_OTA
 
 #if defined(ESP32)
-        // ⭐ Periodic Modbus telemetry publishing (runs during OTA — JSON build local, MQTT publish tự fail nếu disconnected)
+        // Periodic Modbus telemetry publishing (runs during OTA JSON build local, MQTT publish t fail nu disconnected)
         // ESP32-only per Plan 06-03 D-03 (Modbus subsystem stripped on ESP8266).
         static unsigned long lastTelemetryPrint = 0;
         auto &modbusBuffer = ModbusDataBuffer::getInstance();
@@ -1608,16 +1608,16 @@ namespace ZenoPCB
             String telemetryJson = ModbusDataBuffer::getInstance().buildTelemetryJson();
             if (telemetryJson.length() > 2 && telemetryJson != "null") // skip empty "{}" or null
             {
-                ZENO_LOG_CORE("📊 Modbus telemetry: %d bytes, %d monitors",
+                ZENO_LOG_CORE("Modbus telemetry: %d bytes, %d monitors",
                               telemetryJson.length(), regCount);
 
-                // ⭐ Chunk publish: split into max 50 keys per MQTT message
+                // Chunk publish: split into max 50 keys per MQTT message
                 // During 4G OTA: queue small payloads, skip chunking (queue can't hold multiple chunks)
                 if (_mqtt && _mqtt->isConnected())
                 {
                     const int CHUNK_SIZE = 50;
 
-                    // ⭐ Phase 3 Plan 03-02 hot-path refactor: build the topic ONCE
+                    // Phase 3 Plan 03-02 hot-path refactor: build the topic ONCE
                     // into a stack buffer (every branch below targets the same topic).
                     // THREAD-NOTE: _deviceToken is set once at provisioning and never
                     // mutated post-begin(); .c_str() is stable here. (RESEARCH.md Pitfall #3)
@@ -1626,8 +1626,8 @@ namespace ZenoPCB
                                        "v1/devices/%s/telemetry", _deviceToken.c_str());
                     if (ctn < 0 || (size_t)ctn >= sizeof(chunkTopicBuf))
                     {
-                        ZENO_LOG_CORE("❌ Modbus chunk topic truncated");
-                        // Fall through to the alarm check below — no publish attempted.
+                        ZENO_LOG_CORE("Modbus chunk topic truncated");
+                        // Fall through to the alarm check below no publish attempted.
                     }
                     else
                     {
@@ -1642,34 +1642,34 @@ namespace ZenoPCB
 
                         if (totalKeys <= CHUNK_SIZE)
                         {
-                            // Small payload — send as-is or queue
+                            // Small payload send as-is or queue
                             if (_mqttQueueEnabled)
                             {
-                                // 4G OTA active → queue for yield callback.
+                                // 4G OTA active queue for yield callback.
                                 // Cold path: one-time String wrap at the queue boundary
                                 // is acceptable per RESEARCH.md Risk R2 (QueuedMQTTMessage
                                 // out of scope for Plan 03-02).
                                 _enqueueMQTT(String(chunkTopicBuf), telemetryJson);
-                                ZENO_LOG_CORE("📦 Modbus telemetry queued (%d keys) — will flush at OTA yield", totalKeys);
+                                ZENO_LOG_CORE("Modbus telemetry queued (%d keys) will flush at OTA yield", totalKeys);
                             }
                             else
                             {
-                                // Hot path — direct publish via char* overload from plan 03-01.
+                                // Hot path direct publish via char* overload from plan 03-01.
                                 // `telemetryJson` itself is the unavoidable return of
                                 // ModbusDataBuffer::buildTelemetryJson() (out-of-scope per plan);
-                                // reuse its .c_str() — stable until next String mutation.
-                                // QoS / retain mirror sendTelemetryJson → publishJson defaults
+                                // reuse its .c_str() stable until next String mutation.
+                                // QoS / retain mirror sendTelemetryJson publishJson defaults
                                 // (QOS_0, retain=false; verified mqtt/MQTTClient.cpp:447).
                                 bool published = _mqtt->publish(chunkTopicBuf,
                                                                 telemetryJson.c_str(),
                                                                 MQTTQoS::QOS_0, false);
                                 ZENO_LOG_CORE("%s Modbus telemetry published (%d keys)",
-                                              published ? "✅" : "❌", totalKeys);
+                                              published ? "" : "", totalKeys);
                             }
                         }
                         else if (!_mqttQueueEnabled)
                         {
-                            // Large payload — split into chunks (only if not in queue mode)
+                            // Large payload split into chunks (only if not in queue mode)
                             int chunkCount = 0;
                             int keyIndex = 0;
                             int publishedChunks = 0;
@@ -1684,7 +1684,7 @@ namespace ZenoPCB
                                 {
                                     chunkCount++;
 
-                                    // ⭐ Phase 3 Plan 03-02: serialize chunk into stack
+                                    // Phase 3 Plan 03-02: serialize chunk into stack
                                     // buffer instead of String. RESEARCH.md A1: chunk JSON
                                     // is bounded by MQTT_MAX_PAYLOAD + CHUNK_SIZE=50 keys
                                     // (typical < 256 B); 512 = 2x headroom under CLAUDE.md.
@@ -1693,32 +1693,32 @@ namespace ZenoPCB
                                                               sizeof(chunkJsonBuf));
                                     if (cn == 0 || cn >= sizeof(chunkJsonBuf))
                                     {
-                                        ZENO_LOG_CORE("❌ Modbus chunk JSON truncated/empty (n=%u, cap=%u)",
+                                        ZENO_LOG_CORE("Modbus chunk JSON truncated/empty (n=%u, cap=%u)",
                                                       (unsigned)cn, (unsigned)sizeof(chunkJsonBuf));
                                         chunkDoc.clear();
                                         continue; // skip this chunk; preserve loop progression
                                     }
 
-                                    // Hot path — direct publish via char* overload.
+                                    // Hot path direct publish via char* overload.
                                     bool ok = _mqtt->publish(chunkTopicBuf, chunkJsonBuf,
                                                              MQTTQoS::QOS_0, false);
                                     if (ok)
                                         publishedChunks++;
                                     ZENO_LOG_CORE("%s Chunk %d/%d (%d keys, %u bytes)",
-                                                  ok ? "✅" : "❌", chunkCount,
+                                                  ok ? "" : "", chunkCount,
                                                   (totalKeys + CHUNK_SIZE - 1) / CHUNK_SIZE,
                                                   chunkDoc.size(), (unsigned)cn);
 
                                     chunkDoc.clear();
                                 }
                             }
-                            ZENO_LOG_CORE("📊 Telemetry: %d keys → %d chunks, %d published",
+                            ZENO_LOG_CORE("Telemetry: %d keys %d chunks, %d published",
                                           totalKeys, chunkCount, publishedChunks);
                         }
                         else
                         {
-                            // Large payload + queue mode → skip (can't queue multiple chunks)
-                            ZENO_LOG_CORE("⏭️ Telemetry skipped (%d keys) — too large for 4G OTA queue", totalKeys);
+                            // Large payload + queue mode skip (can't queue multiple chunks)
+                            ZENO_LOG_CORE("Telemetry skipped (%d keys) too large for 4G OTA queue", totalKeys);
                         }
                     }
                     else
@@ -1726,12 +1726,12 @@ namespace ZenoPCB
                         // Fallback: parse failed
                         if (!_mqttQueueEnabled)
                         {
-                            // Hot path — direct publish via char* overload.
+                            // Hot path direct publish via char* overload.
                             bool published = _mqtt->publish(chunkTopicBuf,
                                                             telemetryJson.c_str(),
                                                             MQTTQoS::QOS_0, false);
                             ZENO_LOG_CORE("%s Modbus telemetry published (raw fallback)",
-                                          published ? "✅" : "❌");
+                                          published ? "" : "");
                         }
                     }
 
@@ -1739,7 +1739,7 @@ namespace ZenoPCB
                 }
 
 #if !defined(ZENOPCB_DISABLE_ALARM)
-                // ⭐ Alarm: check rules against Modbus telemetry keys (mqtt_key numeric strings)
+                // Alarm: check rules against Modbus telemetry keys (mqtt_key numeric strings)
                 if (_alarmEnabled && _alarmEngine && _alarmEngine->getRuleCount() > 0)
                 {
                     _alarmEngine->checkAlarmsFromJson(telemetryJson);
@@ -1747,9 +1747,9 @@ namespace ZenoPCB
 #endif // !ZENOPCB_DISABLE_ALARM
             }
         }
-#endif  // ESP32 — Modbus periodic telemetry block
+#endif  // ESP32 Modbus periodic telemetry block
 
-        // ⭐ Z Key telemetry publishing
+        // Z Key telemetry publishing
         // When 4G OTA queue mode: ZKey publish goes through queue
         if (!apActive && _zKeysEnabled)
         {
@@ -1758,8 +1758,8 @@ namespace ZenoPCB
             if (zBuffer.isPublishDue())
             {
                 // Timer-only reset (NOT markPublished). Previously the call
-                // was markPublished(), which also wiped every dirty flag —
-                // meaning any `ZENO_WRITE(Zx, …)` the user did from `loop()`
+                // was markPublished(), which also wiped every dirty flag 
+                // meaning any `ZENO_WRITE(Zx, )` the user did from `loop()`
                 // between intervals got discarded before `_publishZKeyTelemetry()`
                 // ran, so only values set INSIDE ZENO_READ_ALL ever reached
                 // the cloud. markPublishTimer() preserves those values; the
@@ -1841,7 +1841,7 @@ namespace ZenoPCB
             delay(100);
             WiFi.begin(_wifiSSID.c_str(), _wifiPassword.c_str());
 #else
-            ZENO_LOG_CORE("⚠️ _reconnect: WiFi.h unavailable on this platform");
+            ZENO_LOG_CORE("_reconnect: WiFi.h unavailable on this platform");
 #endif
         }
     }
@@ -1952,16 +1952,16 @@ namespace ZenoPCB
         _deviceId = deviceId;
         _deviceToken = token;
 
-        // ⭐ Auto-configure ZenoPCB MQTT defaults.
+        // Auto-configure ZenoPCB MQTT defaults.
         // Users only need DEVICE_ID + DEVICE_TOKEN - no broker config needed.
         // Only apply defaults if broker not already explicitly set.
         //
         // Lookup precedence (Phase 5 D-14, layered):
-        //   1. Runtime .mqtt(host, port) override — already populated _mqttBroker
-        //      BEFORE this code runs (e.g. ZMG-01 / ZF-01 firmware).
-        //   2. Compile-time -DZENOPCB_BROKER_HOST="..." build flag (advanced
-        //      override; undocumented escape hatch per PROJECT.md).
-        //   3. XOR-obfuscated getCloudBroker() default (defense-in-depth fallback).
+        // 1. Runtime .mqtt(host, port) override already populated _mqttBroker
+        // BEFORE this code runs (e.g. ZMG-01 / ZF-01 firmware).
+        // 2. Compile-time -DZENOPCB_BROKER_HOST="..." build flag (advanced
+        // override; undocumented escape hatch per PROJECT.md).
+        // 3. XOR-obfuscated getCloudBroker() default (defense-in-depth fallback).
         if (_mqttBroker.length() == 0)
         {
 #ifdef ZENOPCB_BROKER_HOST
@@ -1979,7 +1979,7 @@ namespace ZenoPCB
             _mqttEnabled = true;
         }
         // clientId = deviceId, username = token, password = "zenopcb"
-        // (ZenoPCB platform default — do NOT change without confirmation
+        // (ZenoPCB platform default do NOT change without confirmation
         // from the cloud-side auth owner; ZMG production firmware ships
         // with these exact defaults).
         if (_mqttClientId.length() == 0)
@@ -2007,10 +2007,10 @@ namespace ZenoPCB
         // Plan 07-06.6 MICRO_BASIC: WiFiProvisioning subsystem stripped at compile time.
         // _wifiProvisioning stays nullptr; all call sites guard on the same flag.
         _wifiProvisioning = nullptr;
-        ZENO_LOG_CORE("[WARN] WiFiProvisioning subsystem disabled at compile time (ZENOPCB_DISABLE_PROVISIONING) — captive portal / NVS credentials not available on this build");
+        ZENO_LOG_CORE("[WARN] WiFiProvisioning subsystem disabled at compile time (ZENOPCB_DISABLE_PROVISIONING) captive portal / NVS credentials not available on this build");
         return;
 #else
-        // Always create provisioning for button support — explicit HAL injection
+        // Always create provisioning for button support explicit HAL injection
         // (Plan 04-05 swaps the default-ctor bridge for `_hal` propagation).
         _wifiProvisioning = new WiFiProvisioning(_hal);
 
@@ -2026,13 +2026,13 @@ namespace ZenoPCB
             _wifiProvisioning->setSkipAutoWiFiConnect(true);
         }
 
-        // ── MQTT connectivity test for /api/connect/wifi ──────────────────────
-        // Called BEFORE saving config — WiFi is in WIFI_AP_STA and connected
+        // MQTT connectivity test for /api/connect/wifi 
+        // Called BEFORE saving config WiFi is in WIFI_AP_STA and connected
         // Tests that the MQTT broker is reachable using device credentials.
         //
         // Pattern H gate (Plan 07-06.5): STM32F4 default-Ethernet build has no
         // WiFi.h equivalent, so the test/claim lambdas (which instantiate a
-        // local WiFiClient) skip wiring on that platform — the provisioning
+        // local WiFiClient) skip wiring on that platform the provisioning
         // surface (web server, AP mode) is already a no-op stub there.
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
         _wifiProvisioning->setMQTTTestCallback([this]() -> bool
@@ -2052,9 +2052,9 @@ namespace ZenoPCB
             String clientId = _mqttClientId.length() == 0 ? _deviceId : _mqttClientId;
 
             // No-leak rule (user feedback 2026-06-06): no broker host /
-            // port / clientId fragment in serial — even an 8-char prefix
+            // port / clientId fragment in serial even an 8-char prefix
             // of the device ID is enough to correlate the device on cloud.
-            ZENO_LOG_CORE("🔬 MQTT test starting");
+            ZENO_LOG_CORE("MQTT test starting");
 
             WiFiClient tempWiFiClient;
             ZenoPubSubClient tempMqtt(tempWiFiClient);
@@ -2070,17 +2070,17 @@ namespace ZenoPCB
 
             if (ok)
             {
-                ZENO_LOG_CORE("✅ MQTT test PASSED (state: %d)", tempMqtt.state());
+                ZENO_LOG_CORE("MQTT test PASSED (state: %d)", tempMqtt.state());
                 tempMqtt.disconnect();
             }
             else
             {
-                ZENO_LOG_CORE("❌ MQTT test FAILED (state: %d)", tempMqtt.state());
+                ZENO_LOG_CORE("MQTT test FAILED (state: %d)", tempMqtt.state());
             }
             tempWiFiClient.stop();
             return ok; });
 
-        // ── Device claim callback ─────────────────────────────────────────────
+        // Device claim callback 
         // Called after MQTT test passes. Publishes claim and waits for backend ack.
         // WiFi is still in AP_STA mode and connected when this is called.
         _wifiProvisioning->setClaimCallback([this](const String &userId, const String &deviceId, const String &token) -> bool
@@ -2101,7 +2101,7 @@ namespace ZenoPCB
             // Add suffix to avoid clientId collision with the main MQTT client
             clientId += "_claim";
 
-            ZENO_LOG_CORE("📋 Claim: connecting to %s:%d (clientId: %s)", broker.c_str(), port, clientId.c_str());
+            ZENO_LOG_CORE("Claim: connecting to %s:%d (clientId: %s)", broker.c_str(), port, clientId.c_str());
 
             WiFiClient claimWiFiClient;
             ZenoPubSubClient claimMqtt(claimWiFiClient);
@@ -2110,12 +2110,12 @@ namespace ZenoPCB
             claimMqtt.setSocketTimeout(10);
             claimMqtt.setBufferSize(512);
 
-            // Track ack received — file-scope static slot (s_claimAck*)
-            // lets us pass a non-capturing lambda → plain function pointer.
+            // Track ack received file-scope static slot (s_claimAck*)
+            // lets us pass a non-capturing lambda plain function pointer.
             s_claimAckReceived = false;
             s_claimAckSuccess = false;
 
-            // Set message callback BEFORE connect (non-capturing — required
+            // Set message callback BEFORE connect (non-capturing required
             // for strict-conversion toolchains; Phase 7 Area E).
             claimMqtt.setCallback(+[](char* topic, byte* payload, unsigned int length) {
                 (void)topic;
@@ -2124,7 +2124,7 @@ namespace ZenoPCB
                 for (unsigned int i = 0; i < length; i++) {
                     msg += (char)payload[i];
                 }
-                ZENO_LOG_CORE("📋 Claim ack received: %s", msg.c_str());
+                ZENO_LOG_CORE("Claim ack received: %s", msg.c_str());
 
                 JsonDocument ackDoc;
                 DeserializationError err = deserializeJson(ackDoc, msg);
@@ -2145,7 +2145,7 @@ namespace ZenoPCB
             );
 
             if (!connected) {
-                ZENO_LOG_CORE("❌ Claim: MQTT connect failed (state: %d)", claimMqtt.state());
+                ZENO_LOG_CORE("Claim: MQTT connect failed (state: %d)", claimMqtt.state());
                 claimWiFiClient.stop();
                 return false;
             }
@@ -2153,7 +2153,7 @@ namespace ZenoPCB
             // Subscribe to ack topic
             String ackTopic = "v1/devices/" + String(_deviceToken) + "/claim/ack";
             bool subOK = claimMqtt.subscribe(ackTopic.c_str(), 1);
-            ZENO_LOG_CORE("📋 Subscribed to ack topic: %s (ok: %d)", maskTopic(ackTopic).c_str(), subOK);
+            ZENO_LOG_CORE("Subscribed to ack topic: %s (ok: %d)", maskTopic(ackTopic).c_str(), subOK);
 
             // Build claim payload
             JsonDocument claimDoc;
@@ -2163,28 +2163,28 @@ namespace ZenoPCB
             String claimPayload;
             serializeJson(claimDoc, claimPayload);
 
-            ZENO_LOG_CORE("📋 Claim payload: (hidden - contains token)");
+            ZENO_LOG_CORE("Claim payload: (hidden - contains token)");
 
             // Publish claim
             String claimTopic = "v1/devices/" + String(_deviceToken) + "/claim";
             bool pubOK = claimMqtt.publish(claimTopic.c_str(), claimPayload.c_str(), false);
-            ZENO_LOG_CORE("📋 Published claim to: %s (ok: %d)", maskTopic(claimTopic).c_str(), pubOK);
+            ZENO_LOG_CORE("Published claim to: %s (ok: %d)", maskTopic(claimTopic).c_str(), pubOK);
 
             if (!pubOK) {
-                ZENO_LOG_CORE("❌ Claim: publish failed");
+                ZENO_LOG_CORE("Claim: publish failed");
                 claimMqtt.disconnect();
                 claimWiFiClient.stop();
                 return false;
             }
 
-            // Wait for ack with retry — total 30s, retry publish every 8s
+            // Wait for ack with retry total 30s, retry publish every 8s
             unsigned long startWait = millis();
             unsigned long lastPublishTime = millis();
             const unsigned long CLAIM_TIMEOUT_MS = 30000;
             const unsigned long CLAIM_RETRY_INTERVAL_MS = 8000;
             int claimRetry = 0;
             const int CLAIM_MAX_RETRIES = 3;
-            ZENO_LOG_CORE("⏳ Waiting for claim ack (timeout: %lums, max retries: %d)...", CLAIM_TIMEOUT_MS, CLAIM_MAX_RETRIES);
+            ZENO_LOG_CORE("Waiting for claim ack (timeout: %lums, max retries: %d)...", CLAIM_TIMEOUT_MS, CLAIM_MAX_RETRIES);
 
             while (!s_claimAckReceived && (millis() - startWait < CLAIM_TIMEOUT_MS)) {
                 claimMqtt.loop();
@@ -2193,7 +2193,7 @@ namespace ZenoPCB
                 if (!s_claimAckReceived && claimRetry < CLAIM_MAX_RETRIES &&
                     (millis() - lastPublishTime >= CLAIM_RETRY_INTERVAL_MS)) {
                     claimRetry++;
-                    ZENO_LOG_CORE("📋 Claim retry #%d (elapsed: %lums)...", claimRetry, millis() - startWait);
+                    ZENO_LOG_CORE("Claim retry #%d (elapsed: %lums)...", claimRetry, millis() - startWait);
                     claimMqtt.publish(claimTopic.c_str(), claimPayload.c_str(), false);
                     lastPublishTime = millis();
                 }
@@ -2205,13 +2205,13 @@ namespace ZenoPCB
             claimWiFiClient.stop();
 
             if (s_claimAckReceived) {
-                ZENO_LOG_CORE("📋 Claim result: %s (took %lums)", s_claimAckSuccess ? "SUCCESS" : "REJECTED", millis() - startWait);
+                ZENO_LOG_CORE("Claim result: %s (took %lums)", s_claimAckSuccess ? "SUCCESS" : "REJECTED", millis() - startWait);
                 return s_claimAckSuccess;
             } else {
-                ZENO_LOG_CORE("❌ Claim: timeout after %lums — no ack received", CLAIM_TIMEOUT_MS);
+                ZENO_LOG_CORE("Claim: timeout after %lums no ack received", CLAIM_TIMEOUT_MS);
                 return false;
             } });
-#endif // ESP32 || ESP8266 || ARDUINO_UNOR4_WIFI || STM32F1 — MQTT-test / claim callbacks
+#endif // ESP32 || ESP8266 || ARDUINO_UNOR4_WIFI || STM32F1 MQTT-test / claim callbacks
 
         _wifiProvisioning->begin(_provConfig);
 
@@ -2283,10 +2283,10 @@ namespace ZenoPCB
             _mqttEnabled = true;
         }
 
-        ZENO_LOG_CORE("🔧 _initMQTT() called");
+        ZENO_LOG_CORE("_initMQTT() called");
 
         _mqtt = new ZenoPCBMQTT();
-        ZENO_LOG_CORE("✅ ZenoPCBMQTT object created");
+        ZENO_LOG_CORE("ZenoPCBMQTT object created");
 
         // Configure broker
         if (_mqttTLS)
@@ -2295,10 +2295,10 @@ namespace ZenoPCB
             if (_tlsEnabled && _wifiClientSecure)
             {
                 _mqtt->brokerTLS(_mqttBroker, _mqttPort);
-                // Phase 7 D-27 — if user pinned a PEM root CA via setRootCA(),
+                // Phase 7 D-27 if user pinned a PEM root CA via setRootCA(),
                 // use setCACert() on ESP32 for verified TLS. Otherwise fall
                 // back to setInsecure() dev-mode behaviour. ESP8266 BearSSL
-                // needs a parsed BearSSL::X509List (deferred — logs WARN
+                // needs a parsed BearSSL::X509List (deferred logs WARN
                 // then falls back to setInsecure for now).
                 if (_rootCA != nullptr)
                 {
@@ -2306,10 +2306,10 @@ namespace ZenoPCB
                     _wifiClientSecure->setCACert(_rootCA);
                     ZENO_LOG_CORE("TLS root CA pinned via setCACert (ESP32)");
 #elif defined(ESP8266)
-                    ZENO_LOG_CORE("[WARN] ESP8266 BearSSL root CA pinning requires user-constructed BearSSL::X509List — falling back to setInsecure (D-27 note)");
+                    ZENO_LOG_CORE("[WARN] ESP8266 BearSSL root CA pinning requires user-constructed BearSSL::X509List falling back to setInsecure (D-27 note)");
                     _wifiClientSecure->setInsecure();
 #else
-                    ZENO_LOG_CORE("[WARN] Root CA pinning not implemented on this platform — setInsecure fallback");
+                    ZENO_LOG_CORE("[WARN] Root CA pinning not implemented on this platform setInsecure fallback");
                     _wifiClientSecure->setInsecure();
 #endif
                 }
@@ -2331,17 +2331,17 @@ namespace ZenoPCB
         }
         else
         {
-            ZENO_LOG_CORE("📡 Setting MQTT broker (non-TLS)");
+            ZENO_LOG_CORE("Setting MQTT broker (non-TLS)");
             _mqtt->broker(_mqttBroker, _mqttPort);
 
             // 4G needs longer timeouts: TCP handshake on cellular is much slower
-            // ⚠️ FIX: keepAlive() and socketTimeout() now directly set ZenoPubSubClient params
+            // FIX: keepAlive() and socketTimeout() now directly set ZenoPubSubClient params
             // (no longer call full setConfig), so order doesn't matter
             if (_networkProvider && strcmp(_networkProvider->getName(), "4G") == 0)
             {
                 _mqtt->keepAlive(MQTT_CELLULAR_KEEPALIVE);
                 _mqtt->socketTimeout(MQTT_CELLULAR_SOCKET_TIMEOUT);
-                ZENO_LOG_CORE("⚡ 4G mode: keepAlive=%ds, socketTimeout=%ds",
+                ZENO_LOG_CORE("4G mode: keepAlive=%ds, socketTimeout=%ds",
                               MQTT_CELLULAR_KEEPALIVE, MQTT_CELLULAR_SOCKET_TIMEOUT);
             }
         }
@@ -2359,7 +2359,7 @@ namespace ZenoPCB
             // Pattern H gate: F4 default-Ethernet has no WiFi.h, so the
             // network-check lambda there returns the AP-mode guard only
             // (which on F4 is permanently false since provisioning is a
-            // no-op stub) — effectively disabling MQTT auto-reconnect
+            // no-op stub) effectively disabling MQTT auto-reconnect
             // unless an external network provider is wired in.
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             _mqtt->setNetworkCheck([this]()
@@ -2369,7 +2369,7 @@ namespace ZenoPCB
                                    { return !isAPMode(); });
 #endif
         }
-        ZENO_LOG_CORE("✅ MQTT initialized successfully");
+        ZENO_LOG_CORE("MQTT initialized successfully");
 
         // Set credentials if provided
         if (_mqttUsername.length() > 0)
@@ -2385,8 +2385,8 @@ namespace ZenoPCB
         }
 
         // LWT is auto-configured in ZenoPCBMQTT::begin() using buildTopic("status")
-        // → Same topic as sendStatus("online"/"offline") = v1/devices/{token}/status
-        // → QoS 1 + retain=true ensures broker replaces retained "online" with "offline"
+        // Same topic as sendStatus("online"/"offline") = v1/devices/{token}/status
+        // QoS 1 + retain=true ensures broker replaces retained "online" with "offline"
 
         // Set MQTT client ID if provided
         if (_mqttClientId.length() > 0)
@@ -2394,10 +2394,10 @@ namespace ZenoPCB
             _mqtt->clientId(_mqttClientId);
         }
 
-        // ⚠️ CRITICAL: Initialize MQTT (calls setConfig/setServer) BEFORE setClient()
+        // CRITICAL: Initialize MQTT (calls setConfig/setServer) BEFORE setClient()
         _mqtt->begin();
 
-        // ⚠️ NOW set network client AFTER setServer() to ensure ZenoPubSubClient uses it
+        // NOW set network client AFTER setServer() to ensure ZenoPubSubClient uses it
         // ZenoPubSubClient may reset internal state when setServer() is called
         if (_mqttTLS)
         {
@@ -2405,7 +2405,7 @@ namespace ZenoPCB
             if (_tlsEnabled && _wifiClientSecure)
             {
                 _mqtt->setClient(_wifiClientSecure);
-                ZENO_LOG_CORE("✅ TLS Client set for MQTT (after setConfig)");
+                ZENO_LOG_CORE("TLS Client set for MQTT (after setConfig)");
             }
 #endif
         }
@@ -2421,15 +2421,15 @@ namespace ZenoPCB
                 if (provClient)
                 {
                     _mqtt->setClient(provClient);
-                    ZENO_LOG_CORE("✅ %s Client set for MQTT (after begin, final)", _networkProvider->getName());
+                    ZENO_LOG_CORE("%s Client set for MQTT (after begin, final)", _networkProvider->getName());
                 }
                 else
                 {
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                     _mqtt->setClient(&_wifiClient);
-                    ZENO_LOG_CORE("⚠️ Provider client NULL, fallback to WiFiClient");
+                    ZENO_LOG_CORE("Provider client NULL, fallback to WiFiClient");
 #else
-                    ZENO_LOG_CORE("⚠️ Provider client NULL and no WiFiClient fallback on this platform");
+                    ZENO_LOG_CORE("Provider client NULL and no WiFiClient fallback on this platform");
 #endif
                 }
             }
@@ -2437,9 +2437,9 @@ namespace ZenoPCB
             {
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                 _mqtt->setClient(&_wifiClient);
-                ZENO_LOG_CORE("✅ WiFiClient set for MQTT");
+                ZENO_LOG_CORE("WiFiClient set for MQTT");
 #else
-                ZENO_LOG_CORE("⚠️ No network provider AND no WiFiClient on this platform — MQTT will not start");
+                ZENO_LOG_CORE("No network provider AND no WiFiClient on this platform MQTT will not start");
 #endif
             }
         }
@@ -2452,7 +2452,7 @@ namespace ZenoPCB
 #if defined(ZENOPCB_DISABLE_STORAGE)
         if (_storageEnabled)
         {
-            ZENO_LOG_CORE("[WARN] Storage subsystem disabled at compile time (ZENOPCB_DISABLE_STORAGE) — enableStorage() is a no-op on this build");
+            ZENO_LOG_CORE("[WARN] Storage subsystem disabled at compile time (ZENOPCB_DISABLE_STORAGE) enableStorage() is a no-op on this build");
         }
         return;
 #else
@@ -2524,7 +2524,7 @@ namespace ZenoPCB
             ZENO_LOG_CORE("Config error: %s", result.errorMessage.c_str());
             if (_errorCallback)
             {
-                _errorCallback("Config: " + result.errorMessage);
+                _errorCallback("Config:" + result.errorMessage);
             }
         }
 #endif // !ZENOPCB_DISABLE_STORAGE
@@ -2610,7 +2610,7 @@ namespace ZenoPCB
             ZENO_LOG_CORE("Data monitor error: %s", result.errorMessage.c_str());
             if (_errorCallback)
             {
-                _errorCallback("DataMonitor: " + result.errorMessage);
+                _errorCallback("DataMonitor:" + result.errorMessage);
             }
         }
 #endif // !ZENOPCB_DISABLE_STORAGE
@@ -2645,12 +2645,12 @@ namespace ZenoPCB
             String actualType = String(type);
             if (_actualConnectionType.length() > 0)
             {
-                // Library đã track actual connection (from provisioning switch)
+                // Library track actual connection (from provisioning switch)
                 actualType = _actualConnectionType;
             }
             else if (_networkProvider == nullptr)
             {
-                // No provider and no tracked type → default WiFi
+                // No provider and no tracked type default WiFi
                 actualType = "WIFI";
             }
             _diagnostics->setConnectionType(actualType);
@@ -2850,66 +2850,66 @@ namespace ZenoPCB
         if (!buffer.hasDirtyKeys())
             return;
 
-        // ⭐ Phase 3 Plan 03-02 hot-path refactor: build the Z-Key payload + topic
+        // Phase 3 Plan 03-02 hot-path refactor: build the Z-Key payload + topic
         // into stack buffers instead of three heap-allocated Strings per publish.
         // Pattern from .planning/phases/03-internal-tech-debt-cleanup/03-RESEARCH.md
         // Code Example 2; depends on the const char* publish overloads added in 03-01.
 
         // 1. Build JSON into a stack buffer via ArduinoJson serializeJson(doc, char*, size).
-        //    THREAD-NOTE: ZKeyBuffer instance + JsonDocument are stack-scoped here;
-        //    no cross-task aliasing.
+        // THREAD-NOTE: ZKeyBuffer instance + JsonDocument are stack-scoped here;
+        // no cross-task aliasing.
         JsonDocument doc;
         buffer.mergeIntoJson(doc);
         char zJsonBuf[512]; // RESEARCH.md A1: typical < 256 B; 512 = 2x headroom; well under CLAUDE.md 1 KB stack limit
         size_t n = serializeJson(doc, zJsonBuf, sizeof(zJsonBuf));
         if (n == 0 || n >= sizeof(zJsonBuf))
         {
-            ZENO_LOG_CORE("❌ ZKey JSON truncated/empty (n=%u, cap=%u)",
+            ZENO_LOG_CORE("ZKey JSON truncated/empty (n=%u, cap=%u)",
                           (unsigned)n, (unsigned)sizeof(zJsonBuf));
             return;
         }
-        if (n <= 2) // "{}" — nothing dirty after merge; preserve existing length > 2 guard
+        if (n <= 2) // "{}" nothing dirty after merge; preserve existing length > 2 guard
             return;
 
         // 2. Build topic into stack buffer.
-        //    THREAD-NOTE: _deviceToken is set once at provisioning (Zeno::setDeviceCredentials
-        //    / NVS first-boot) and never mutated post-begin(). .c_str() is stable for the
-        //    lifetime of this call. (RESEARCH.md Pitfall #3)
+        // THREAD-NOTE: _deviceToken is set once at provisioning (Zeno::setDeviceCredentials
+        // / NVS first-boot) and never mutated post-begin(). .c_str() is stable for the
+        // lifetime of this call. (RESEARCH.md Pitfall #3)
         char topicBuf[128]; // longest topic ~53 B; 128 matches MQTTClient::_brokerStable convention
         int tn = snprintf(topicBuf, sizeof(topicBuf), "v1/devices/%s/telemetry",
                           _deviceToken.c_str());
         if (tn < 0 || (size_t)tn >= sizeof(topicBuf))
         {
-            ZENO_LOG_CORE("❌ ZKey topic truncated");
+            ZENO_LOG_CORE("ZKey topic truncated");
             return;
         }
 
-        // ⭐ 4G OTA: queue instead of direct publish.
+        // 4G OTA: queue instead of direct publish.
         // Cold path (OTA active). One-time String alloc at the queue boundary is
-        // acceptable per RESEARCH.md Risk R2 — the QueuedMQTTMessage struct still
+        // acceptable per RESEARCH.md Risk R2 the QueuedMQTTMessage struct still
         // takes const String& and is explicitly out of scope for Plan 03-02.
         if (_mqttQueueEnabled)
         {
             _enqueueMQTT(String(topicBuf), String(zJsonBuf), MQTTQoS::QOS_1, false);
-            ZENO_LOG_CORE("📦 ZKey queued: %s — will flush at OTA yield", zJsonBuf);
+            ZENO_LOG_CORE("ZKey queued: %s will flush at OTA yield", zJsonBuf);
             buffer.clearDirtyFlags();
             buffer.markPublished();
             return;
         }
 
-        // Hot path — direct publish via new char* overload from plan 03-01
+        // Hot path direct publish via new char* overload from plan 03-01
         // (Pitfall #2: must NOT use .c_str() round-trip into the String overload).
         bool published = _mqtt->publish(topicBuf, zJsonBuf, MQTTQoS::QOS_1, false);
 
         if (published)
         {
-            ZENO_LOG_CORE("📤 ZKey: %s", zJsonBuf);
+            ZENO_LOG_CORE("ZKey: %s", zJsonBuf);
             buffer.clearDirtyFlags();
             buffer.markPublished();
         }
         else
         {
-            ZENO_LOG_CORE("❌ ZKey publish FAILED");
+            ZENO_LOG_CORE("ZKey publish FAILED");
         }
     }
 
@@ -2919,7 +2919,7 @@ namespace ZenoPCB
         // Plan 07-06.6 MICRO_BASIC: Diagnostics subsystem stripped at compile time.
         if (_diagnosticsEnabled)
         {
-            ZENO_LOG_CORE("[WARN] Diagnostics subsystem disabled at compile time (ZENOPCB_DISABLE_DIAGNOSTICS) — enableDiagnostics() is a no-op on this build");
+            ZENO_LOG_CORE("[WARN] Diagnostics subsystem disabled at compile time (ZENOPCB_DISABLE_DIAGNOSTICS) enableDiagnostics() is a no-op on this build");
         }
         return;
 #else
@@ -3020,7 +3020,7 @@ namespace ZenoPCB
 
     void Zeno::_initSchedule()
     {
-        // Phase 7 Plan 07-06.6 — ZENOPCB_MICRO_BASIC profile compile-strip.
+        // Phase 7 Plan 07-06.6 ZENOPCB_MICRO_BASIC profile compile-strip.
         // When `-DZENOPCB_DISABLE_SCHEDULE` is set, the entire Schedule subsystem
         // is gone (TU guards in schedule/*.cpp produce no link symbols). The body
         // below references those symbols, so it must be guarded too. The builder
@@ -3029,7 +3029,7 @@ namespace ZenoPCB
 #if defined(ZENOPCB_DISABLE_SCHEDULE)
         if (_scheduleEnabled)
         {
-            ZENO_LOG_CORE("[WARN] Schedule subsystem disabled at compile time (ZENOPCB_DISABLE_SCHEDULE) — enableSchedule() is a no-op on this build");
+            ZENO_LOG_CORE("[WARN] Schedule subsystem disabled at compile time (ZENOPCB_DISABLE_SCHEDULE) enableSchedule() is a no-op on this build");
         }
         return;
 #else
@@ -3044,7 +3044,7 @@ namespace ZenoPCB
         // (may already be initialized by _initStorage, safe to call again)
         if (!LittleFSManager::initialize())
         {
-            ZENO_LOG_CORE("⚠️ LittleFS init failed — schedules will not persist");
+            ZENO_LOG_CORE("LittleFS init failed schedules will not persist");
         }
 
         // Create schedule executor
@@ -3056,7 +3056,7 @@ namespace ZenoPCB
         // Initialize executor (loads schedules from LittleFS)
         if (!_scheduleExecutor->begin())
         {
-            ZENO_LOG_CORE("❌ Failed to initialize Schedule executor");
+            ZENO_LOG_CORE("Failed to initialize Schedule executor");
             return;
         }
 
@@ -3113,7 +3113,7 @@ namespace ZenoPCB
                              id.c_str(), executionStatusToString(status), value);
                 
                 // Publish execution report to MQTT
-                // Skip for INTERVAL schedules (fires too frequently — cloud doesn't need every tick)
+                // Skip for INTERVAL schedules (fires too frequently cloud doesn't need every tick)
                 ScheduleType sType = _scheduleExecutor ? _scheduleExecutor->getScheduleType(id) : ScheduleType::ONCE;
                 if (_mqtt && _mqtt->isConnected() && sType != ScheduleType::INTERVAL) {
                     String execTopic = "v1/devices/" + _deviceToken + "/schedules/executed";
@@ -3125,7 +3125,7 @@ namespace ZenoPCB
                     doc["status"] = (status == ExecutionStatus::SUCCESS) ? "success" : "failed";
                     if (status == ExecutionStatus::SUCCESS) {
                         // Use snprintf into a stack buffer to avoid the ambiguous
-                        // String((long long)) ctor — STM32duino + Renesas WString
+                        // String((long long)) ctor STM32duino + Renesas WString
                         // expose only `String(long)` / `String(unsigned long)`, so
                         // the implicit long-long path becomes ambiguous on those
                         // toolchains. ESP32/ESP8266 baseline byte-identical.
@@ -3156,7 +3156,7 @@ namespace ZenoPCB
                 } });
         }
 
-        ZENO_LOG_CORE("✅ Schedule module initialized with %d schedules (subscription handled by unified callback)",
+        ZENO_LOG_CORE("Schedule module initialized with %d schedules (subscription handled by unified callback)",
                       _scheduleExecutor ? _scheduleExecutor->getScheduleCount() : 0);
 #endif // !ZENOPCB_DISABLE_SCHEDULE
     }
@@ -3165,10 +3165,10 @@ namespace ZenoPCB
     {
 #if defined(ZENOPCB_DISABLE_SCHEDULE)
         (void)topic; (void)payload;
-        // Subsystem stripped at compile time — message is silently ignored
+        // Subsystem stripped at compile time message is silently ignored
         return;
 #else
-        ZENO_LOG_CORE("📥 Schedule message received on: %s", maskTopic(topic).c_str());
+        ZENO_LOG_CORE("Schedule message received on: %s", maskTopic(topic).c_str());
 
         ScheduleMessageHandler &handler = ScheduleMessageHandler::getInstance();
         ScheduleHandleResult result = handler.handleMessage(topic, payload);
@@ -3180,17 +3180,17 @@ namespace ZenoPCB
 
         if (result.success)
         {
-            ZENO_LOG_CORE("✅ Schedule %c for %s - OK (%dms)",
+            ZENO_LOG_CORE("Schedule %c for %s - OK (%dms)",
                           (char)result.action,
                           result.scheduleId.c_str(),
                           result.processingMs);
         }
         else
         {
-            ZENO_LOG_CORE("❌ Schedule error: %s", result.errorMessage.c_str());
+            ZENO_LOG_CORE("Schedule error: %s", result.errorMessage.c_str());
             if (_errorCallback)
             {
-                _errorCallback("Schedule: " + result.errorMessage);
+                _errorCallback("Schedule:" + result.errorMessage);
             }
         }
 #endif // !ZENOPCB_DISABLE_SCHEDULE
@@ -3237,7 +3237,7 @@ namespace ZenoPCB
         return _scheduleExecutor ? _scheduleExecutor->getScheduleCount() : 0;
     }
 
-    // Plan 06-03 — Modbus getters preserve their public signature on every
+    // Plan 06-03 Modbus getters preserve their public signature on every
     // platform (so a publish-all sketch compiles), but the body is
     // ESP32-only. ESP8266 returns 0 because the Modbus subsystem is not
     // available (capability gap; surfaced via _hal.capabilities() if the
@@ -3269,7 +3269,7 @@ namespace ZenoPCB
     // Irrigation Management
     // ============================================
 
-    // Plan 06-03 Pattern F (OQ-1 RESOLVED) — enableIrrigation() stays
+    // Plan 06-03 Pattern F (OQ-1 RESOLVED) enableIrrigation() stays
     // available on every platform so a publish-all sketch
     // (`zeno.enableIrrigation();`) compiles on ESP8266; on non-ESP32 the
     // body logs a runtime warning and the fluent API still returns *this.
@@ -3279,14 +3279,14 @@ namespace ZenoPCB
         _irrigationEnabled = true;
         ZENO_LOG_CORE("Irrigation module enabled");
 #else
-        ZENO_LOG_CORE("⚠️ Irrigation not available on this platform — ignoring (capability not in _hal.capabilities())");
+        ZENO_LOG_CORE("Irrigation not available on this platform ignoring (capability not in _hal.capabilities())");
 #endif
         return *this;
     }
 
 #if defined(ESP32)
     // Typed callback setters reference IrrigationWriteCallback/etc. which
-    // live in irrigation/IrrigationTypes.h — guarded by D-03 module strip.
+    // live in irrigation/IrrigationTypes.h guarded by D-03 module strip.
     Zeno &Zeno::setIrrigationWriteFunction(IrrigationWriteCallback callback)
     {
         _irrigationWriteCallback = callback;
@@ -3310,9 +3310,9 @@ namespace ZenoPCB
         _irrigationErrorCallback = callback;
         return *this;
     }
-#endif  // ESP32 — typed irrigation callback setters
+#endif  // ESP32 typed irrigation callback setters
 
-    // Plan 06-03 Pattern F — _initIrrigation() body is ESP32-only (touches
+    // Plan 06-03 Pattern F _initIrrigation() body is ESP32-only (touches
     // IrrigationExecutor/Scheduler/MessageHandler/Storage types). On
     // ESP8266 it is a silent no-op; the user-facing warning was already
     // logged by enableIrrigation() so we do not re-emit.
@@ -3329,7 +3329,7 @@ namespace ZenoPCB
         // Ensure LittleFS is mounted
         if (!LittleFSManager::initialize())
         {
-            ZENO_LOG_CORE("⚠️ LittleFS init failed — irrigation scenarios will not persist");
+            ZENO_LOG_CORE("LittleFS init failed irrigation scenarios will not persist");
         }
 
         IrrigationExecutor &executor = IrrigationExecutor::getInstance();
@@ -3342,7 +3342,7 @@ namespace ZenoPCB
             executor.setWriteFunction(_irrigationWriteCallback);
         }
 
-        // Wire executor callbacks → publish status to MQTT
+        // Wire executor callbacks publish status to MQTT
         executor.onStepProgress([this](const char *sid, const char *eid,
                                        uint8_t step, uint8_t total,
                                        IrrigationAction action,
@@ -3385,14 +3385,14 @@ namespace ZenoPCB
         // Initialize executor
         executor.begin();
 
-        // Wire scheduler trigger → start executor from storage (V3: scheduleId + scenarioId)
+        // Wire scheduler trigger start executor from storage (V3: scheduleId + scenarioId)
         scheduler.setTriggerCallback([this](const char *scheduleId, const char *scenarioId) -> bool
                                      {
-            ZENO_LOG_CORE("⏰ Irrigation schedule %s → scenario %s", scheduleId, scenarioId);
+            ZENO_LOG_CORE("Irrigation schedule %s scenario %s", scheduleId, scenarioId);
             IrrigationExecutor &exec = IrrigationExecutor::getInstance();
             if (exec.isRunning())
             {
-                ZENO_LOG_CORE("⚠️ Executor busy — skip scheduled trigger");
+                ZENO_LOG_CORE("Executor busy skip scheduled trigger");
                 return false;
             }
             // Generate eid from schedule ID
@@ -3406,20 +3406,20 @@ namespace ZenoPCB
         // Wire message handler error callback
         msgHandler.onError([this](const String &error, const String &payload)
                            {
-            ZENO_LOG_CORE("❌ Irrigation message error: %s", error.c_str());
-            if (_errorCallback) _errorCallback("Irrigation: " + error); });
+            ZENO_LOG_CORE("Irrigation message error: %s", error.c_str());
+            if (_errorCallback) _errorCallback("Irrigation:" + error); });
 
-        // On MQTT disconnect → stop execution for safety
+        // On MQTT disconnect stop execution for safety
         // (handled externally by user's disconnect callback calling stopExecution)
 
-        ZENO_LOG_CORE("✅ Irrigation module initialized (%d scenarios, %d schedules)",
+        ZENO_LOG_CORE("Irrigation module initialized (%d scenarios, %d schedules)",
                       IrrigationStorage::getScenarioCount(),
                       scheduler.getScheduleCount());
-#endif  // ESP32 — _initIrrigation() body
+#endif  // ESP32 _initIrrigation() body
     }
 
 #if defined(ESP32)
-    // Irrigation message + ACK helpers — ESP32-only (declared inside an
+    // Irrigation message + ACK helpers ESP32-only (declared inside an
     // #if defined(ESP32) block in ZenoPCB.h and reference types from the
     // guarded IrrigationTypes.h header).
     void Zeno::_handleIrrigationMessage(const String &topic, const String &payload)
@@ -3429,7 +3429,7 @@ namespace ZenoPCB
             return;
         }
 
-        ZENO_LOG_CORE("📥 Irrigation message received on: %s", maskTopic(topic).c_str());
+        ZENO_LOG_CORE("Irrigation message received on: %s", maskTopic(topic).c_str());
 
         IrrigationMessageHandler &handler = IrrigationMessageHandler::getInstance();
         IrrigationHandleResult result = handler.handleMessage(topic, payload);
@@ -3455,15 +3455,15 @@ namespace ZenoPCB
 
         if (result.success)
         {
-            ZENO_LOG_CORE("✅ Irrigation %s for %s - OK (%dms)",
+            ZENO_LOG_CORE("Irrigation %s for %s - OK (%dms)",
                           result.action, ackId, result.processingMs);
         }
         else
         {
-            ZENO_LOG_CORE("❌ Irrigation error: %s", result.errorMessage);
+            ZENO_LOG_CORE("Irrigation error: %s", result.errorMessage);
             if (_errorCallback)
             {
-                _errorCallback(String("Irrigation: ") + result.errorMessage);
+                _errorCallback(String("Irrigation:") + result.errorMessage);
             }
         }
     }
@@ -3518,7 +3518,7 @@ namespace ZenoPCB
         String payload;
         serializeJson(doc, payload);
         _mqtt->publish(statusTopic.c_str(), payload.c_str(), MQTTQoS::QOS_1, false);
-        ZENO_LOG_CORE("📨 Irrigation status → %s: %s", status, payload.c_str());
+        ZENO_LOG_CORE("Irrigation status %s: %s", status, payload.c_str());
     }
 
     void Zeno::_publishIrrigationAck(const char *action, const char *id, const char *eid,
@@ -3557,9 +3557,9 @@ namespace ZenoPCB
         String payload;
         serializeJson(doc, payload);
         _mqtt->publish(ackTopic.c_str(), payload.c_str(), MQTTQoS::QOS_1, false);
-        ZENO_LOG_CORE("📨 Irrigation ACK → %s: %s", action, payload.c_str());
+        ZENO_LOG_CORE("Irrigation ACK %s: %s", action, payload.c_str());
     }
-#endif  // ESP32 — irrigation message + ACK helpers
+#endif  // ESP32 irrigation message + ACK helpers
 
     // ============================================
     // Edge Alarm Management
@@ -3578,7 +3578,7 @@ namespace ZenoPCB
         // Plan 07-06.6 MICRO_BASIC: Alarm subsystem stripped at compile time.
         if (_alarmEnabled)
         {
-            ZENO_LOG_CORE("[WARN] Alarm subsystem disabled at compile time (ZENOPCB_DISABLE_ALARM) — enableAlarm() is a no-op on this build");
+            ZENO_LOG_CORE("[WARN] Alarm subsystem disabled at compile time (ZENOPCB_DISABLE_ALARM) enableAlarm() is a no-op on this build");
         }
         return;
 #else
@@ -3592,7 +3592,7 @@ namespace ZenoPCB
             _alarmEngine = new AlarmEngine();
         }
 
-        // Wire internal publish callback: alarm event → MQTT
+        // Wire internal publish callback: alarm event MQTT
         // Returns true if successfully published (starts cooldown), false = retry next cycle.
         _alarmEngine->onAlarmTriggered([this](const AlarmEvent &event) -> bool
                                        {
@@ -3611,16 +3611,16 @@ namespace ZenoPCB
 
                 bool ok = _mqtt->publish(alarmTopic.c_str(), payload.c_str(), MQTTQoS::QOS_1, false);
                 ZENO_LOG_CORE("%s Alarm event: rule=%s key=%s val=%.4f ts=%lu (Unix epoch)",
-                              ok ? "\U0001f514" : "⚠️",
+                              ok ? "\U0001f514" : "",
                               event.ruleId, event.key, event.currentValue,
                               (unsigned long)event.timestamp);
                 if (!ok)
                 {
-                    ZENO_LOG_CORE("  ↳ Publish failed — cooldown NOT started, will retry next cycle");
+                    ZENO_LOG_CORE("Publish failed cooldown NOT started, will retry next cycle");
                 }
                 return ok;
             }
-            ZENO_LOG_CORE("⚠️ Alarm skipped — MQTT not connected (will retry)");
+            ZENO_LOG_CORE("Alarm skipped MQTT not connected (will retry)");
             return false; });
 
         // Wire user-facing notification callback
@@ -3629,7 +3629,7 @@ namespace ZenoPCB
             _alarmEngine->onAlarmNotify(_alarmTriggeredCallback);
         }
 
-        ZENO_LOG_CORE("✅ Edge Alarm module initialized (subscription handled by unified callback)");
+        ZENO_LOG_CORE("Edge Alarm module initialized (subscription handled by unified callback)");
 #endif // !ZENOPCB_DISABLE_ALARM
     }
 
@@ -3639,12 +3639,12 @@ namespace ZenoPCB
         (void)topic; (void)payload;
         return;
 #else
-        ZENO_LOG_CORE("📥 Alarm config received: %s", payload.c_str());
+        ZENO_LOG_CORE("Alarm config received: %s", payload.c_str());
         uint32_t startMs = millis();
 
         if (!_alarmEngine)
         {
-            ZENO_LOG_CORE("⚠️ Alarm engine not initialized");
+            ZENO_LOG_CORE("Alarm engine not initialized");
             _publishAck("alarm", "?", "", false, millis() - startMs, "Alarm engine not initialized");
             return;
         }
@@ -3653,8 +3653,8 @@ namespace ZenoPCB
         DeserializationError err = deserializeJson(doc, payload);
         if (err)
         {
-            ZENO_LOG_CORE("❌ Alarm config parse error: %s", err.c_str());
-            _publishAck("alarm", "?", "", false, millis() - startMs, String("Parse error: ") + err.c_str());
+            ZENO_LOG_CORE("Alarm config parse error: %s", err.c_str());
+            _publishAck("alarm", "?", "", false, millis() - startMs, String("Parse error:") + err.c_str());
             return;
         }
 
@@ -3664,17 +3664,17 @@ namespace ZenoPCB
         const char *action = doc["a"];
         if (!action)
         {
-            ZENO_LOG_CORE("❌ Alarm config missing 'a' field");
+            ZENO_LOG_CORE("Alarm config missing 'a' field");
             _publishAck("alarm", "?", rid ? rid : "", false, millis() - startMs, "Missing 'a' field");
             return;
         }
 
         if (strcmp(action, "set") == 0)
         {
-            // Full sync — replace all rules
+            // Full sync replace all rules
             JsonArray rules = doc["r"].as<JsonArray>();
             int count = _alarmEngine->syncRules(rules);
-            ZENO_LOG_CORE("✅ Alarm rules synced: %d rules", count);
+            ZENO_LOG_CORE("Alarm rules synced: %d rules", count);
 
             // ACK: id = rid (request tracking ID)
             _publishAck("alarm", "set", rid ? rid : "", true, millis() - startMs);
@@ -3691,7 +3691,7 @@ namespace ZenoPCB
             if (ruleId)
             {
                 _alarmEngine->deleteRule(ruleId);
-                ZENO_LOG_CORE("✅ Alarm rule deleted: %s", ruleId);
+                ZENO_LOG_CORE("Alarm rule deleted: %s", ruleId);
 
                 // ACK: id = rule ID being deleted
                 _publishAck("alarm", "del", ruleId, true, millis() - startMs);
@@ -3703,14 +3703,14 @@ namespace ZenoPCB
             }
             else
             {
-                ZENO_LOG_CORE("❌ Alarm del missing 'id' field");
+                ZENO_LOG_CORE("Alarm del missing 'id' field");
                 _publishAck("alarm", "del", rid ? rid : "", false, millis() - startMs, "Missing 'id' field");
             }
         }
         else
         {
-            ZENO_LOG_CORE("⚠️ Unknown alarm action: %s", action);
-            _publishAck("alarm", action, rid ? rid : "", false, millis() - startMs, String("Unknown action: ") + action);
+            ZENO_LOG_CORE("Unknown alarm action: %s", action);
+            _publishAck("alarm", action, rid ? rid : "", false, millis() - startMs, String("Unknown action:") + action);
         }
 #endif // !ZENOPCB_DISABLE_ALARM
     }
@@ -3751,7 +3751,7 @@ namespace ZenoPCB
                 numericValue = val.toBool() ? 1.0 : 0.0;
                 break;
             default:
-                continue; // Skip string types — not numeric
+                continue; // Skip string types not numeric
             }
 
             // Build key name "Z0", "Z1", etc.
@@ -3837,7 +3837,7 @@ namespace ZenoPCB
         serializeJson(doc, ackPayload);
 
         _mqtt->publish(ackTopic.c_str(), ackPayload.c_str(), MQTTQoS::QOS_1, false);
-        ZENO_LOG_CORE("📨 ACK → %s: %s", module, ackPayload.c_str());
+        ZENO_LOG_CORE("ACK %s: %s", module, ackPayload.c_str());
     }
 
     // ============================================
@@ -3851,31 +3851,31 @@ namespace ZenoPCB
         return *this;
     }
 
-    // Pattern G (Phase 7 D-06) — fallible OTA trigger. Distinct overload from the
+    // Pattern G (Phase 7 D-06) fallible OTA trigger. Distinct overload from the
     // enableOTA() builder above. T-4-03 safe: ESP32 production firmware does NOT
-    // call zeno.ota(url) directly (verified via RESEARCH §Pitfall 4 + A8), so this
+    // call zeno.ota(url) directly (verified via RESEARCH Pitfall 4 + A8), so this
     // additive method does not affect any existing call site.
     ZenoCapability Zeno::ota(const char *url)
     {
 #if defined(ZENOPCB_DISABLE_OTA)
         (void)url;
-        ZENO_LOG_CORE("[WARN] ota(url) — OTA subsystem disabled at compile time (ZENOPCB_DISABLE_OTA)");
+        ZENO_LOG_CORE("[WARN] ota(url) OTA subsystem disabled at compile time (ZENOPCB_DISABLE_OTA)");
         return ZenoCapability::Unavailable;
 #else
         if (!(_hal.capabilities() & IZenoHal::CAP_OTA))
         {
-            ZENO_LOG_CORE("[WARN] OTA not available on this platform — capabilities() & CAP_OTA == 0");
+            ZENO_LOG_CORE("[WARN] OTA not available on this platform capabilities() & CAP_OTA == 0");
             return ZenoCapability::Unavailable;
         }
 
-        // Delegate to the existing ZenoPCBOTA instance — the same code path the
+        // Delegate to the existing ZenoPCBOTA instance the same code path the
         // internal MQTT /ota command handler uses. If the user has not yet called
         // enableOTA() + begin(), _ota is null; return Error rather than crashing
         // on a null deref. Plan 07-06 may refine this to a stricter Pending /
         // Error split for non-ESP32 platforms.
         if (_ota == nullptr)
         {
-            ZENO_LOG_CORE("[WARN] ota(url) called before enableOTA() + begin() — _ota null");
+            ZENO_LOG_CORE("[WARN] ota(url) called before enableOTA() + begin() _ota null");
             return ZenoCapability::Error;
         }
         return _ota->beginUpdate(url) ? ZenoCapability::OK : ZenoCapability::Error;
@@ -3933,7 +3933,7 @@ namespace ZenoPCB
 #if defined(ZENOPCB_DISABLE_OTA)
         if (_otaEnabled)
         {
-            ZENO_LOG_CORE("[WARN] OTA subsystem disabled at compile time (ZENOPCB_DISABLE_OTA) — enableOTA() is a no-op on this build");
+            ZENO_LOG_CORE("[WARN] OTA subsystem disabled at compile time (ZENOPCB_DISABLE_OTA) enableOTA() is a no-op on this build");
         }
         return;
 #else
@@ -3944,7 +3944,7 @@ namespace ZenoPCB
 
         if (!_ota)
         {
-            // Explicit HAL injection (Plan 04-05) — replaces the Plan 04-04 bridge.
+            // Explicit HAL injection (Plan 04-05) replaces the Plan 04-04 bridge.
             _ota = new ZenoPCBOTA(_hal);
         }
 
@@ -3954,32 +3954,32 @@ namespace ZenoPCB
             _ota->onProgress([this](float pct)
                              {
                                  _otaProgressCallback(pct);
-                                 // ⚠️ KHÔNG publish MQTT progress trong callback!
-                                 // Callback chạy BÊN TRONG _ota->loop() → AT+CIPRXGET đang active
-                                 // Nếu gửi AT+CIPSEND (MQTT publish) → response bị lẫn → firmware corrupt
-                                 // Progress MQTT sẽ được publish SAU _ota->loop() return (xem Zeno::loop)
+                                 // KHNG publish MQTT progress trong callback!
+                                 // Callback chy BN TRONG _ota->loop() AT+CIPRXGET ang active
+                                 // Nu gi AT+CIPSEND (MQTT publish) response b ln firmware corrupt
+                                 // Progress MQTT s c publish SAU _ota->loop() return (xem Zeno::loop)
                              });
         }
 
         _ota->onComplete([this](const String &version)
                          {
             unsigned long elapsed = (_otaStartTimeMs > 0) ? (millis() - _otaStartTimeMs) / 1000 : 0;
-            ZENO_LOG_CORE("⏱️ OTA completed in %lus — Version: %s", elapsed, version.c_str());
+            ZENO_LOG_CORE("OTA completed in %lus Version: %s", elapsed, version.c_str());
             _otaStartTimeMs = 0;
 
-            // ⭐ Disable queue mode and flush remaining messages
+            // Disable queue mode and flush remaining messages
             if (_mqttQueueEnabled)
             {
                 _mqttQueueEnabled = false;
                 _flushMQTTQueue();
-                ZENO_LOG_OTA("📦 4G OTA complete: MQTT queue mode DISABLED");
+                ZENO_LOG_OTA("4G OTA complete: MQTT queue mode DISABLED");
             }
 
-            // 🔄 Force fresh MQTT connection before publishing OTA result
+            // Force fresh MQTT connection before publishing OTA result
             // Old connection may be stale (isConnected=true but publish fails)
             bool is4G = _networkProvider && strcmp(_networkProvider->getName(), "4G") == 0;
             
-            ZENO_LOG_OTA("📡 Reconnecting MQTT to publish OTA result...");
+            ZENO_LOG_OTA("Reconnecting MQTT to publish OTA result...");
             
             // Step 1: Force disconnect old (possibly stale) connection
             if (_mqtt)
@@ -4015,7 +4015,7 @@ namespace ZenoPCB
                     delay(200);
             }
             
-            ZENO_LOG_OTA("📡 MQTT reconnect: %s (took %lums)", 
+            ZENO_LOG_OTA("MQTT reconnect: %s (took %lums)", 
                          connected ? "OK" : "FAILED", millis() - startMs);
 
             // Step 4: Publish OTA completed with retry
@@ -4039,7 +4039,7 @@ namespace ZenoPCB
                         _mqtt->loop();
                     }
                     published = _mqtt->publish(respTopic.c_str(), payload.c_str(), MQTTQoS::QOS_1, false);
-                    ZENO_LOG_OTA("📤 OTA result publish attempt %d: %s", attempt + 1, published ? "OK" : "FAILED");
+                    ZENO_LOG_OTA("OTA result publish attempt %d: %s", attempt + 1, published ? "OK" : "FAILED");
                 }
 
                 if (published)
@@ -4047,7 +4047,7 @@ namespace ZenoPCB
                     // Wait for TCP buffer to flush before restart
                     delay(500);
                     _mqtt->loop();
-                    ZENO_LOG_OTA("✅ OTA completed notification sent to backend");
+                    ZENO_LOG_OTA("OTA completed notification sent to backend");
                 }
             }
 
@@ -4066,31 +4066,31 @@ namespace ZenoPCB
                 _hal.nvs().begin("ota_result", false);
                 _hal.nvs().putString("payload", payload.c_str());
                 _hal.nvs().end();
-                ZENO_LOG_OTA("💾 Publish failed — saved to NVS (will send after reboot)");
+                ZENO_LOG_OTA("Publish failed saved to NVS (will send after reboot)");
             }
             
             if (_otaCompleteCallback) _otaCompleteCallback(version); });
 
         _ota->onError([this](OTAError error, const String &message)
                       {
-            // ⭐ Disable queue mode and flush remaining messages
+            // Disable queue mode and flush remaining messages
             if (_mqttQueueEnabled)
             {
                 _mqttQueueEnabled = false;
                 _flushMQTTQueue();
-                ZENO_LOG_OTA("📦 4G OTA error: MQTT queue mode DISABLED");
+                ZENO_LOG_OTA("4G OTA error: MQTT queue mode DISABLED");
             }
 
             _publishOTAResponse("error", -1, "", message);
             if (_otaErrorCallback) _otaErrorCallback(error, message); });
 
-        // ⭐ Yield callback — gọi tại safe points khi OTA đang đợi data
-        // Tại đây AT command của OTA đã complete → an toàn cho MQTT AT commands
+        // Yield callback gi ti safe points khi OTA ang i data
+        // Ti y AT command ca OTA complete an ton cho MQTT AT commands
         _ota->onYield([this]()
                       {
             if (_mqttQueueEnabled && _mqtt)
             {
-                // 1. Run MQTT loop for keepalive (safe — OTA AT command complete)
+                // 1. Run MQTT loop for keepalive (safe OTA AT command complete)
                 _mqtt->loop();
 
                 // 2. Flush queued MQTT messages
@@ -4113,12 +4113,12 @@ namespace ZenoPCB
                     }
                     if (flushed > 0)
                     {
-                        ZENO_LOG_OTA("📤 Flushed %d queued MQTT messages at OTA yield point", flushed);
+                        ZENO_LOG_OTA("Flushed %d queued MQTT messages at OTA yield point", flushed);
                     }
                 }
             } });
 
-        // Set network client — OTA dùng client RIÊNG BIỆT với MQTT.
+        // Set network client OTA dng client RING BIT vi MQTT.
         // Pattern H gate: STM32F4 default-Ethernet has no WiFi.h / `WiFiClient`
         // member declared, so the fallback branches drop on that platform.
         if (_networkProvider)
@@ -4127,15 +4127,15 @@ namespace ZenoPCB
             if (provOTAClient)
             {
                 _ota->setClient(provOTAClient);
-                ZENO_LOG_CORE("✅ OTA using %s dedicated OTA client", _networkProvider->getName());
+                ZENO_LOG_CORE("OTA using %s dedicated OTA client", _networkProvider->getName());
             }
             else
             {
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
                 _ota->setClient(&_otaWifiClient);
-                ZENO_LOG_CORE("⚠️ OTA fallback to dedicated OTA WiFiClient (provider OTA client NULL)");
+                ZENO_LOG_CORE("OTA fallback to dedicated OTA WiFiClient (provider OTA client NULL)");
 #else
-                ZENO_LOG_CORE("⚠️ Provider OTA client NULL and no WiFiClient fallback on this platform");
+                ZENO_LOG_CORE("Provider OTA client NULL and no WiFiClient fallback on this platform");
 #endif
             }
         }
@@ -4143,13 +4143,13 @@ namespace ZenoPCB
         {
 #if defined(ESP32) || defined(ESP8266) || defined(ARDUINO_UNOR4_WIFI) || defined(STM32F1xx)
             _ota->setClient(&_otaWifiClient);
-            ZENO_LOG_CORE("✅ OTA using dedicated OTA WiFiClient (separate from MQTT)");
+            ZENO_LOG_CORE("OTA using dedicated OTA WiFiClient (separate from MQTT)");
 #else
-            ZENO_LOG_CORE("⚠️ No network provider AND no WiFiClient on this platform — OTA cannot connect");
+            ZENO_LOG_CORE("No network provider AND no WiFiClient on this platform OTA cannot connect");
 #endif
         }
 
-        ZENO_LOG_CORE("✅ OTA module initialized (subscription handled by unified callback)");
+        ZENO_LOG_CORE("OTA module initialized (subscription handled by unified callback)");
 #endif // !ZENOPCB_DISABLE_OTA
     }
 
@@ -4159,24 +4159,24 @@ namespace ZenoPCB
         (void)topic; (void)payload;
         return;
 #else
-        ZENO_LOG_CORE("📥 OTA command received: %s", maskPayload(payload).c_str());
+        ZENO_LOG_CORE("OTA command received: %s", maskPayload(payload).c_str());
 
         if (!_ota)
         {
-            ZENO_LOG_CORE("⚠️ OTA module not initialized");
+            ZENO_LOG_CORE("OTA module not initialized");
             return;
         }
 
         // === Guard: prevent infinite retry loop ===
         // If reconnect delivers the same retained OTA message that already failed,
-        // skip it to avoid endless OTA-fail → disconnect → reconnect → OTA-fail cycle.
+        // skip it to avoid endless OTA-fail disconnect reconnect OTA-fail cycle.
         const unsigned long OTA_DEDUP_WINDOW_MS = 60000; // 60s cooldown
 
         if (_lastFailedOTAPayload.length() > 0 &&
             _lastFailedOTAPayload == payload &&
             (millis() - _lastFailedOTATime) < OTA_DEDUP_WINDOW_MS)
         {
-            ZENO_LOG_CORE("⏭️ OTA skipped: same command failed %lus ago (cooldown 60s)",
+            ZENO_LOG_CORE("OTA skipped: same command failed %lus ago (cooldown 60s)",
                           (millis() - _lastFailedOTATime) / 1000);
             return;
         }
@@ -4185,8 +4185,8 @@ namespace ZenoPCB
         DeserializationError err = deserializeJson(doc, payload);
         if (err)
         {
-            ZENO_LOG_CORE("❌ OTA parse error: %s", err.c_str());
-            _publishOTAResponse("error", -1, "", String("JSON parse error: ") + err.c_str());
+            ZENO_LOG_CORE("OTA parse error: %s", err.c_str());
+            _publishOTAResponse("error", -1, "", String("JSON parse error:") + err.c_str());
             return;
         }
 
@@ -4194,7 +4194,7 @@ namespace ZenoPCB
 
         if (!action)
         {
-            ZENO_LOG_CORE("❌ OTA missing 'action' field");
+            ZENO_LOG_CORE("OTA missing 'action' field");
             _publishOTAResponse("error", -1, "", "Missing 'action' field");
             return;
         }
@@ -4215,7 +4215,7 @@ namespace ZenoPCB
             if (version && _deviceInfo.version.length() > 0 &&
                 _deviceInfo.version == version)
             {
-                ZENO_LOG_CORE("⏭️ OTA skipped: version %s already running", version);
+                ZENO_LOG_CORE("OTA skipped: version %s already running", version);
                 _publishOTAResponse("skipped", 0, version, "Already running this version");
                 _lastFailedOTAPayload = "";
                 return;
@@ -4226,20 +4226,20 @@ namespace ZenoPCB
                 _ota->setNewVersion(version);
             }
 
-            // ⭐ DEFERRED: Không gọi beginUpdate() ở đây (blocking TCP connect)
-            // Lưu thông tin → xử lý trong Zeno::loop() → tránh block MQTT keepalive
+            // DEFERRED: Khng gi beginUpdate() y (blocking TCP connect)
+            // Lu thng tin x l trong Zeno::loop() trnh block MQTT keepalive
             _pendingOTAUrl = String(url);
             _pendingOTAVersion = version ? String(version) : "";
             _pendingOTAPayload = payload;
             _pendingOTAStart = true;
 
-            ZENO_LOG_CORE("📋 OTA queued for next loop cycle: %s", maskUrl(String(url)).c_str());
+            ZENO_LOG_CORE("OTA queued for next loop cycle: %s", maskUrl(String(url)).c_str());
         }
         else if (strcmp(action, "cancel") == 0)
         {
             if (_ota->isInProgress())
             {
-                ZENO_LOG_CORE("⛔ OTA cancel command from backend");
+                ZENO_LOG_CORE("OTA cancel command from backend");
                 _ota->cancelUpdate("Cancelled by backend");
                 // Error callback already fires _publishOTAResponse("error")
             }
@@ -4250,12 +4250,12 @@ namespace ZenoPCB
                 _pendingOTAUrl = "";
                 _pendingOTAVersion = "";
                 _pendingOTAPayload = "";
-                ZENO_LOG_CORE("⛔ Pending OTA cancelled by backend");
+                ZENO_LOG_CORE("Pending OTA cancelled by backend");
                 _publishOTAResponse("cancelled", 0, "", "Cancelled by backend before start");
             }
             else
             {
-                ZENO_LOG_CORE("⚠️ Cancel received but no OTA in progress");
+                ZENO_LOG_CORE("Cancel received but no OTA in progress");
                 _publishOTAResponse("cancelled", 0, "", "No OTA in progress");
             }
         }
@@ -4264,7 +4264,7 @@ namespace ZenoPCB
             if (ZenoPCBOTA::canRollBack())
             {
                 _publishOTAResponse("rolling_back");
-                ZENO_LOG_CORE("🔄 OTA rollback initiated");
+                ZENO_LOG_CORE("OTA rollback initiated");
                 delay(500); // Let MQTT publish complete
                 ZenoPCBOTA::rollBack();
             }
@@ -4295,8 +4295,8 @@ namespace ZenoPCB
         }
         else
         {
-            ZENO_LOG_CORE("❌ Unknown OTA action: %s", action);
-            _publishOTAResponse("error", -1, "", String("Unknown action: ") + action);
+            ZENO_LOG_CORE("Unknown OTA action: %s", action);
+            _publishOTAResponse("error", -1, "", String("Unknown action:") + action);
         }
 #endif // !ZENOPCB_DISABLE_OTA
     }
@@ -4322,21 +4322,21 @@ namespace ZenoPCB
 
         if (!_mqtt || !_mqtt->isConnected())
         {
-            // MQTT mất kết nối — queue cho sau reconnect
+            // MQTT mt kt ni queue cho sau reconnect
             if (strcmp(status, "error") == 0 && _pendingOTAErrorPayload.length() == 0)
             {
                 _pendingOTAErrorPayload = payload;
-                ZENO_LOG_OTA("⏳ MQTT offline — queued OTA error response for next reconnect");
+                ZENO_LOG_OTA("MQTT offline queued OTA error response for next reconnect");
             }
             else if (strcmp(status, "completed") == 0)
             {
-                // ⚠️ 4G blocking OTA: MQTT socket đã đóng trước khi OTA
-                // Lưu vào NVS → sẽ publish sau reboot khi MQTT reconnect
+                // 4G blocking OTA: MQTT socket ng trc khi OTA
+                // Lu vo NVS s publish sau reboot khi MQTT reconnect
                 // T-4-02: namespace "ota_result" + key "payload" preserved byte-for-byte.
                 _hal.nvs().begin("ota_result", false);
                 _hal.nvs().putString("payload", payload.c_str());
                 _hal.nvs().end();
-                ZENO_LOG_OTA("💾 MQTT offline — saved OTA completed to NVS (publish after reboot)");
+                ZENO_LOG_OTA("MQTT offline saved OTA completed to NVS (publish after reboot)");
             }
             return;
         }
@@ -4346,13 +4346,13 @@ namespace ZenoPCB
 
         if (published)
         {
-            ZENO_LOG_OTA("📤 Response → %s: %s", status, payload.c_str());
+            ZENO_LOG_OTA("Response %s: %s", status, payload.c_str());
         }
         else
         {
-            ZENO_LOG_OTA("❌ Publish failed → %s", status);
+            ZENO_LOG_OTA("Publish failed %s", status);
 
-            // ⭐ Publish failed but isConnected() was true (stale connection)
+            // Publish failed but isConnected() was true (stale connection)
             // Save to NVS so it can be published after reboot
             if (strcmp(status, "completed") == 0)
             {
@@ -4360,18 +4360,18 @@ namespace ZenoPCB
                 _hal.nvs().begin("ota_result", false);
                 _hal.nvs().putString("payload", payload.c_str());
                 _hal.nvs().end();
-                ZENO_LOG_OTA("💾 Publish failed — saved OTA completed to NVS (publish after reboot)");
+                ZENO_LOG_OTA("Publish failed saved OTA completed to NVS (publish after reboot)");
             }
             else if (strcmp(status, "error") == 0 && _pendingOTAErrorPayload.length() == 0)
             {
                 _pendingOTAErrorPayload = payload;
-                ZENO_LOG_OTA("⏳ Publish failed — queued OTA error for next reconnect");
+                ZENO_LOG_OTA("Publish failed queued OTA error for next reconnect");
             }
         }
     }
 
     // ========================================
-    // MQTT Queue Methods — for 4G OTA time-slicing
+    // MQTT Queue Methods for 4G OTA time-slicing
     // Messages queued during OTA, flushed at yield points
     // ========================================
 
@@ -4385,7 +4385,7 @@ namespace ZenoPCB
         int count = _mqttQueueCount();
         if (count >= MAX_MQTT_QUEUE - 1)
         {
-            ZENO_LOG_OTA("⚠️ MQTT queue full (%d), dropping oldest message", count);
+            ZENO_LOG_OTA("MQTT queue full (%d), dropping oldest message", count);
             // Drop oldest (advance head)
             _mqttQueueHead = (_mqttQueueHead + 1) % MAX_MQTT_QUEUE;
         }
@@ -4396,7 +4396,7 @@ namespace ZenoPCB
         _mqttQueue[_mqttQueueTail].retain = retain;
         _mqttQueueTail = (_mqttQueueTail + 1) % MAX_MQTT_QUEUE;
 
-        ZENO_LOG_OTA("📥 Queued MQTT message (%d in queue): %s", _mqttQueueCount(), maskTopic(topic).c_str());
+        ZENO_LOG_OTA("Queued MQTT message (%d in queue): %s", _mqttQueueCount(), maskTopic(topic).c_str());
     }
 
     void Zeno::_flushMQTTQueue()
@@ -4419,7 +4419,7 @@ namespace ZenoPCB
         }
         if (flushed > 0)
         {
-            ZENO_LOG_OTA("📤 Flushed %d remaining MQTT messages", flushed);
+            ZENO_LOG_OTA("Flushed %d remaining MQTT messages", flushed);
         }
     }
 

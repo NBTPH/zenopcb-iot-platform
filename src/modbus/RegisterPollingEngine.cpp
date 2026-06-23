@@ -1,4 +1,4 @@
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only.
+// Plan 06-03 D-03 - Modbus subsystem is ESP32-only.
 #if defined(ESP32)
 
 #include "RegisterPollingEngine.h"
@@ -24,9 +24,9 @@ namespace ZenoPCB
      * Each register is 16-bit: [highByte][lowByte]
      *
      * For value 0x12345678:
-     * - BIG_ENDIAN (ABCD):      reg[0]=0x1234, reg[1]=0x5678
+     * - BIG_ENDIAN (ABCD): reg[0]=0x1234, reg[1]=0x5678
      * - BIG_ENDIAN_SWAP (BADC): reg[0]=0x3412, reg[1]=0x7856
-     * - LITTLE_ENDIAN (DCBA):   reg[0]=0x7856, reg[1]=0x3412
+     * - LITTLE_ENDIAN (DCBA): reg[0]=0x7856, reg[1]=0x3412
      * - LITTLE_ENDIAN_SWAP (CDAB): reg[0]=0x5678, reg[1]=0x1234
      */
     uint32_t RegisterPollingEngine::_assemble32Bit(const uint16_t *regs, ByteOrder order)
@@ -168,13 +168,13 @@ namespace ZenoPCB
     {
         uint32_t now = millis();
 
-        // 1. If async read active → process bus data and check completion
+        // 1. If async read active -> process bus data and check completion
         if (_activePollKey.length() > 0)
         {
             _checkActiveRead(now);
         }
 
-        // 1.5: Write preemption — abort slow reads when writes are pending
+        // 1.5: Write preemption - abort slow reads when writes are pending
         if (_activePollKey.length() > 0 && !_writeQueue.empty())
         {
             _preemptReadForWrite(now);
@@ -211,7 +211,7 @@ namespace ZenoPCB
 
     bool RegisterPollingEngine::enqueueWrite(const WriteRequest &request)
     {
-        // ⭐ Deduplication: Check if same mqttKey exists in queue
+        // Deduplication: Check if same mqttKey exists in queue
         for (auto &existing : _writeQueue)
         {
             if (existing.mqttKey == request.mqttKey)
@@ -658,7 +658,7 @@ namespace ZenoPCB
                 task.retryCount = 0;
                 _pollsCompleted++;
 
-                // ⭐ Mark connection healthy
+                // Mark connection healthy
                 auto conn = connMgr.getConnection(String(task.connectionId));
                 if (conn)
                 {
@@ -673,7 +673,7 @@ namespace ZenoPCB
         auto &buffer = ModbusDataBuffer::getInstance();
         const DataMonitorConfig &config = task.config;
 
-        // ⭐ v2.2: Apply byte order and save to correct field by dataType
+        // v2.2: Apply byte order and save to correct field by dataType
         // getScaledValue() in RegisterValue will apply scale/offset
         switch (config.dataType)
         {
@@ -738,7 +738,7 @@ namespace ZenoPCB
 
         // Debug: Log scaled value
         double scaledValue = buffer.getScaledValue(mqttKey);
-        ZENO_LOG_MODBUS("📊 [%s] addr=%d scaled=%.4f (raw=%d)",
+        ZENO_LOG_MODBUS(" [%s] addr=%d scaled=%.4f (raw=%d)",
                         mqttKey.c_str(), config.address, scaledValue, task.valueBuffer[0]);
     }
 
@@ -768,15 +768,15 @@ namespace ZenoPCB
             return false;
         }
 
-        // ⭐ Get connection config to retrieve delayBetweenPolls
+        // Get connection config to retrieve delayBetweenPolls
         ConnectionConfig connConfig;
         bool configLoaded = LittleFSManager::readConfig(connId, connConfig);
         if (!configLoaded)
         {
-            ZENO_LOG_CORE("❌ Failed to read connection config: %s", connId.c_str());
+            ZENO_LOG_CORE(" Failed to read connection config: %s", connId.c_str());
             return false;
         }
-        ZENO_LOG_CORE("✅ Loaded config for %s: dbp=%dms, maxRetries=%d",
+        ZENO_LOG_CORE(" Loaded config for %s: dbp=%dms, maxRetries=%d",
                       connId.c_str(), connConfig.delayBetweenPolls, connConfig.maxRetries);
 
         // Create polling task
@@ -784,14 +784,14 @@ namespace ZenoPCB
         task.config = config;
         memcpy(task.connectionId, config.connectionId, 4);
         task.connectionId[4] = '\0';
-        task.pollInterval = max((uint32_t)connConfig.delayBetweenPolls, MIN_POLL_INTERVAL_MS); // ⭐ Use dbp, min 1000ms
-        task.maxRetries = connConfig.maxRetries;                                               // ⭐ Also use maxRetries from connection
+        task.pollInterval = max((uint32_t)connConfig.delayBetweenPolls, MIN_POLL_INTERVAL_MS); // Use dbp, min 1000ms
+        task.maxRetries = connConfig.maxRetries; // Also use maxRetries from connection
         task.enabled = config.enabled;
         task.lastPollTime = millis();
         task.pendingRead = false;
         task.valueReady = false;
 
-        ZENO_LOG_CORE("🆕 Task created: pollInterval=%dms, lastPollTime=%d",
+        ZENO_LOG_CORE(" Task created: pollInterval=%dms, lastPollTime=%d",
                       task.pollInterval, task.lastPollTime);
 
         _pollingTasks[mqttKey] = task;
@@ -814,7 +814,7 @@ namespace ZenoPCB
         auto it = _pollingTasks.find(mqttKey);
         if (it == _pollingTasks.end())
         {
-            // ⭐ Register not found - try to add it instead
+            // Register not found - try to add it instead
             ZENO_LOG_CORE("Register not found for update, attempting to add: %s", mqttKey.c_str());
             return addRegister(config);
         }
@@ -827,7 +827,7 @@ namespace ZenoPCB
         it->second.retryCount = 0;
         it->second.pendingRead = false;
 
-        // ⭐ Update pollInterval from connection config
+        // Update pollInterval from connection config
         String connId(config.connectionId);
         ConnectionConfig connConfig;
         if (LittleFSManager::readConfig(connId, connConfig))
@@ -893,7 +893,7 @@ namespace ZenoPCB
         if (count > 0)
         {
             ZENO_LOG("PollingEngine", "%s %d registers for connection '%s'",
-                          enable ? "✅ Enabled" : "⏸️ Disabled", count, connectionId.c_str());
+                          enable ? " Enabled" : "Disabled", count, connectionId.c_str());
         }
         return count;
     }
@@ -903,7 +903,7 @@ namespace ZenoPCB
         return enableRegistersByConnection(connectionId, false);
     }
 
-    // ⭐ v2.5: Force immediate read — mark all tasks as due, async loop picks them up
+    // v2.5: Force immediate read - mark all tasks as due, async loop picks them up
     void RegisterPollingEngine::forceReadAll()
     {
         ZENO_LOG("PollingEngine", "Force reading ALL enabled registers...");
@@ -942,7 +942,7 @@ namespace ZenoPCB
             return false;
         }
 
-        // Reset poll timer — async loop will pick it up on next iteration
+        // Reset poll timer - async loop will pick it up on next iteration
         task.lastPollTime = 0;
         ZENO_LOG("PollingEngine", "Verify read queued: %s", mqttKey.c_str());
         return true;
@@ -1029,7 +1029,7 @@ namespace ZenoPCB
         if (sent)
         {
             task.pendingRead = true;
-            ZENO_LOG_MODBUS("📤 Async read: %s addr=%d slave=%d rt=%d cnt=%d",
+            ZENO_LOG_MODBUS(" Async read: %s addr=%d slave=%d rt=%d cnt=%d",
                             mqttKey.c_str(), config.address, config.slaveId,
                             (int)config.registerType, count);
         }
@@ -1056,14 +1056,14 @@ namespace ZenoPCB
             return;
         }
 
-        // v2.6: Watchdog — if request hangs too long, reset and move on (ZF-01 pattern)
+        // v2.6: Watchdog - if request hangs too long, reset and move on (ZF-01 pattern)
         if (now - _activePollStartTime > POLL_WATCHDOG_MS)
         {
             task.lastErrorCode = 0xE4;
             task.pendingRead = false;
-            task.lastPollTime = now; // Spread retries — wait full interval before next attempt
+            task.lastPollTime = now; // Spread retries - wait full interval before next attempt
             _pollGeneration++;
-            ZENO_LOG_CORE("⏰ Watchdog [%s] addr=%d (gen=%d)",
+            ZENO_LOG_CORE("Watchdog [%s] addr=%d (gen=%d)",
                           _activePollKey.c_str(), task.config.address, _pollGeneration);
             _handlePollFailure(_activePollKey, task);
             _activePollKey = "";
@@ -1071,7 +1071,7 @@ namespace ZenoPCB
         }
 
         if (conn->isBusy())
-            return; // Still waiting — processTask() already called by ConnectionManager::loop()
+            return; // Still waiting - processTask() already called by ConnectionManager::loop()
 
         // Transaction completed
         if (conn->wasAsyncReadSuccessful())
@@ -1085,21 +1085,21 @@ namespace ZenoPCB
             task.valueReady = true;
             task.lastErrorCode = 0;
             task.retryCount = 0;
-            // pendingRead stays true — _processResponses() will handle it
+            // pendingRead stays true - _processResponses() will handle it
 
-            ZENO_LOG_MODBUS("✅ Async read OK: %s sid=%d addr=%d rt=%d buf[0]=%d",
+            ZENO_LOG_MODBUS(" Async read OK: %s sid=%d addr=%d rt=%d buf[0]=%d",
                             _activePollKey.c_str(), task.config.slaveId,
                             task.config.address, (int)task.config.registerType,
                             task.valueBuffer[0]);
         }
         else
         {
-            // Read failed — skip immediately, pollInterval will retry next cycle naturally
+            // Read failed - skip immediately, pollInterval will retry next cycle naturally
             task.lastErrorCode = conn->getLastErrorCode();
             task.pendingRead = false;
             task.lastPollTime = now; // Wait full interval before next attempt
 
-            ZENO_LOG_CORE("❌ Read failed [%s] sid=%d addr=%d rt=%d error=0x%02X",
+            ZENO_LOG_CORE(" Read failed [%s] sid=%d addr=%d rt=%d error=0x%02X",
                           _activePollKey.c_str(), task.config.slaveId, task.config.address,
                           (int)task.config.registerType, task.lastErrorCode);
 
@@ -1119,7 +1119,7 @@ namespace ZenoPCB
         _pollsFailed++;
         task.retryCount = 0;
 
-        // Connection-level health tracking (no register-level backoff — ZF-01 pattern)
+        // Connection-level health tracking (no register-level backoff - ZF-01 pattern)
         auto &connMgr = ModbusConnectionManager::getInstance();
         auto conn = connMgr.getConnection(String(task.connectionId));
         if (conn)
@@ -1127,7 +1127,7 @@ namespace ZenoPCB
     }
 
     // ============================================
-    // v2.7: Write preemption — abort slow reads for pending writes
+    // v2.7: Write preemption - abort slow reads for pending writes
     // ============================================
 
     void RegisterPollingEngine::_preemptReadForWrite(uint32_t now)
@@ -1155,7 +1155,7 @@ namespace ZenoPCB
         task.lastPollTime = now; // Retry next cycle
         _pollGeneration++;
 
-        ZENO_LOG_CORE("⚡ Write preempt: aborted read [%s] after %dms (writes=%d)",
+        ZENO_LOG_CORE(" Write preempt: aborted read [%s] after %dms (writes=%d)",
                       _activePollKey.c_str(), (int)(now - _activePollStartTime), _writeQueue.size());
 
         _activePollKey = "";
@@ -1209,7 +1209,7 @@ namespace ZenoPCB
             return false;
         }
 
-        // ⭐ v2.4: Check connection health - skip if in backoff
+        // v2.4: Check connection health - skip if in backoff
         if (!conn->isHealthy())
         {
             // Connection in backoff mode - skip poll to avoid timeout blocking
@@ -1244,7 +1244,7 @@ namespace ZenoPCB
                 // Error occurred
                 task.lastErrorCode = conn->getLastErrorCode();
                 String mqttKey(task.config.mqttKey);
-                ZENO_LOG_CORE("❌ Read failed [%s] addr=%d error=0x%02X",
+                ZENO_LOG_CORE(" Read failed [%s] addr=%d error=0x%02X",
                               mqttKey.c_str(), address, task.lastErrorCode);
 
                 // Set error in buffer
@@ -1309,12 +1309,12 @@ namespace ZenoPCB
         }
         else
         {
-            // ⚡ transId = 0 means error occurred
+            // transId = 0 means error occurred
             task.lastErrorCode = conn->getLastErrorCode();
             auto &buffer = ModbusDataBuffer::getInstance();
             String mqttKey(config.mqttKey);
             buffer.setError(mqttKey, String("E") + String(task.lastErrorCode, HEX), task.lastErrorCode);
-            ZENO_LOG_CORE("❌ Modbus read failed: %s", mqttKey.c_str());
+            ZENO_LOG_CORE(" Modbus read failed: %s", mqttKey.c_str());
         }
 
         return false;
@@ -1322,4 +1322,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif // Plan 06-03 D-03 - defined(ESP32)

@@ -5,7 +5,7 @@
  * @file ZenoPCBDebug.h
  * @brief Cấu hình debug duy nhất cho ZenoPCB IoT Library
  *
- * ⭐ ĐÂY LÀ NƠI DUY NHẤT ĐỂ KIỂM SOÁT TOÀN BỘ LOG OUTPUT
+ * ĐÂY LÀ NƠI DUY NHẤT ĐỂ KIỂM SOÁT TOÀN BỘ LOG OUTPUT
  * Hoạt động trên mọi IDE: Arduino IDE, PlatformIO, VS Code...
  *
  * ============================================
@@ -13,31 +13,31 @@
  * ============================================
  *
  * [Chế độ Quiet - Production/Deploy]
- *   ZENOPCB_DEBUG         = 1  (bật)
- *   ZENOPCB_DEBUG_VERBOSE = 0  (tắt - mặc định)
- *   → Chỉ hiển thị: WiFi connected, MQTT connected, lỗi quan trọng
+ * ZENOPCB_DEBUG = 1 (bật)
+ * ZENOPCB_DEBUG_VERBOSE = 0 (tắt - mặc định)
+ * -> Chỉ hiển thị: WiFi connected, MQTT connected, lỗi quan trọng
  *
  * [Chế độ Verbose - Khi debug vấn đề kết nối]
- *   ZENOPCB_DEBUG         = 1  (bật)
- *   ZENOPCB_DEBUG_VERBOSE = 1  (bật)
- *   → Hiển thị thêm: chi tiết subscribe topics, routing messages,
- *                    publish telemetry, storage init, v.v.
+ * ZENOPCB_DEBUG = 1 (bật)
+ * ZENOPCB_DEBUG_VERBOSE = 1 (bật)
+ * -> Hiển thị thêm: chi tiết subscribe topics, routing messages,
+ * publish telemetry, storage init, v.v.
  *
  * [Tắt hoàn toàn - Sản phẩm cuối]
- *   ZENOPCB_DEBUG         = 0  (tắt tất cả)
+ * ZENOPCB_DEBUG = 0 (tắt tất cả)
  *
  * [Bật debug từng module]
- *   ZENOPCB_DEBUG_MODBUS  = 1  (chỉ xem log Modbus)
- *   ZENOPCB_DEBUG_WIFI    = 1  (chỉ xem log WiFi chi tiết)
+ * ZENOPCB_DEBUG_MODBUS = 1 (chỉ xem log Modbus)
+ * ZENOPCB_DEBUG_WIFI = 1 (chỉ xem log WiFi chi tiết)
  * ============================================
  */
 
 // ============================================
-// ⭐ CẤU HÌNH CHÍNH - SỬA 2 DÒNG NÀY ĐỂ ĐIỀU CHỈNH LOG
+// CẤU HÌNH CHÍNH - SỬA 2 DÒNG NÀY ĐỂ ĐIỀU CHỈNH LOG
 // ============================================
 //
 // Library standard 2026-06-06: ships QUIET by default. Arduino IDE
-// users — who can't easily set -D build flags — get production-grade
+// users - who can't easily set -D build flags - get production-grade
 // boot output (only critical events: WiFi connect, MQTT connect/fail,
 // errors). Developers who want verbose subsystem-init traces opt-in
 // with -DZENOPCB_DEBUG=1 (PlatformIO build_flags) or by editing the
@@ -69,7 +69,7 @@
 #endif
 
 #ifndef ZENOPCB_DEBUG_4G
-#define ZENOPCB_DEBUG_4G 0 // AT command dialog — tắt mặc định (rất verbose)
+#define ZENOPCB_DEBUG_4G 0 // AT command dialog - tắt mặc định (rất verbose)
 #endif
 
 #ifndef ZENOPCB_DEBUG_CORE
@@ -85,7 +85,7 @@
 #endif
 
 #ifndef ZENOPCB_DEBUG_PROVISIONING
-#define ZENOPCB_DEBUG_PROVISIONING 0 // WiFi Provisioning — TẮT mặc định (ẩn credentials/API/tokens)
+#define ZENOPCB_DEBUG_PROVISIONING 0 // WiFi Provisioning - TẮT mặc định (ẩn credentials/API/tokens)
                                      // Bật bằng: -DZENOPCB_DEBUG_PROVISIONING=1
 #endif
 
@@ -93,24 +93,24 @@
 // Portable printf shim (Phase 7 Plan 07-05)
 // ============================================
 // ESP32 + ESP8266 Arduino cores expose `Serial.printf` directly. UNO R4
-// (Renesas `UART` class) and STM32duino (`HardwareSerial`) do NOT — they
+// (Renesas `UART` class) and STM32duino (`HardwareSerial`) do NOT - they
 // only have `Serial.print` / `Serial.println`. To keep the central
 // `ZENO_LOG_*` surface working across all four platforms without losing
 // log output on the new ports, we route through a `zenopcb_printf` shim:
-//   - Espressif: forwards directly to `Serial.printf` (zero overhead).
-//   - UNO R4 / STM32: `snprintf` into a 256-byte stack buffer + `Serial.print`.
+// - Espressif: forwards directly to `Serial.printf` (zero overhead).
+// - UNO R4 / STM32: `snprintf` into a 256-byte stack buffer + `Serial.print`.
 //
-// Keeps CLAUDE.md "library code never calls Serial.print* directly — use
+// Keeps CLAUDE.md "library code never calls Serial.print* directly - use
 // ZENO_LOG_*" invariant intact, and ESP32 baseline byte-identical.
 #if defined(ESP32) || defined(ESP8266)
   #define ZENOPCB_PRINTF(fmt, ...) Serial.printf(fmt, ##__VA_ARGS__)
 #else
   // Portable shim: snprintf to a stack buffer then Serial.print.
-  // Buffer is bounded at 256 bytes — large enough for typical log lines;
+  // Buffer is bounded at 256 bytes - large enough for typical log lines;
   // longer messages are truncated (defensive, matches ESP32 vprintf 256B
   // chunk behavior).
   //
-  // Plan 07-06.5 (Area C aftermath) — STM32duino + Renesas headers do
+  // Plan 07-06.5 (Area C aftermath) - STM32duino + Renesas headers do
   // not pull <stdarg.h> via <stdio.h> the same way Espressif cores do;
   // include both va_list machinery and <Arduino.h> for Serial declaration
   // BEFORE the shim definition. Espressif arm above does not need this
@@ -141,7 +141,7 @@
 // + `static` so multiple TUs get a private copy with no link conflict.
 //
 // Guard via `__has_include` style of detection: STM32 + Renesas miss it;
-// ESP32 / ESP8266 have it natively — exclude there to keep baseline byte-
+// ESP32 / ESP8266 have it natively - exclude there to keep baseline byte-
 // identical and avoid ODR weirdness.
 #include <string.h>
 #if !defined(ESP32) && !defined(ESP8266)
@@ -218,10 +218,10 @@ static inline size_t zenopcb_strlcpy(char* dst, const char* src, size_t dsize)
 // ============================================
 // PROVISIONING Macros (ẩn toàn bộ theo mặc định)
 // Tắt khi ZENOPCB_DEBUG_PROVISIONING=0 (mặc định):
-//   - Credentials, userId, deviceId, token
-//   - API endpoint calls, response body
-//   - WiFi SSID, IP, APN, Ethernet config
-//   - Button hold logs, AP mode startup
+// - Credentials, userId, deviceId, token
+// - API endpoint calls, response body
+// - WiFi SSID, IP, APN, Ethernet config
+// - Button hold logs, AP mode startup
 // Bật khi debug firmware: -DZENOPCB_DEBUG_PROVISIONING=1
 // ============================================
 
@@ -236,7 +236,7 @@ static inline size_t zenopcb_strlcpy(char* dst, const char* src, size_t dsize)
 // ============================================
 // VERBOSE Macro (for noisy detail logs)
 // Dùng cho: subscribe topics, publish confirmations,
-//           message routing, storage init, v.v.
+// message routing, storage init, v.v.
 // ============================================
 
 #if ZENOPCB_DEBUG_VERBOSE
@@ -246,8 +246,8 @@ static inline size_t zenopcb_strlcpy(char* dst, const char* src, size_t dsize)
 #endif
 
 // ============================================
-// Security Helpers — mask token in topics/credentials
-// Topic format: v1/devices/{token}/suffix → v1/devices/****/suffix
+// Security Helpers - mask token in topics/credentials
+// Topic format: v1/devices/{token}/suffix -> v1/devices/****/suffix
 // ============================================
 
 #include <Arduino.h>
@@ -269,7 +269,7 @@ inline String maskToken(const String& token) {
 
 /**
  * @brief Mask sensitive query params (token=xxx) in URL
- * e.g. "http://host/path?token=abc-123-def" → "http://host/path?token=abc-...def"
+ * e.g. "http://host/path?token=abc-123-def" -> "http://host/path?token=abc-...def"
  */
 inline String maskUrl(const String& url) {
     // Mask token= query parameter

@@ -9,7 +9,7 @@
  * @version 1.1.0
  */
 
-// Plan 06-03 D-03 — Modbus subsystem is ESP32-only; TU guard so PIO
+// Plan 06-03 D-03 - Modbus subsystem is ESP32-only; TU guard so PIO
 // library scanner reduces this file to empty TU on ESP8266.
 #if defined(ESP32)
 
@@ -50,7 +50,7 @@ namespace ZenoPCB
 
         JsonObject obj = doc.as<JsonObject>();
 
-        // ⭐ Check for get_all: legacy format {"get_all":true}
+        // Check for get_all: legacy format {"get_all":true}
         // OR cloud format {"requestType":"get_telemetry","command":"GET_DATA"}
         bool isGetAll = (obj.containsKey("get_all") && obj["get_all"].as<bool>());
         if (!isGetAll && obj.containsKey("command"))
@@ -101,7 +101,7 @@ namespace ZenoPCB
 
             String mqttKey = kv.key().c_str();
 
-            // ⭐ Check if this is a Z key (Z0-Z254)
+            // Check if this is a Z key (Z0-Z254)
             if (isZKey(mqttKey.c_str()))
             {
                 ZKey zk = stringToZKey(mqttKey.c_str());
@@ -189,7 +189,7 @@ namespace ZenoPCB
                                       "Register not writable (INPUT/DISCRETE)");
         }
 
-        // ⭐ NEW: Use write queue instead of direct write
+        // NEW: Use write queue instead of direct write
         // This avoids conflicts with ongoing read operations
         // Write-hold and buffer injection handled by _completeCurrentWrite in polling engine
         // This callback handles instant telemetry publish (both success and failure)
@@ -272,7 +272,7 @@ namespace ZenoPCB
         // `{}` (valid JSON object, "device alive, no data") instead of
         // ArduinoJson's default `null`. Many cloud platforms interpret
         // `null` as "device not ready" and keep polling get_all on a
-        // short interval — see user report on 01_relay_single.ino.
+        // short interval - see user report on 01_relay_single.ino.
         doc.to<JsonObject>();
 
         // 1. Merge Modbus register data (if any registers configured)
@@ -300,4 +300,4 @@ namespace ZenoPCB
 
 } // namespace ZenoPCB
 
-#endif  // Plan 06-03 D-03 — defined(ESP32)
+#endif // Plan 06-03 D-03 - defined(ESP32)

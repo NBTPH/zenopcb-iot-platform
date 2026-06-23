@@ -1,10 +1,10 @@
 #include "WiFiProvisioning.h"
 #include "../core/ZenoPCBDebug.h"
-// Plan 06-03 — platform HAL bridge for backward-compat default ctor
+// Plan 06-03 platform HAL bridge for backward-compat default ctor
 // (Plan 04-05 wires explicit DI from ZenoPCB.cpp callers). WDT-feed
 // audit + ESP8266-specific yield()/feedWatchdog() insertions are Plan
 // 06-04 territory; this plan only flips the include + ctor selector.
-// Phase 7 Plan 07-06.5 (Area F follow-up) — extend HAL include switch to
+// Phase 7 Plan 07-06.5 (Area F follow-up) extend HAL include switch to
 // cover UNO R4 + STM32 so the default WiFiProvisioning() ctor can wire a
 // real reference member instead of `*reinterpret_cast<IZenoHal*>(nullptr)`
 // (the latter trips Renesas + STM32 g++ as an invalid nullptr cast under
@@ -22,7 +22,7 @@
 #include <map>
 #include <algorithm>
 
-// Plan 06-03 — ESP8266 compatibility shim for the ESP32 `wifi_mode_t`
+// Plan 06-03 ESP8266 compatibility shim for the ESP32 `wifi_mode_t`
 // typedef used in _handleVerifyWiFi(). ESP8266 Arduino Core 3.x exposes
 // the same concept under the name `WiFiMode_t`. The encryption-type
 // enum names (WIFI_AUTH_*) used in _encryptionTypeToString() do NOT map
@@ -34,10 +34,10 @@
   using wifi_mode_t = WiFiMode_t;
 #endif
 
-// Bounded buffers for HAL getString() reads. Sizes per 04-03-AUDIT.md §1.1
-// — chosen to cover the existing IEEE 802.11 / WPA2 / dotted-quad maxima
+// Bounded buffers for HAL getString() reads. Sizes per 04-03-AUDIT.md 1.1
+// chosen to cover the existing IEEE 802.11 / WPA2 / dotted-quad maxima
 // plus padding. Stack arrays only on _loadConfig() which runs once at boot
-// (CLAUDE.md "Stack arrays must be < 1 KB" — total per-frame here ~512 B).
+// (CLAUDE.md "Stack arrays must be < 1 KB" total per-frame here ~512 B).
 namespace ZenoPCB
 {
     namespace
@@ -53,24 +53,24 @@ namespace ZenoPCB
     } // namespace
 } // namespace ZenoPCB
 
-// Phase 7 Plan 07-06 — Pattern H whole-class capability gate. ESP32 + ESP8266
+// Phase 7 Plan 07-06 Pattern H whole-class capability gate. ESP32 + ESP8266
 // retain their existing class body verbatim; UNO R4 + STM32 get stub bodies
 // (returns failure + one-time warn log) at the bottom of the file. This TU
 // guard wraps the ISR globals, the `using wifi_mode_t = ...` alias above,
-// and every method body in this translation unit — all reference APIs
+// and every method body in this translation unit all reference APIs
 // (WiFi.*, WebServer*, IRAM_ATTR, scanNetworks, etc.) that do not exist on
 // UNO R4 / STM32 builds.
 #if defined(ESP32) || defined(ESP8266)
 
-// ── ISR globals for button (must be at file scope for IRAM placement) ────────
-// Modified from interrupt context — captures button press even when loop() is blocked
+// ISR globals for button (must be at file scope for IRAM placement) 
+// Modified from interrupt context captures button press even when loop() is blocked
 // (e.g., during MQTT TCP connect timeout of 15s+)
 static volatile bool g_wifiProv_btnFlag = false;
 static volatile unsigned long g_wifiProv_btnTime = 0;
 
 static void IRAM_ATTR wifiProv_buttonISR()
 {
-    // Record first press only — don't overwrite timestamp while still processing
+    // Record first press only don't overwrite timestamp while still processing
     if (!g_wifiProv_btnFlag)
     {
         g_wifiProv_btnFlag = true;
@@ -90,7 +90,7 @@ namespace ZenoPCB
     {
     }
 
-    // Backward-compat default ctor — uses the canonical platform HAL
+    // Backward-compat default ctor uses the canonical platform HAL
     // singleton (Esp32Hal on ESP32, Esp8266Hal on ESP8266 per Plan
     // 06-03). Plan 04-05 will switch ZenoPCB.cpp callers to pass `_hal`
     // directly.
@@ -122,7 +122,7 @@ namespace ZenoPCB
         _apSSID = _config.apSSIDPrefix + _getChipID();
 
         ZENO_LOG_PROV("Initializing...");
-        ZENO_LOG_PROV("AP SSID: %s", _apSSID.c_str()); // sensitive — verbose only
+        ZENO_LOG_PROV("AP SSID: %s", _apSSID.c_str()); // sensitive verbose only
         ZENO_LOG_PROV("Button Pin: %d", _config.buttonPin);
 
         pinMode(_config.buttonPin, INPUT_PULLUP);
@@ -130,13 +130,13 @@ namespace ZenoPCB
         // Initialize LED if configured
         _initLED();
 
-        // ⭐ Check if button is held at startup → force AP mode immediately
+        // Check if button is held at startup force AP mode immediately
         // This overrides WiFi auto-connect so user can enter config mode
         // even if device has saved credentials
         delay(50); // Debounce
         if (digitalRead(_config.buttonPin) == LOW)
         {
-            ZENO_LOG_PROV("Button held at startup (GPIO %d) → Entering AP mode...",
+            ZENO_LOG_PROV("Button held at startup (GPIO %d) Entering AP mode...",
                           _config.buttonPin);
             _loadConfig(); // Load config first (for device info etc), but skip WiFi connect
             _startAccessPoint();
@@ -153,7 +153,7 @@ namespace ZenoPCB
             }
             else if (_deviceConfig.configured && _skipAutoWiFiConnect)
             {
-                ZENO_LOG_PROV("Device configured — WiFi connect skipped (external network provider)");
+                ZENO_LOG_PROV("Device configured WiFi connect skipped (external network provider)");
             }
         }
         else
@@ -199,18 +199,18 @@ namespace ZenoPCB
     void WiFiProvisioning::markClaimed()
     {
         if (_deviceConfig.isClaimed)
-            return; // Already claimed — no-op
+            return; // Already claimed no-op
         _deviceConfig.isClaimed = true;
-        // Persist only the claim flag — lightweight NVS write
+        // Persist only the claim flag lightweight NVS write
         if (_hal.nvs().begin("zenopcb", false))
         {
             _hal.nvs().putBool("isClaimed", true);
             _hal.nvs().end();
-            ZENO_LOG_PROV("✅ Device marked as claimed (deferred claim succeeded)");
+            ZENO_LOG_PROV("Device marked as claimed (deferred claim succeeded)");
         }
         else
         {
-            ZENO_LOG_PROV("⚠️ markClaimed: failed to open NVS");
+            ZENO_LOG_PROV("markClaimed: failed to open NVS");
         }
     }
 
@@ -218,7 +218,7 @@ namespace ZenoPCB
     {
         if (_deviceConfig.configured && _deviceConfig.wifiSSID.length() > 0)
         {
-            ZENO_LOG_PROV("Connecting to saved WiFi: %s", _deviceConfig.wifiSSID.c_str()); // sensitive — verbose only
+            ZENO_LOG_PROV("Connecting to saved WiFi: %s", _deviceConfig.wifiSSID.c_str()); // sensitive verbose only
             _connectToWiFi();
         }
         else
@@ -250,7 +250,7 @@ namespace ZenoPCB
     {
         _checkButton();
 
-        // PITFALL 3 (D-14) — ESP8266 SW-WDT fires at ~1.5s. Feed every loop iteration.
+        // PITFALL 3 (D-14) ESP8266 SW-WDT fires at ~1.5s. Feed every loop iteration.
         // No-op-ish on ESP32 (esp_task_wdt_reset() is cheap, ~tens of cycles).
         _hal.system().feedWatchdog();
 
@@ -283,12 +283,12 @@ namespace ZenoPCB
         {
             _checkAPTimeout();
             // LED managed externally by ZenoPCB::loop() via updateLED()
-            // Không chạy reconnect khi đang ở AP mode
+            // Khng chy reconnect khi ang AP mode
         }
         else if (_deviceConfig.configured && _deviceConfig.wifiSSID.length() > 0 && !_skipAutoWiFiConnect)
         {
             // Non-blocking WiFi connection check and reconnect
-            // Chỉ chạy khi không ở AP mode, đã có config, và không dùng external network provider
+            // Ch chy khi khng AP mode, c config, v khng dng external network provider
             _checkWiFiConnection();
         }
 
@@ -397,7 +397,7 @@ namespace ZenoPCB
 
     void WiFiProvisioning::_checkButton()
     {
-        // ── Sync interrupt flag ────────────────────────────────────────────────
+        // Sync interrupt flag 
         // Button may have been pressed while loop() was blocked (e.g., MQTT TCP connect).
         // ISR recorded the press time; sync it here so hold calculation is correct.
         if (g_wifiProv_btnFlag)
@@ -410,7 +410,7 @@ namespace ZenoPCB
                 ZENO_LOG_PROV("Button detected via interrupt (GPIO %d) - hold %lums for AP mode",
                               _config.buttonPin, (unsigned long)_config.buttonHoldTimeMs);
             }
-            g_wifiProv_btnFlag = false; // Clear — already tracking this press
+            g_wifiProv_btnFlag = false; // Clear already tracking this press
         }
 
         bool buttonState = digitalRead(_config.buttonPin) == LOW;
@@ -441,7 +441,7 @@ namespace ZenoPCB
 
             if (holdTime >= _config.buttonHoldTimeMs && _state != ProvisioningState::AP_MODE_ACTIVE)
             {
-                ZENO_LOG_PROV("Button held %lums → Starting AP mode!", holdTime);
+                ZENO_LOG_PROV("Button held %lums Starting AP mode!", holdTime);
                 _handleButtonPress();
             }
         }
@@ -494,7 +494,7 @@ namespace ZenoPCB
             return;
         }
 
-        ZENO_LOG_PROV("AP Started: %s  IP: %s", // sensitive — verbose only
+        ZENO_LOG_PROV("AP Started: %s IP: %s", // sensitive verbose only
                       _apSSID.c_str(), WiFi.softAPIP().toString().c_str());
 
         _setupWebServer();
@@ -502,7 +502,7 @@ namespace ZenoPCB
         _apStartTime = millis();
         _setState(ProvisioningState::AP_MODE_ACTIVE);
 
-        // ⭐ Flash LED 3x to confirm AP mode started (visual feedback)
+        // Flash LED 3x to confirm AP mode started (visual feedback)
         if (_config.ledPin >= 0)
         {
             ZENO_LOG_PROV("Flashing LED GPIO %d to confirm AP mode...", _config.ledPin);
@@ -587,7 +587,7 @@ namespace ZenoPCB
                        { _handleReset(); });
         _webServer->on("/api/reset", HTTP_OPTIONS, [this]()
                        { _sendCORS(); });
-        // Connect endpoints — only register what this firmware supports
+        // Connect endpoints only register what this firmware supports
         _webServer->on("/api/connect/wifi", HTTP_POST, [this]()
                        { _handleConnectWiFi(); });
         _webServer->on("/api/connect/wifi", HTTP_OPTIONS, [this]()
@@ -664,7 +664,7 @@ namespace ZenoPCB
         doc["firmwareVersion"] = _deviceInfo.version;
         doc["manufacturer"] = _deviceInfo.manufacturer;
 
-        // Supported connections (array) — same as /api/info
+        // Supported connections (array) same as /api/info
         JsonArray supportedArr = doc["supportedConnections"].to<JsonArray>();
         if (_deviceInfo.supportsWiFi())
             supportedArr.add("wifi");
@@ -864,7 +864,7 @@ namespace ZenoPCB
         {
             String body = _webServer->arg("plain");
             ZENO_LOG_PROV("WiFi connect request (%d bytes)", body.length());
-            // Raw body NOT logged — may contain plaintext WiFi password
+            // Raw body NOT logged may contain plaintext WiFi password
 
             JsonDocument doc;
             DeserializationError error = deserializeJson(doc, body);
@@ -873,17 +873,17 @@ namespace ZenoPCB
                 if (doc.containsKey("userId"))
                 {
                     _deviceConfig.userId = doc["userId"].as<String>();
-                    ZENO_LOG_PROV("  userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
                 }
                 if (doc.containsKey("deviceId"))
                 {
                     _deviceConfig.deviceId = doc["deviceId"].as<String>();
-                    ZENO_LOG_PROV("  deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
                 }
                 if (doc.containsKey("wifiSSID"))
                 {
                     _deviceConfig.wifiSSID = doc["wifiSSID"].as<String>();
-                    ZENO_LOG_PROV("  wifiSSID received"); // SSID not logged
+                    ZENO_LOG_PROV("wifiSSID received"); // SSID not logged
                 }
                 if (doc.containsKey("wifiPassword"))
                 {
@@ -893,7 +893,7 @@ namespace ZenoPCB
                 if (doc.containsKey("dhcp"))
                 {
                     _deviceConfig.wifiDHCP = doc["dhcp"].as<bool>();
-                    ZENO_LOG_PROV("  dhcp: %s", _deviceConfig.wifiDHCP ? "true" : "false");
+                    ZENO_LOG_PROV("dhcp: %s", _deviceConfig.wifiDHCP ? "true" : "false");
                 }
                 if (doc.containsKey("ip"))
                     _deviceConfig.wifiIP = doc["ip"].as<String>();
@@ -916,8 +916,8 @@ namespace ZenoPCB
             return;
         }
 
-        // ── STEP 1: Test WiFi connection ──────────────────────────────────────
-        ZENO_LOG_PROV("🔍 Step 1/3: Testing WiFi connection..."); // SSID not logged
+        // STEP 1: Test WiFi connection 
+        ZENO_LOG_PROV("Step 1/3: Testing WiFi connection..."); // SSID not logged
         WiFi.mode(WIFI_AP_STA);
         WiFi.begin(_deviceConfig.wifiSSID.c_str(), _deviceConfig.wifiPassword.c_str());
 
@@ -925,7 +925,7 @@ namespace ZenoPCB
         while (WiFi.status() != WL_CONNECTED && attempts < 30) // 15s
         {
             delay(500);
-            yield();                          // PITFALL 3 (D-14) — explicit cooperative yield
+            yield();                          // PITFALL 3 (D-14) explicit cooperative yield
             _hal.system().feedWatchdog();
             ZENO_LOG_PROV_RAW(".");
             attempts++;
@@ -934,7 +934,7 @@ namespace ZenoPCB
 
         if (WiFi.status() != WL_CONNECTED)
         {
-            ZENO_LOG_PROV("❌ WiFi connection failed");
+            ZENO_LOG_PROV("WiFi connection failed");
             int wifiStatus = WiFi.status();
             WiFi.disconnect(true);
             delay(100);
@@ -955,18 +955,18 @@ namespace ZenoPCB
 
         String wifiIP = WiFi.localIP().toString();
         int wifiRSSI = WiFi.RSSI();
-        ZENO_LOG_PROV("✅ WiFi OK! IP: %s, RSSI: %d", wifiIP.c_str(), wifiRSSI);
+        ZENO_LOG_PROV("WiFi OK! IP: %s, RSSI: %d", wifiIP.c_str(), wifiRSSI);
 
-        // ── STEP 2: Test MQTT connection ──────────────────────────────────────
+        // STEP 2: Test MQTT connection 
         bool mqttOK = true;
         if (_mqttTestCallback)
         {
-            ZENO_LOG_PROV("🔍 Step 2/3: Testing MQTT broker connection...");
+            ZENO_LOG_PROV("Step 2/3: Testing MQTT broker connection...");
             mqttOK = _mqttTestCallback();
 
             if (!mqttOK)
             {
-                ZENO_LOG_PROV("❌ MQTT connection failed");
+                ZENO_LOG_PROV("MQTT connection failed");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -984,19 +984,19 @@ namespace ZenoPCB
                 _webServer->send(503, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ MQTT OK!");
+            ZENO_LOG_PROV("MQTT OK!");
         }
         else
         {
-            ZENO_LOG_PROV("⚠️ No MQTT test callback — skipping MQTT check");
+            ZENO_LOG_PROV("No MQTT test callback skipping MQTT check");
         }
 
-        // ── STEP 3: Claim device via MQTT ─────────────────────────────────────
+        // STEP 3: Claim device via MQTT 
         bool claimOK = true;
         if (_claimCallback && mqttOK)
         {
-            ZENO_LOG_PROV("🔍 Step 3/3: Claiming device via MQTT...");
-            ZENO_LOG_PROV("📋 Claim params: userId=%s deviceId=%s token=%s",
+            ZENO_LOG_PROV("Step 3/3: Claiming device via MQTT...");
+            ZENO_LOG_PROV("Claim params: userId=%s deviceId=%s token=%s",
                           _deviceConfig.userId.c_str(),
                           _deviceConfig.deviceId.c_str(),
                           maskToken(_provisionedToken).c_str());
@@ -1004,7 +1004,7 @@ namespace ZenoPCB
 
             if (!claimOK)
             {
-                ZENO_LOG_PROV("❌ Device claim failed or timed out");
+                ZENO_LOG_PROV("Device claim failed or timed out");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -1023,14 +1023,14 @@ namespace ZenoPCB
                 _webServer->send(504, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ Device claimed successfully!");
+            ZENO_LOG_PROV("Device claimed successfully!");
         }
         else if (!_claimCallback)
         {
-            ZENO_LOG_PROV("⚠️ No claim callback — skipping device claim");
+            ZENO_LOG_PROV("No claim callback skipping device claim");
         }
 
-        // ── All steps passed → restore AP, save config ────────────────────────
+        // All steps passed restore AP, save config 
         WiFi.disconnect(true);
         delay(100);
         WiFi.mode(WIFI_AP);
@@ -1040,9 +1040,9 @@ namespace ZenoPCB
         _deviceConfig.configured = true;
         _deviceConfig.isClaimed = claimOK;
         _saveConfig();
-        ZENO_LOG_PROV("✅ Configuration saved to NVS (claimed: %s)", claimOK ? "true" : "false");
+        ZENO_LOG_PROV("Configuration saved to NVS (claimed: %s)", claimOK ? "true" : "false");
 
-        // ── Send success response ─────────────────────────────────────────────
+        // Send success response 
         JsonDocument response;
         response["success"] = true;
         response["message"] = claimOK ? "WiFi, MQTT and claim verified. Restarting..." : "WiFi verified. Restarting...";
@@ -1060,9 +1060,9 @@ namespace ZenoPCB
         _webServer->send(200, "application/json", output);
         ZENO_LOG_PROV("Response sent successfully");
 
-        ZENO_LOG_PROV("⏳ Waiting 500ms for response to complete...");
+        ZENO_LOG_PROV("Waiting 500ms for response to complete...");
         delay(500);
-        ZENO_LOG_PROV("🔄 Restarting ESP to apply WiFi configuration...");
+        ZENO_LOG_PROV("Restarting ESP to apply WiFi configuration...");
         _hal.system().restart();
     }
 
@@ -1089,39 +1089,39 @@ namespace ZenoPCB
                 if (doc.containsKey("userId"))
                 {
                     _deviceConfig.userId = doc["userId"].as<String>();
-                    ZENO_LOG_PROV("  userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
                 }
                 if (doc.containsKey("deviceId"))
                 {
                     _deviceConfig.deviceId = doc["deviceId"].as<String>();
-                    ZENO_LOG_PROV("  deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
                 }
                 // DHCP setting (default: true)
                 if (doc.containsKey("dhcp"))
                 {
                     _deviceConfig.ethernetDHCP = doc["dhcp"].as<bool>();
-                    ZENO_LOG_PROV("  dhcp: %s", _deviceConfig.ethernetDHCP ? "true" : "false");
+                    ZENO_LOG_PROV("dhcp: %s", _deviceConfig.ethernetDHCP ? "true" : "false");
                 }
                 // Static IP settings (only used if dhcp=false)
                 if (doc.containsKey("ip"))
                 {
                     _deviceConfig.ethernetIP = doc["ip"].as<String>();
-                    ZENO_LOG_PROV("  ip: %s", _deviceConfig.ethernetIP.c_str());
+                    ZENO_LOG_PROV("ip: %s", _deviceConfig.ethernetIP.c_str());
                 }
                 if (doc.containsKey("gateway"))
                 {
                     _deviceConfig.ethernetGateway = doc["gateway"].as<String>();
-                    ZENO_LOG_PROV("  gateway: %s", _deviceConfig.ethernetGateway.c_str());
+                    ZENO_LOG_PROV("gateway: %s", _deviceConfig.ethernetGateway.c_str());
                 }
                 if (doc.containsKey("subnet"))
                 {
                     _deviceConfig.ethernetSubnet = doc["subnet"].as<String>();
-                    ZENO_LOG_PROV("  subnet: %s", _deviceConfig.ethernetSubnet.c_str());
+                    ZENO_LOG_PROV("subnet: %s", _deviceConfig.ethernetSubnet.c_str());
                 }
                 if (doc.containsKey("dns"))
                 {
                     _deviceConfig.ethernetDNS = doc["dns"].as<String>();
-                    ZENO_LOG_PROV("  dns: %s", _deviceConfig.ethernetDNS.c_str());
+                    ZENO_LOG_PROV("dns: %s", _deviceConfig.ethernetDNS.c_str());
                 }
             }
             else
@@ -1143,12 +1143,12 @@ namespace ZenoPCB
             return;
         }
 
-        // ── Establish temporary WiFi for MQTT test & Claim ──────────────────
+        // Establish temporary WiFi for MQTT test & Claim 
         // Ethernet isn't active in AP mode, so we use WiFi AP_STA temporarily
         bool wifiTempConnected = false;
         if (_deviceConfig.wifiSSID.length() > 0)
         {
-            ZENO_LOG_PROV("🔗 Connecting WiFi temporarily for MQTT test & claim...");
+            ZENO_LOG_PROV("Connecting WiFi temporarily for MQTT test & claim...");
             WiFi.mode(WIFI_AP_STA);
             WiFi.begin(_deviceConfig.wifiSSID.c_str(), _deviceConfig.wifiPassword.c_str());
             int attempts = 0;
@@ -1162,28 +1162,28 @@ namespace ZenoPCB
             wifiTempConnected = (WiFi.status() == WL_CONNECTED);
             if (wifiTempConnected)
             {
-                ZENO_LOG_PROV("✅ Temp WiFi OK! IP: %s", WiFi.localIP().toString().c_str());
+                ZENO_LOG_PROV("Temp WiFi OK! IP: %s", WiFi.localIP().toString().c_str());
             }
             else
             {
-                ZENO_LOG_PROV("⚠️ Temp WiFi failed — will skip MQTT test & claim");
+                ZENO_LOG_PROV("Temp WiFi failed will skip MQTT test & claim");
             }
         }
         else
         {
-            ZENO_LOG_PROV("⚠️ No WiFi credentials — will skip MQTT test & claim");
+            ZENO_LOG_PROV("No WiFi credentials will skip MQTT test & claim");
         }
 
-        // ── STEP 1: Test MQTT connection via WiFiClient ───────────────────────
+        // STEP 1: Test MQTT connection via WiFiClient 
         bool mqttOK = true;
         if (wifiTempConnected && _mqttTestCallback)
         {
-            ZENO_LOG_PROV("🔍 Step 1/2: Testing MQTT broker connection...");
+            ZENO_LOG_PROV("Step 1/2: Testing MQTT broker connection...");
             mqttOK = _mqttTestCallback();
 
             if (!mqttOK)
             {
-                ZENO_LOG_PROV("❌ MQTT connection failed");
+                ZENO_LOG_PROV("MQTT connection failed");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -1199,19 +1199,19 @@ namespace ZenoPCB
                 _webServer->send(503, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ MQTT OK!");
+            ZENO_LOG_PROV("MQTT OK!");
         }
 
-        // ── STEP 2: Claim device via MQTT ────────────────────────────────────
+        // STEP 2: Claim device via MQTT 
         bool claimOK = false;
         if (wifiTempConnected && mqttOK && _claimCallback)
         {
-            ZENO_LOG_PROV("🔍 Step 2/2: Claiming device via MQTT...");
+            ZENO_LOG_PROV("Step 2/2: Claiming device via MQTT...");
             claimOK = _claimCallback(_deviceConfig.userId, _deviceConfig.deviceId, _provisionedToken);
 
             if (!claimOK)
             {
-                ZENO_LOG_PROV("❌ Device claim failed for Ethernet config");
+                ZENO_LOG_PROV("Device claim failed for Ethernet config");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -1227,11 +1227,11 @@ namespace ZenoPCB
                 _webServer->send(504, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ Device claimed successfully!");
+            ZENO_LOG_PROV("Device claimed successfully!");
         }
         else if (!wifiTempConnected)
         {
-            ZENO_LOG_PROV("⚠️ No network for MQTT/claim — will complete on first Ethernet boot");
+            ZENO_LOG_PROV("No network for MQTT/claim will complete on first Ethernet boot");
         }
 
         // Cleanup temporary WiFi
@@ -1302,28 +1302,28 @@ namespace ZenoPCB
                 if (doc.containsKey("userId"))
                 {
                     _deviceConfig.userId = doc["userId"].as<String>();
-                    ZENO_LOG_PROV("  userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("userId: %s...", _deviceConfig.userId.substring(0, 8).c_str());
                 }
                 if (doc.containsKey("deviceId"))
                 {
                     _deviceConfig.deviceId = doc["deviceId"].as<String>();
-                    ZENO_LOG_PROV("  deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
+                    ZENO_LOG_PROV("deviceId: %s...", _deviceConfig.deviceId.substring(0, 8).c_str());
                 }
                 // APN settings
                 if (doc.containsKey("apn"))
                 {
                     _deviceConfig.cellularAPN = doc["apn"].as<String>();
-                    ZENO_LOG_PROV("  apn: %s", _deviceConfig.cellularAPN.c_str());
+                    ZENO_LOG_PROV("apn: %s", _deviceConfig.cellularAPN.c_str());
                 }
                 if (doc.containsKey("user"))
                 {
                     _deviceConfig.cellularUser = doc["user"].as<String>();
-                    ZENO_LOG_PROV("  user: %s", _deviceConfig.cellularUser.c_str());
+                    ZENO_LOG_PROV("user: %s", _deviceConfig.cellularUser.c_str());
                 }
                 if (doc.containsKey("pass"))
                 {
                     _deviceConfig.cellularPass = doc["pass"].as<String>();
-                    ZENO_LOG_PROV("  pass: ****");
+                    ZENO_LOG_PROV("pass: ****");
                 }
             }
             else
@@ -1345,12 +1345,12 @@ namespace ZenoPCB
             return;
         }
 
-        // ── Establish temporary WiFi for MQTT test & Claim ──────────────────
+        // Establish temporary WiFi for MQTT test & Claim 
         // 4G modem isn't used from WiFiProvisioning, so we use WiFi AP_STA temporarily
         bool wifiTempConnected = false;
         if (_deviceConfig.wifiSSID.length() > 0)
         {
-            ZENO_LOG_PROV("🔗 Connecting WiFi temporarily for MQTT test & claim...");
+            ZENO_LOG_PROV("Connecting WiFi temporarily for MQTT test & claim...");
             WiFi.mode(WIFI_AP_STA);
             WiFi.begin(_deviceConfig.wifiSSID.c_str(), _deviceConfig.wifiPassword.c_str());
             int attempts = 0;
@@ -1364,28 +1364,28 @@ namespace ZenoPCB
             wifiTempConnected = (WiFi.status() == WL_CONNECTED);
             if (wifiTempConnected)
             {
-                ZENO_LOG_PROV("✅ Temp WiFi OK! IP: %s", WiFi.localIP().toString().c_str());
+                ZENO_LOG_PROV("Temp WiFi OK! IP: %s", WiFi.localIP().toString().c_str());
             }
             else
             {
-                ZENO_LOG_PROV("⚠️ Temp WiFi failed — will skip MQTT test & claim");
+                ZENO_LOG_PROV("Temp WiFi failed will skip MQTT test & claim");
             }
         }
         else
         {
-            ZENO_LOG_PROV("⚠️ No WiFi credentials — will skip MQTT test & claim");
+            ZENO_LOG_PROV("No WiFi credentials will skip MQTT test & claim");
         }
 
-        // ── STEP 1: Test MQTT connection via WiFiClient ───────────────────────
+        // STEP 1: Test MQTT connection via WiFiClient 
         bool mqttOK = true;
         if (wifiTempConnected && _mqttTestCallback)
         {
-            ZENO_LOG_PROV("🔍 Step 1/2: Testing MQTT broker connection...");
+            ZENO_LOG_PROV("Step 1/2: Testing MQTT broker connection...");
             mqttOK = _mqttTestCallback();
 
             if (!mqttOK)
             {
-                ZENO_LOG_PROV("❌ MQTT connection failed");
+                ZENO_LOG_PROV("MQTT connection failed");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -1401,19 +1401,19 @@ namespace ZenoPCB
                 _webServer->send(503, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ MQTT OK!");
+            ZENO_LOG_PROV("MQTT OK!");
         }
 
-        // ── STEP 2: Claim device via MQTT ────────────────────────────────────
+        // STEP 2: Claim device via MQTT 
         bool claimOK = false;
         if (wifiTempConnected && mqttOK && _claimCallback)
         {
-            ZENO_LOG_PROV("🔍 Step 2/2: Claiming device via MQTT...");
+            ZENO_LOG_PROV("Step 2/2: Claiming device via MQTT...");
             claimOK = _claimCallback(_deviceConfig.userId, _deviceConfig.deviceId, _provisionedToken);
 
             if (!claimOK)
             {
-                ZENO_LOG_PROV("❌ Device claim failed for Cellular config");
+                ZENO_LOG_PROV("Device claim failed for Cellular config");
                 WiFi.disconnect(true);
                 delay(100);
                 WiFi.mode(WIFI_AP);
@@ -1429,11 +1429,11 @@ namespace ZenoPCB
                 _webServer->send(504, "application/json", out);
                 return;
             }
-            ZENO_LOG_PROV("✅ Device claimed successfully!");
+            ZENO_LOG_PROV("Device claimed successfully!");
         }
         else if (!wifiTempConnected)
         {
-            ZENO_LOG_PROV("⚠️ No network for MQTT/claim — will complete on first Cellular boot");
+            ZENO_LOG_PROV("No network for MQTT/claim will complete on first Cellular boot");
         }
 
         // Cleanup temporary WiFi
@@ -1506,16 +1506,16 @@ namespace ZenoPCB
 
         ZENO_LOG_PROV("Testing connection to: %s", ssid.c_str());
 
-        // Lưu mode hiện tại
+        // Lu mode hin ti
         wifi_mode_t currentMode = WiFi.getMode();
 
-        // Chuyển sang AP_STA để có thể test kết nối mà vẫn giữ AP
+        // Chuyn sang AP_STA c th test kt ni m vn gi AP
         WiFi.mode(WIFI_AP_STA);
 
-        // Thử kết nối
+        // Th kt ni
         WiFi.begin(ssid.c_str(), password.c_str());
 
-        // Đợi kết nối với timeout 15 giây
+        // i kt ni vi timeout 15 giy
         int attempts = 0;
         const int maxAttempts = 30; // 30 * 500ms = 15s
         while (WiFi.status() != WL_CONNECTED && attempts < maxAttempts)
@@ -1530,15 +1530,15 @@ namespace ZenoPCB
         String ip = connected ? WiFi.localIP().toString() : "";
         int rssi = connected ? WiFi.RSSI() : 0;
 
-        // Ngắt kết nối test
+        // Ngt kt ni test
         WiFi.disconnect(true);
         delay(100);
 
-        // Khôi phục mode AP
+        // Khi phc mode AP
         WiFi.mode(WIFI_AP);
         WiFi.softAP(_apSSID.c_str(), _config.apPassword.c_str());
 
-        // Tạo response
+        // To response
         JsonDocument response;
         response["success"] = connected;
 
@@ -1643,7 +1643,7 @@ namespace ZenoPCB
 
     void WiFiProvisioning::_checkWiFiConnection()
     {
-        // Không chạy reconnect khi đang ở AP mode
+        // Khng chy reconnect khi ang AP mode
         if (_state == ProvisioningState::AP_MODE_ACTIVE ||
             _state == ProvisioningState::AP_MODE_STARTING)
         {
@@ -1720,7 +1720,7 @@ namespace ZenoPCB
 
     bool WiFiProvisioning::_scanNetworks(std::vector<WiFiNetwork> &networks)
     {
-        // PITFALL 3 (D-14) — synchronous WiFi.scanNetworks() blocks 2-5s on ESP8266
+        // PITFALL 3 (D-14) synchronous WiFi.scanNetworks() blocks 2-5s on ESP8266
         // single-threaded cooperative loop. Feed WDT before + after to bracket the
         // blocking window.
         _hal.system().feedWatchdog();
@@ -1788,15 +1788,15 @@ namespace ZenoPCB
 
     bool WiFiProvisioning::_loadConfig()
     {
-        // Plan 04-03 — route through IZenoNVS. Namespace literal "zenopcb"
+        // Plan 04-03 route through IZenoNVS. Namespace literal "zenopcb"
         // and every key name preserved byte-for-byte per 04-03-AUDIT.md
-        // §1.1 (T-4-02 mitigation — devices keep saved Wi-Fi config across
+        // 1.1 (T-4-02 mitigation devices keep saved Wi-Fi config across
         // the refactor).
 
         // First try readonly mode
         if (!_hal.nvs().begin("zenopcb", true))
         {
-            // Namespace doesn't exist yet — create it by opening in write mode
+            // Namespace doesn't exist yet create it by opening in write mode
             ZENO_LOG_PROV("NVS namespace not found, creating...");
             if (_hal.nvs().begin("zenopcb", false))
             {
@@ -1823,7 +1823,7 @@ namespace ZenoPCB
             // Connection type
             _deviceConfig.connectionType = static_cast<ConnectionType>(_hal.nvs().getUChar("connType", 1)); // Default: WIFI
 
-            // Device info (bounded buffers per AUDIT §1.1 sizing)
+            // Device info (bounded buffers per AUDIT 1.1 sizing)
             char userIdBuf[BUF_USERID];
             char deviceIdBuf[BUF_DEVICEID];
             _hal.nvs().getString("userId", userIdBuf, sizeof(userIdBuf), "");
@@ -1965,7 +1965,7 @@ namespace ZenoPCB
     String WiFiProvisioning::_getChipID()
     {
         // T-4-CHIPID: HAL impl preserves the exact "%08X" format on the
-        // upper 32 bits of ESP.getEfuseMac() — byte-for-byte identical to
+        // upper 32 bits of ESP.getEfuseMac() byte-for-byte identical to
         // the pre-Phase-4 SSID suffix (verified in Esp32System.cpp:34-50).
         char chipIdStr[13];
         _hal.system().getUniqueId(chipIdStr, sizeof(chipIdStr));
@@ -1993,7 +1993,7 @@ namespace ZenoPCB
             return "Unknown";
         }
 #elif defined(ESP8266)
-        // ESP8266 uses ENC_TYPE_* — see ESP8266WiFiType.h. The value
+        // ESP8266 uses ENC_TYPE_* see ESP8266WiFiType.h. The value
         // space is smaller than ESP32's WIFI_AUTH_* (no Enterprise
         // distinction); we map what is available.
         switch (type)
@@ -2235,7 +2235,7 @@ namespace ZenoPCB
 
 #elif !defined(ZENOPCB_DISABLE_PROVISIONING)  // UNO R4 / STM32 stub block (kept for builds without DISABLE_PROVISIONING)
 // ============================================================================
-// Phase 7 Plan 07-06 — Pattern H whole-class capability-gate stub block.
+// Phase 7 Plan 07-06 Pattern H whole-class capability-gate stub block.
 //
 // UNO R4 has no captive-portal HTTP-server analog (RESEARCH A1, 3-week
 // port deferred to v0.4.0); STM32 has no AP-mode hardware. Every public
@@ -2245,7 +2245,7 @@ namespace ZenoPCB
 //
 // Plan 07-06.6 extension: when `-DZENOPCB_DISABLE_PROVISIONING` is set
 // (e.g. ZENOPCB_MICRO_BASIC profile on F103 Blue Pill, 64KB Flash), this
-// stub block also compiles out — callers must guard their _initProvisioning
+// stub block also compiles out callers must guard their _initProvisioning
 // + _wifiProvisioning use sites with the same flag (done in ZenoPCB.cpp).
 //
 // Members `_hal` (IZenoHal&), `_config`, etc. are still declared in the
@@ -2259,7 +2259,7 @@ namespace ZenoPCB
 {
     namespace
     {
-        // One-time log helpers — keeps the WiFiProvisioning stub bodies quiet
+        // One-time log helpers keeps the WiFiProvisioning stub bodies quiet
         // after the first invocation per method, since they may be called in
         // tight loops (loop(), updateLED()).
         static bool g_wifiProvLogged_begin = false;
@@ -2275,7 +2275,7 @@ namespace ZenoPCB
             if (!flag)
             {
                 flag = true;
-                ZENO_LOG_CORE("[WARN] WiFiProvisioning::%s — not available on this platform (Pattern H)", method);
+                ZENO_LOG_CORE("[WARN] WiFiProvisioning::%s not available on this platform (Pattern H)", method);
             }
         }
     } // namespace
@@ -2294,7 +2294,7 @@ namespace ZenoPCB
     {
     }
 
-    // Default ctor — Plan 07-06.5 (Area F follow-up): mirror the
+    // Default ctor Plan 07-06.5 (Area F follow-up): mirror the
     // DeviceCredentials default-arg HAL bridge pattern (commit 6bc92f0).
     // The IZenoHal& reference member must be initialised on every
     // platform; the prior `*reinterpret_cast<IZenoHal*>(nullptr)`
