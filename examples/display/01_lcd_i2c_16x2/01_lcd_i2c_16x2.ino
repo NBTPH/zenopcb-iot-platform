@@ -1,28 +1,53 @@
 /**
  * @file 01_lcd_i2c_16x2.ino
- * @brief 16x2 I2C LCD (PCF8574 backpack) — display value pushed to Z0.
+ * @brief Show a value written from the cloud (Z0) on line 2 of a 16x2 I2C LCD.
+ *
+ * What you'll learn:
+ *   - How to drive a classic 16x2 character LCD over I2C using a PCF8574 backpack
+ *   - How to update a display from a CLOUD_TO_DEVICE handler
+ *   - How to truncate strings to the LCD's column width without crashing
+ *
+ * Hardware needed:
+ *   - Any supported board with WiFi and I2C
+ *   - 16x2 LCD with a PCF8574 I2C backpack (typical addresses: 0x27 or 0x3F)
+ *   - Jumper wires, breadboard
+ *
+ * Wiring:
+ *   - LCD SDA -> board default SDA (GPIO 21 on ESP32, A4 on UNO R4)
+ *   - LCD SCL -> board default SCL (GPIO 22 on ESP32, A5 on UNO R4)
+ *   - LCD VCC -> 5 V (PCF8574 backpacks expect 5 V; the I2C bus pull-ups still
+ *     keep SDA/SCL safe for a 3.3 V MCU thanks to open-drain signalling)
+ *   - LCD GND -> GND
+ *
+ * Cloud dashboard setup:
+ *   - Create Z0 of type String — text to show on line 2 of the LCD
  *
  * @category Display
  * @level Beginner
  *
  * @hardware
- * - Any supported board with I2C.
- * - 16x2 LCD with PCF8574 I2C backpack (typical I2C address 0x27 or 0x3F).
+ *   - Any supported board with I2C.
+ *   - 16x2 LCD with PCF8574 I2C backpack (address 0x27 or 0x3F).
  *
  * @wiring
- * - LCD SDA -> SDA_PIN (board default).
- * - LCD SCL -> SCL_PIN (board default).
- * - LCD VCC -> 5 V (most PCF8574 boards expect 5 V).
- * - LCD GND -> GND.
+ *   See "Wiring" section above.
  *
  * @lib_deps
- * Arduino IDE / platformio.ini: `marcoschwartz/LiquidCrystal_I2C @ ^1.1.4`.
+ *   Arduino IDE / platformio.ini: `marcoschwartz/LiquidCrystal_I2C @ ^1.1.4`.
  *
  * @usage
- * 1. Install LiquidCrystal_I2C library.
- * 2. Set credentials.
- * 3. Cloud-write any string-ish value to Z0; it appears on line 2 of the LCD.
- * 4. If the LCD address is not 0x27 try 0x3F (and vice-versa).
+ *   1. Install the LiquidCrystal_I2C library.
+ *   2. Replace credentials below.
+ *   3. Cloud-write any string-ish value to Z0; it appears on line 2 of the LCD.
+ *   4. If line 1 says "ZenoPCB ZSignal" but Z0 writes never show up, try
+ *      changing LCD_ADDR from 0x27 to 0x3F (or vice versa).
+ *
+ * Tips & common mistakes:
+ *   - Two common PCF8574 addresses exist: 0x27 (most modules) and 0x3F (others).
+ *     Run examples/communication/03_i2c_device_scanner to find yours.
+ *   - The 16x2 LCD shows only 16 characters per line — `substring(0, 16)`
+ *     prevents overflow into line 1.
+ *   - Backlight off? Wrong VCC? Most modules need 5 V power even with a 3.3 V MCU.
  */
 
 #include <ZenoPCBMain.h>
@@ -36,28 +61,29 @@ using namespace ZenoPCB;
 #define DEVICE_ID "REPLACE_ME"
 #define DEVICE_TOKEN "REPLACE_AT_PROVISIONING"
 
-static const uint8_t LCD_ADDR = 0x27;
-LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
+static const uint8_t LCD_ADDR = 0x27;     // change to 0x3F if your backpack uses that
+LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);   // 16 columns, 2 rows
 Zeno              zeno;
 
+// Cloud -> Device: dashboard wrote a new value to Z0; refresh line 2 of the LCD.
 CLOUD_TO_DEVICE(Z0)
 {
     const String s = param.toString();
     lcd.setCursor(0, 1);
-    lcd.print(" "); // clear line 2
+    lcd.print(" ");                       // clear leftmost char to avoid stale text
     lcd.setCursor(0, 1);
-    lcd.print(s.substring(0, 16));
+    lcd.print(s.substring(0, 16));        // LCD has 16 columns — truncate longer strings
     Serial.printf("[LCD] Z0 -> %s\n", s.c_str());
 }
 
 void setup()
 {
     Serial.begin(115200);
-    Wire.begin();
+    Wire.begin();                          // start I2C on the board's default pins
     lcd.init();
     lcd.backlight();
     lcd.setCursor(0, 0);
-    lcd.print("ZenoPCB ZSignal");
+    lcd.print("ZenoPCB ZSignal");         // line 1 — static label
 
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
@@ -67,5 +93,5 @@ void setup()
 
 void loop()
 {
-    zeno.loop();
+    zeno.loop();                           // keep WiFi + MQTT + Z0 callback alive
 }

@@ -1,24 +1,42 @@
 /**
  * @file 01_ota_basic.ino
- * @brief OTA firmware update from ZenoPCB Cloud — MQTT-triggered.
+ * @brief Receive a new firmware image Over-The-Air from the ZenoPCB Cloud (ESP32).
  *
- * @category Maintenance
- * @level Intermediate
+ * What you'll learn:
+ *   - What "OTA" means and why you'd push a build to a deployed device
+ *   - How to subscribe to progress / success / error callbacks during an OTA
+ *   - How to also trigger an OTA from your own code (Pattern G) — useful when
+ *     you have a custom MQTT command or a maintenance button
  *
- * @hardware
- * - Any ESP32 dev board with at least 4 MB flash and an OTA-aware partition
- *   layout (the default Arduino ESP32 partition layout works).
- * - OTA is ESP32-only on the current release (Phase 7 D-16 RESCOPED — UNO R4
- *   custom OTA opt-in via `-DZENOPCB_ENABLE_UNOR4_OTA`; STM32 OTA off-default).
+ * Hardware needed:
+ *   - ESP32 dev board with at least 4 MB flash (most do)
+ *   - An OTA-aware partition table (Arduino ESP32 default works)
+ *   (UNO R4 needs `-DZENOPCB_ENABLE_UNOR4_OTA`. STM32 OTA is off by default.)
  *
- * @usage
- * 1. Replace placeholders below + set FIRMWARE_VER to your current build.
- * 2. Flash this sketch.
- * 3. From the ZenoPCB Cloud dashboard, push a new firmware build (built with
- *    the same FIRMWARE_VER scheme bumped) — the device picks it up, streams
- *    progress through onOTAProgress, and reboots on success.
- * 4. Pattern G surface in loop() below shows how user code can also trigger
- *    OTA from any command path (MQTT, button, scheduled task, etc.).
+ * Wiring:
+ *   - None beyond USB power — OTA travels over WiFi.
+ *
+ * Cloud dashboard setup:
+ *   - No ZSignal channels required. OTA is triggered from the firmware
+ *     manager / device console on the dashboard.
+ *
+ * How to use:
+ *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below and
+ *      set FIRMWARE_VER to your current build string.
+ *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32).
+ *   3. Flash this sketch.
+ *   4. From the dashboard, upload a new build (with FIRMWARE_VER bumped) —
+ *      the device should download it, print progress, and reboot.
+ *   5. After reboot, the new FIRMWARE_VER prints on the Serial Monitor.
+ *
+ * Tips & common mistakes:
+ *   - Always bump FIRMWARE_VER between builds — otherwise the device cannot
+ *     tell whether an offered image is newer.
+ *   - If your sketch is large, use the "Huge APP 3MB No OTA" partition for
+ *     development only. For production OTA you need a partition layout that
+ *     reserves space for both the running image and the incoming one.
+ *   - Don't call delay() inside the OTA callbacks — they fire frequently and
+ *     blocking them can stall the download.
  */
 
 #include <ZenoPCBMain.h>
@@ -26,7 +44,8 @@
 using namespace ZenoPCB;
 
 // ============================================
-// Credentials — replace before flashing
+// Credentials — replace before flashing.
+// FIRMWARE_VER must change every build so the cloud can compare versions.
 // ============================================
 #define WIFI_SSID "REPLACE_ME"
 #define WIFI_PASS "REPLACE_ME"
@@ -47,6 +66,8 @@ void setup()
     Serial.begin(115200);
     Serial.printf("[OTA] Boot, firmware v%s\n", FIRMWARE_VER);
 
+    // Fluent setup: WiFi, identify to cloud, enable OTA, register three callbacks.
+    // The callbacks are tiny lambdas — keep them short so they don't slow the download.
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableOTA()
@@ -64,27 +85,27 @@ void setup()
 // ============================================
 void loop()
 {
-    zeno.loop();
+    zeno.loop();    // services WiFi + MQTT + OTA — required every loop iteration
 
     // ============================================
-    // Pattern G — Phase 7 D-06 canonical surface for cloud-triggered OTA.
+    // Pattern G — trigger an OTA from your own code path.
     //
-    // The fluent enableOTA() + onOTAProgress / onOTAComplete / onOTAError
-    // callback chain above (D-07) continues to work for cloud-pushed OTA
-    // commands. The switch pattern below is the additional Pattern G
-    // surface for user code that wants to trigger an OTA itself (e.g.,
-    // from its own MQTT command handler, button-press routine, scheduled
-    // task, etc.).
+    // The fluent enableOTA() chain above already handles cloud-pushed OTAs.
+    // This block is for the other direction: you want YOUR code (an MQTT
+    // command handler, a maintenance button, a scheduled task) to kick off
+    // an OTA from a URL it computed.
     //
-    // In a real application `mqttCommand` would arrive from your message
-    // handler; here it is a static placeholder so the demo compiles
-    // unchanged. The switch covers all four ZenoCapability outcomes —
-    // there is NO bool alias (per OQ-4 RESOLVED, user direction).
+    // `mqttCommand` is a static placeholder so the example compiles without
+    // an MQTT handler attached. In production you'd populate it from your
+    // own command path.
     // ============================================
-    static String mqttCommand = "";  // placeholder — wire to your MQTT handler in production
+    static String mqttCommand = "";   // wire this to your real MQTT handler
     if (mqttCommand.startsWith("OTA:"))
     {
-        String urlStr = mqttCommand.substring(4);
+        String urlStr = mqttCommand.substring(4);   // strip the "OTA:" prefix
+        // zeno.ota(url) returns a ZenoCapability indicating whether the OTA
+        // started, isn't available on this platform, failed immediately, or
+        // is already in progress. Handle each so users get a clear log line.
         switch (zeno.ota(urlStr.c_str()))
         {
             case ZenoCapability::OK:
@@ -100,6 +121,6 @@ void loop()
                 Serial.println(F("[OTA] already in progress, ignoring duplicate request"));
                 break;
         }
-        mqttCommand = "";
+        mqttCommand = "";   // clear the slot so we don't re-trigger next loop
     }
 }

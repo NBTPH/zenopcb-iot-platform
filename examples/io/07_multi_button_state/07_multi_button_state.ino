@@ -1,21 +1,36 @@
 /**
  * @file 07_multi_button_state.ino
- * @brief Three independent buttons -> Z1 / Z2 / Z3 boolean state per button.
+ * @brief Three independent push buttons, each mapped to its own ZSignal (Z1 / Z2 / Z3).
  *
- * @category IO
- * @level Intermediate
+ * What you'll learn:
+ *   - How to group repeated hardware (3 buttons) into a small struct + array
+ *   - How to detect edges on each button independently in a single loop
+ *   - How DEVICE_TO_CLOUD(Zn, ...) requires a literal channel name — hence the switch
  *
- * @hardware
- * - Any supported board.
- * - 3 momentary push buttons, each between its BUTTONx_PIN and GND.
+ * Hardware needed:
+ *   - Any supported board
+ *   - 3 momentary push buttons
+ *   - Jumper wires, breadboard
  *
- * @wiring
- * - BTN_A_PIN, BTN_B_PIN, BTN_C_PIN — each to GND through a push button.
+ * Wiring:
+ *   - Each button: BTN_x_PIN -> button -> GND
+ *   (INPUT_PULLUP again — no external resistors needed.)
  *
- * @usage
- * 1. Set credentials.
- * 2. Each button independently flips the matching Z signal on edge changes.
- *    Z1 = btn A, Z2 = btn B, Z3 = btn C.
+ * Cloud dashboard setup:
+ *   - Create Z1 of type Bool — button A state
+ *   - Create Z2 of type Bool — button B state
+ *   - Create Z3 of type Bool — button C state
+ *
+ * How to use:
+ *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below.
+ *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
+ *   3. Flash and open Serial Monitor at 115200 baud.
+ *   4. Press each button — only the matching Z signal should flip.
+ *
+ * Tips & common mistakes:
+ *   - DEVICE_TO_CLOUD is a macro that needs the literal Z name at compile time,
+ *     so we can't loop over channels directly — the switch is the canonical pattern.
+ *   - Not debounced; see 03_button_debounce.ino if you need clean edges.
  */
 
 #include <ZenoPCBMain.h>
@@ -51,10 +66,11 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
+// One small record per button keeps the loop body short.
 struct Btn {
-    uint8_t pin;
-    int     last;
-    ZKey    key;
+    uint8_t pin;     // GPIO pin
+    int     last;    // last reading (HIGH/LOW)
+    ZKey    key;     // which ZSignal this button publishes to
 };
 
 static Btn s_btns[3] = {
@@ -67,7 +83,7 @@ void setup()
 {
     Serial.begin(115200);
     for (int i = 0; i < 3; ++i)
-        pinMode(s_btns[i].pin, INPUT_PULLUP);
+        pinMode(s_btns[i].pin, INPUT_PULLUP);    // all buttons share the same wiring scheme
 
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
@@ -80,11 +96,11 @@ void loop()
     for (int i = 0; i < 3; ++i)
     {
         const int r = digitalRead(s_btns[i].pin);
-        if (r != s_btns[i].last)
+        if (r != s_btns[i].last)        // edge detected on this button
         {
             s_btns[i].last = r;
-            const bool pressed = (r == LOW);
-            // ZSignal write on enum key
+            const bool pressed = (r == LOW);   // active-LOW (pull-up)
+            // DEVICE_TO_CLOUD needs the literal Zn name, so we switch by stored key.
             switch (s_btns[i].key)
             {
                 case ZKey::Z1: DEVICE_TO_CLOUD(Z1, pressed); break;

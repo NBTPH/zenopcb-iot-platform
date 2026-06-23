@@ -1,23 +1,39 @@
 /**
  * @file 03_ultrasonic_distance.ino
- * @brief HC-SR04 ultrasonic distance sensor -> Z0 in centimetres.
+ * @brief Measure distance with an HC-SR04 ultrasonic sensor and publish centimetres to Z0.
  *
- * @category Sensors
- * @level Beginner
+ * What you'll learn:
+ *   - How the HC-SR04 uses a trigger pulse and echo pulse to measure distance
+ *   - How pulseIn() times an incoming pulse in microseconds
+ *   - How to convert echo time to centimetres using the speed of sound
  *
- * @hardware
- * - Any supported board.
- * - HC-SR04 ultrasonic (5 V; echo line may need divider on 3.3 V boards).
+ * Hardware needed:
+ *   - Any supported board
+ *   - HC-SR04 ultrasonic distance sensor (5 V supply)
+ *   - For 3.3 V boards: voltage divider on ECHO (e.g. 1 kOhm + 2 kOhm) — the
+ *     HC-SR04 outputs 5 V on ECHO which can damage 3.3 V GPIOs over time.
+ *   - Jumper wires, breadboard
  *
- * @wiring
- * - HC-SR04 VCC -> 5 V.
- * - HC-SR04 GND -> GND.
- * - HC-SR04 TRIG -> TRIG_PIN.
- * - HC-SR04 ECHO -> ECHO_PIN (use 1 kOhm + 2 kOhm divider on 3.3 V MCUs).
+ * Wiring:
+ *   - HC-SR04 VCC  -> 5 V
+ *   - HC-SR04 GND  -> GND
+ *   - HC-SR04 TRIG -> TRIG_PIN
+ *   - HC-SR04 ECHO -> ECHO_PIN  (through divider on 3.3 V MCUs)
  *
- * @usage
- * 1. Set credentials.
- * 2. Distance sampled + published to Z0 every 2 s via ZENO_EVERY(2000).
+ * Cloud dashboard setup:
+ *   - Create Z0 of type Float — distance in centimetres
+ *
+ * How to use:
+ *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below.
+ *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
+ *   3. Flash and open Serial Monitor at 115200 baud.
+ *   4. Move your hand 5..200 cm in front of the sensor — Z0 should track it
+ *      every 2 s.
+ *
+ * Tips & common mistakes:
+ *   - The HC-SR04 is useful from about 2 cm to 4 m. Outside that range pulseIn
+ *     either times out or returns junk; we treat 0 (timeout) as "no reading".
+ *   - Hard, flat surfaces echo well. Soft fabric, fur, and angled walls do not.
  */
 
 #include <ZenoPCBMain.h>
@@ -48,25 +64,28 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
+// Standard HC-SR04 ping: send a 10 us pulse on TRIG, then time the echo pulse on ECHO.
 static float measureDistanceCm()
 {
+    // Ensure TRIG starts LOW, then send a clean 10 us HIGH pulse.
     digitalWrite(TRIG_PIN, LOW);
     delayMicroseconds(2);
     digitalWrite(TRIG_PIN, HIGH);
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW);
 
-    const uint32_t durUs = pulseIn(ECHO_PIN, HIGH, 30000UL); // 30 ms timeout
-    if (durUs == 0) return -1.0f;
-    // Speed of sound 343 m/s -> 0.0343 cm/us; round trip /2
+    // Time how long ECHO stays HIGH, in microseconds. 30 ms timeout ~ 5 m max range.
+    const uint32_t durUs = pulseIn(ECHO_PIN, HIGH, 30000UL);
+    if (durUs == 0) return -1.0f;        // timeout = no echo received
+    // Speed of sound ~343 m/s = 0.0343 cm/us. The echo round-trips, so divide by 2.
     return (float)durUs * 0.0343f * 0.5f;
 }
 
-// Ping + publish distance every 2 s.
+// Device -> Cloud: ping and publish distance every 2 seconds.
 ZENO_EVERY(2000)
 {
     const float d = measureDistanceCm();
-    if (d > 0.0f)
+    if (d > 0.0f)    // skip if the measurement timed out
     {
         DEVICE_TO_CLOUD(Z0, d);
         Serial.printf("[HC-SR04] d=%.1f cm\n", d);
@@ -78,7 +97,7 @@ void setup()
     Serial.begin(115200);
     pinMode(TRIG_PIN, OUTPUT);
     pinMode(ECHO_PIN, INPUT);
-    digitalWrite(TRIG_PIN, LOW);
+    digitalWrite(TRIG_PIN, LOW);   // make sure no stray ping happens at boot
 
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)

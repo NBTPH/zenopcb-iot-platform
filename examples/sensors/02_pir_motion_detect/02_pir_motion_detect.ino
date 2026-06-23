@@ -1,25 +1,37 @@
 /**
  * @file 02_pir_motion_detect.ino
- * @brief HC-SR501 PIR motion sensor -> publish boolean motion event to Z0.
+ * @brief Publish a motion / no-motion event from an HC-SR501 PIR sensor to Z0.
  *
- * @category Sensors
- * @level Beginner
+ * What you'll learn:
+ *   - How a PIR motion sensor exposes a simple digital HIGH/LOW signal
+ *   - Why PIR modules need a power-on warm-up before they behave correctly
+ *   - How to publish only on state change (no spam while motion lingers)
  *
- * @hardware
- * - Any supported board.
- * - HC-SR501 PIR module (5 V VCC, digital output 3.3 V — safe to feed to
- *   3.3 V boards).
+ * Hardware needed:
+ *   - Any supported board
+ *   - HC-SR501 PIR motion module (5 V supply; output swings 0 / 3.3 V — safe for 3.3 V MCUs)
+ *   - Jumper wires, breadboard
  *
- * @wiring
- * - PIR VCC -> 5 V (or board 5 V pin).
- * - PIR GND -> GND.
- * - PIR OUT -> PIR_PIN.
+ * Wiring:
+ *   - PIR VCC -> 5 V
+ *   - PIR GND -> GND
+ *   - PIR OUT -> PIR_PIN
  *
- * @usage
- * 1. Set credentials.
- * 2. After the PIR settles (~30 s power-on calibration), motion in the
- *    sensor's cone flips Z0 to true; quiet flips it back to false.
- * 3. Adjust PIR potentiometers for sensitivity / hold time.
+ * Cloud dashboard setup:
+ *   - Create Z0 of type Bool — true = motion detected, false = quiet
+ *
+ * How to use:
+ *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below.
+ *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
+ *   3. Flash and open Serial Monitor at 115200 baud.
+ *   4. Stand still for ~30 s so the PIR can calibrate, then walk through its cone.
+ *   5. Z0 should flip true on motion and back to false after the hold-time elapses.
+ *
+ * Tips & common mistakes:
+ *   - The two trimpots on the HC-SR501 set sensitivity and hold-time. Turn them
+ *     fully counter-clockwise for shortest hold while testing.
+ *   - The PIR needs roughly 30 s of stable ambient IR after power-on. Spurious
+ *     triggers during that window are normal.
  */
 
 #include <ZenoPCBMain.h>
@@ -44,11 +56,12 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static int s_lastState = LOW;
+static int s_lastState = LOW;       // PIR idles LOW, so start there
 
 void setup()
 {
     Serial.begin(115200);
+    // Plain INPUT — the HC-SR501 actively drives its output, no pull-up needed.
     pinMode(PIR_PIN, INPUT);
 
     zeno.wifi(WIFI_SSID, WIFI_PASS)
@@ -60,11 +73,11 @@ void setup()
 void loop()
 {
     const int s = digitalRead(PIR_PIN);
-    if (s != s_lastState)
+    if (s != s_lastState)                 // only act on a real change
     {
         s_lastState = s;
-        const bool motion = (s == HIGH);
-        DEVICE_TO_CLOUD(Z0, motion);
+        const bool motion = (s == HIGH);  // PIR is active-HIGH: HIGH = motion
+        DEVICE_TO_CLOUD(Z0, motion);      // Device -> Cloud: send new state
         Serial.printf("[PIR] %s\n", motion ? "MOTION" : "quiet");
     }
     zeno.loop();
