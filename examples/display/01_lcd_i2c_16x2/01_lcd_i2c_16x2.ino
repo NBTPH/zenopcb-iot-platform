@@ -40,7 +40,7 @@ static const uint8_t LCD_ADDR = 0x27;
 LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
 Zeno              zeno;
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     const String s = param.toString();
     lcd.setCursor(0, 1);
@@ -62,7 +62,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

@@ -73,7 +73,7 @@ void loop()
     {
         s_stableRaw = raw;
         const bool pressed = (s_stableRaw == LOW);
-        ZENO_WRITE(Z1, pressed);
+        DEVICE_TO_CLOUD(Z1, pressed);
         Serial.printf("[Z1] debounced %s\n", pressed ? "PRESSED" : "RELEASED");
     }
 

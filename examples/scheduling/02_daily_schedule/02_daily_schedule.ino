@@ -53,7 +53,7 @@ static void setRelay(bool on)
 {
     s_relayState = on;
     digitalWrite(RELAY_PIN, on ? HIGH : LOW);
-    ZENO_WRITE(Z0, (int32_t)(on ? 1 : 0));
+    DEVICE_TO_CLOUD(Z0, (int32_t)(on ? 1 : 0));
     Serial.printf("[Relay] %s\n", on ? "ON" : "OFF");
 }
 
@@ -91,7 +91,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .enableSchedule()
         .onScheduleExecuted(onScheduleExecuted)
         .begin();

@@ -17,8 +17,7 @@
  *
  * @usage
  * 1. Set credentials.
- * 2. Distance sample every 250 ms. Z0 publish at most every 2 s through the
- *    Zeno publish-interval throttle.
+ * 2. Distance sampled + published to Z0 every 2 s via ZENO_EVERY(2000).
  */
 
 #include <ZenoPCBMain.h>
@@ -48,8 +47,6 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static uint32_t s_lastPingMs = 0;
-static const uint32_t PING_PERIOD_MS = 250;
 
 static float measureDistanceCm()
 {
@@ -65,6 +62,17 @@ static float measureDistanceCm()
     return (float)durUs * 0.0343f * 0.5f;
 }
 
+// Ping + publish distance every 2 s.
+ZENO_EVERY(2000)
+{
+    const float d = measureDistanceCm();
+    if (d > 0.0f)
+    {
+        DEVICE_TO_CLOUD(Z0, d);
+        Serial.printf("[HC-SR04] d=%.1f cm\n", d);
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -75,22 +83,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(2000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastPingMs >= PING_PERIOD_MS)
-    {
-        s_lastPingMs = now;
-        const float d = measureDistanceCm();
-        if (d > 0.0f)
-        {
-            ZENO_WRITE(Z0, d);
-            Serial.printf("[HC-SR04] d=%.1f cm\n", d);
-        }
-    }
     zeno.loop();
 }

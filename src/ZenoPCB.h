@@ -109,6 +109,7 @@
 #include "core/ZenoPCBTypes.h"
 #include "core/ZKeyTypes.h"
 #include "core/ZKeyBuffer.h"
+#include "core/ZenoTimer.h"
 #include "core/TimeManager.h"
 #include "wifi/WiFiProvisioning.h"
 #include "mqtt/ZenoPCBMQTT.h"
@@ -998,17 +999,6 @@ namespace ZenoPCB
         Zeno &onAnyZKeyChange(ZKeyChangeCallback callback);
 
         /**
-         * @brief Set callback called right before each Z key publish cycle
-         *
-         * Use with ZENO_READ_ALL macro to collect sensor values just-in-time.
-         * Called only when a publish is actually due (not every loop).
-         *
-         * @param callback void() function - call zeno.set() inside
-         * @return Reference to this for method chaining
-         */
-        Zeno &onZKeyRead(std::function<void()> callback);
-
-        /**
          * @brief Set Z key publish interval
          * @param intervalMs Publish interval in milliseconds (min 1000ms)
          * @return Reference to this for method chaining
@@ -1350,9 +1340,6 @@ namespace ZenoPCB
         OTAProgressCallback _otaProgressCallback;
         OTACompleteCallback _otaCompleteCallback;
         OTAErrorCallback _otaErrorCallback;
-
-        // Z Key read callback (called before each publish cycle)
-        std::function<void()> _zKeyReadCallback;
 
         // Internal methods
         void _initProvisioning();

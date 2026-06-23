@@ -55,8 +55,17 @@ Zeno zeno;
 OneWire             oneWire(ONEWIRE_PIN);
 DallasTemperature   sensors(&oneWire);
 
-static uint32_t s_lastReadMs = 0;
-static const uint32_t READ_MS = 5000;
+// Sample + publish DS18B20 temperature every 5 s.
+ZENO_EVERY(5000)
+{
+    sensors.requestTemperatures();
+    const float t = sensors.getTempCByIndex(0);
+    if (t != DEVICE_DISCONNECTED_C)
+    {
+        DEVICE_TO_CLOUD(Z0, t);
+        Serial.printf("[DS18B20] T = %.2f C\n", t);
+    }
+}
 
 void setup()
 {
@@ -66,23 +75,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastReadMs >= READ_MS)
-    {
-        s_lastReadMs = now;
-        sensors.requestTemperatures();
-        const float t = sensors.getTempCByIndex(0);
-        if (t != DEVICE_DISCONNECTED_C)
-        {
-            ZENO_WRITE(Z0, t);
-            Serial.printf("[DS18B20] T = %.2f C\n", t);
-        }
-    }
     zeno.loop();
 }

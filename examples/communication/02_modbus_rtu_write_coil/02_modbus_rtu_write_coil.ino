@@ -34,7 +34,7 @@ using namespace ZenoPCB;
 
 #if defined(ESP32)
 
-#include <ModbusRTU.h>
+#include <modbus/ModbusRTU.h>
 
 #define MB_RX_PIN 16
 #define MB_TX_PIN 17
@@ -46,7 +46,7 @@ static const uint16_t COIL_ADDR = 0;
 Zeno      zeno;
 ModbusRTU mb;
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     const bool on = param.toBool();
     mb.writeCoil(SLAVE_ID, COIL_ADDR, on, nullptr);
@@ -64,7 +64,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

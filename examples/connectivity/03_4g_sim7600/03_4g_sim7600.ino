@@ -85,9 +85,21 @@ Zeno zeno;
                               MODEM_PWR_PIN, MODEM_RST_PIN);
 #endif
 
-static const uint32_t HEARTBEAT_PERIOD_MS = 60000; // 60 s — friendly to data budget
-static uint32_t s_lastBeat = 0;
 static uint32_t s_beatCount = 0;
+
+#if defined(ESP32) && defined(ZENOPCB_ENABLE_CELLULAR)
+// Heartbeat every 60 s — declarative ZENO_EVERY block auto-registers at boot.
+// (Cellular data budget-friendly cadence.)
+ZENO_EVERY(60000)
+{
+    s_beatCount++;
+    DEVICE_TO_CLOUD(Z0, (int32_t)s_beatCount);
+    Serial.printf("[03_4g_sim7600] heartbeat %lu (signal=%d, IP=%s)\n",
+                   (unsigned long)s_beatCount,
+                   cellProvider.getSignalQuality(),
+                   cellProvider.getLocalIP().c_str());
+}
+#endif
 
 void setup()
 {
@@ -100,7 +112,6 @@ void setup()
     zeno.device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&cellProvider)
         .enableZKeys()
-        .setZPublishInterval(10000) // 10 s — but heartbeat is every 60 s
         .onConnected([]()
                      { Serial.println(F("[03_4g_sim7600] cloud connected via 4G")); })
         .begin();
@@ -114,17 +125,6 @@ void setup()
 void loop()
 {
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_CELLULAR)
-    const uint32_t now = millis();
-    if (now - s_lastBeat >= HEARTBEAT_PERIOD_MS)
-    {
-        s_lastBeat = now;
-        s_beatCount++;
-        ZENO_WRITE(Z0, (int32_t)s_beatCount);
-        Serial.printf("[03_4g_sim7600] heartbeat %lu (signal=%d, IP=%s)\n",
-                       (unsigned long)s_beatCount,
-                       cellProvider.getSignalQuality(),
-                       cellProvider.getLocalIP().c_str());
-    }
     zeno.loop();
 #else
     delay(1000);

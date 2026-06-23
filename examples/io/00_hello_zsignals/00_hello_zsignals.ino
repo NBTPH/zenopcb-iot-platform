@@ -7,9 +7,9 @@
  *
  * Two ZSignal channels:
  *   Z0 (Float) — Sensor value (0.0..100.0) read from analogRead on SENSOR_PIN.
- *                Published to ZenoPCB Cloud every 5 s.
+ *                Published to ZenoPCB Cloud every 5 s via ZENO_EVERY(5000).
  *   Z1 (Bool)  — LED state on LED_PIN. Written by the cloud and applied in
- *                the ZENO_READ(Z1) callback below.
+ *                the CLOUD_TO_DEVICE(Z1) block below.
  *
  * @hardware
  * - Any supported board (ESP32 / ESP8266 / UNO R4 WiFi / STM32 F1 / STM32 F4).
@@ -74,23 +74,22 @@ using namespace ZenoPCB;
 Zeno zeno;
 
 // ============================================
-// ZENO_READ_ALL — called once before each cloud publish.
-// Sample the sensor and stuff the scaled value into Z0.
+// ZENO_EVERY(5000) — sample the sensor and publish Z0 every 5 s.
 // ============================================
-ZENO_READ_ALL
+ZENO_EVERY(5000)
 {
     float raw = (float)analogRead(SENSOR_PIN);
     float scaled = raw / SENSOR_MAX * 100.0f; // per-platform ADC resolution (see #defines above)
-    ZENO_WRITE(Z0, scaled);
+    DEVICE_TO_CLOUD(Z0, scaled);
     Serial.print("[Z0] sensor = ");
     Serial.println(scaled);
 }
 
 // ============================================
-// ZENO_READ(Z1) — invoked when the cloud writes Z1.
+// CLOUD_TO_DEVICE(Z1) — invoked when the cloud writes Z1.
 // Use param.toBool() to drive the LED.
 // ============================================
-ZENO_READ(Z1)
+CLOUD_TO_DEVICE(Z1)
 {
     bool on = param.toBool();
     // STM32F1 Blue Pill on-board LED (PC13) is active-LOW.
@@ -115,9 +114,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000) // publish every 5 s
-        .onZKeyRead(_zenoReadAll)
-        .onZKeyChange(ZKey::Z1, onZ1)
         .begin();
 }
 

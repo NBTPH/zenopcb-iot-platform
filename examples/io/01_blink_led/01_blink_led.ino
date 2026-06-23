@@ -66,7 +66,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(2000) // publish at most every 2 s
         .begin();
 }
 
@@ -85,7 +84,7 @@ void loop()
         digitalWrite(LED_PIN, s_ledState ? HIGH : LOW);
 #endif
 
-        ZENO_WRITE(Z0, s_ledState);
+        DEVICE_TO_CLOUD(Z0, s_ledState);
     }
 
     zeno.loop();

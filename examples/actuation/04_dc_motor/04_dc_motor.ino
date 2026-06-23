@@ -88,9 +88,9 @@ static void driveMotor(int signedDuty)
     }
 }
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
-    const int v = (int)param.toLong();
+    const int v = (int)param.toInt();
     driveMotor(v);
     Serial.printf("[Z0] motor %s duty=%d\n",
         v == 0 ? "STOP" : (v > 0 ? "FWD" : "REV"), v);
@@ -107,7 +107,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

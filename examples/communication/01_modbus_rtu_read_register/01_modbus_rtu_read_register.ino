@@ -44,7 +44,7 @@ using namespace ZenoPCB;
 
 #if defined(ESP32)
 
-#include <ModbusRTU.h>
+#include <modbus/ModbusRTU.h>
 
 #define MB_RX_PIN 16
 #define MB_TX_PIN 17
@@ -69,7 +69,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .begin();
 }
 
@@ -86,7 +85,7 @@ void loop()
             {
                 if (event == Modbus::EX_SUCCESS)
                 {
-                    ZENO_WRITE(Z0, (int32_t)s_lastValue);
+                    DEVICE_TO_CLOUD(Z0, (int32_t)s_lastValue);
                     Serial.printf("[Modbus] hreg[%u] = %u\n",
                                    REGISTER_ADDR, s_lastValue);
                 }

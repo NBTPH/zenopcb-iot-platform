@@ -70,9 +70,18 @@ Zeno zeno;
   ZenoEthernetProvider ethProvider(ETH_CS_PIN, ETH_RST_PIN);
 #endif
 
-static const uint32_t HEARTBEAT_PERIOD_MS = 30000;
-static uint32_t s_lastBeat = 0;
 static uint32_t s_beatCount = 0;
+
+#if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET)
+// Heartbeat every 30 s — declarative ZENO_EVERY block auto-registers at boot.
+ZENO_EVERY(30000)
+{
+    s_beatCount++;
+    DEVICE_TO_CLOUD(Z0, (int32_t)s_beatCount);
+    Serial.printf("[02_ethernet_w5500] heartbeat %lu (IP=%s)\n",
+                   (unsigned long)s_beatCount, ethProvider.getLocalIP().c_str());
+}
+#endif
 
 void setup()
 {
@@ -85,7 +94,6 @@ void setup()
     zeno.device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&ethProvider)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .onConnected([]()
                      { Serial.println(F("[02_ethernet_w5500] cloud connected via Ethernet")); })
         .begin();
@@ -109,15 +117,6 @@ void setup()
 void loop()
 {
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET)
-    const uint32_t now = millis();
-    if (now - s_lastBeat >= HEARTBEAT_PERIOD_MS)
-    {
-        s_lastBeat = now;
-        s_beatCount++;
-        ZENO_WRITE(Z0, (int32_t)s_beatCount);
-        Serial.printf("[02_ethernet_w5500] heartbeat %lu (IP=%s)\n",
-                       (unsigned long)s_beatCount, ethProvider.getLocalIP().c_str());
-    }
     zeno.loop();
 #else
     // Non-ESP32 fall-through: keep cooperative scheduler running but emit

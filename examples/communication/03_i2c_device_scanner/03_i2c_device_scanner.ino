@@ -51,12 +51,12 @@ static void scanAndPublish()
         }
     }
     if (found == 0) csv = "(none)";
-    ZENO_WRITE(Z0, csv);
+    DEVICE_TO_CLOUD(Z0, csv);
     Serial.printf("[I2C] scan: %u device(s) -> %s\n",
                    (unsigned)found, csv.c_str());
 }
 
-ZENO_READ(Z1)
+CLOUD_TO_DEVICE(Z1)
 {
     if (param.toBool())
     {
@@ -73,7 +73,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z1, onZ1)
         .begin();
 
     delay(500); // let MQTT connect first so Z0 publish has a destination

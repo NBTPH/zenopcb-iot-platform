@@ -195,6 +195,17 @@ namespace ZenoPCB
          */
         void notifyChange(ZKey key);
 
+        /**
+         * @brief Install all pending CLOUD_TO_DEVICE handlers queued at
+         *        static-init time. Called by Zeno::begin().
+         *
+         * The CLOUD_TO_DEVICE macro generates a global ZKeyHandlerRegistrar
+         * whose ctor pushes the (key, callback) pair into a module-local
+         * queue (see ZenoTimer.cpp). begin() then drains that queue into
+         * _keyCallbacks[] via this method.
+         */
+        void commitPendingHandlers();
+
         // ============================================
         // Stats & Debug
         // ============================================

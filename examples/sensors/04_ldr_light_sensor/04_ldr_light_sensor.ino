@@ -45,8 +45,15 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static uint32_t s_lastSampleMs = 0;
-static const uint32_t SAMPLE_MS = 1000;
+
+// Sample + publish brightness every 1 s.
+ZENO_EVERY(1000)
+{
+    const float raw = (float)analogRead(LDR_PIN);
+    const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
+    DEVICE_TO_CLOUD(Z0, pct);
+    Serial.printf("[LDR] brightness = %.1f%%\n", pct);
+}
 
 void setup()
 {
@@ -55,20 +62,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastSampleMs >= SAMPLE_MS)
-    {
-        s_lastSampleMs = now;
-        const float raw = (float)analogRead(LDR_PIN);
-        const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
-        ZENO_WRITE(Z0, pct);
-        Serial.printf("[LDR] brightness = %.1f%%\n", pct);
-    }
     zeno.loop();
 }

@@ -531,7 +531,13 @@ namespace ZenoPCB
     {
         ZENO_LOG_CORE("Initializing...");
 
-        // Wire the HAL into static-pointer storage consumers 
+        // v0.4.0 — install macros' static-init registrations into the
+        // active pools. Done BEFORE any subsystem init so timers and ZKey
+        // handlers are visible to early callbacks.
+        ZenoTimer::getInstance().commitPending();
+        ZKeyBuffer::getInstance().commitPendingHandlers();
+
+        // Wire the HAL into static-pointer storage consumers
         // (Plan 04-05) replaces the nullptr default from plans 04-03/04-04.
         // Must run BEFORE any module that uses storage (LittleFSManager,
         // ScheduleStorage, IrrigationStorage). Order is irrelevant within
@@ -1119,9 +1125,10 @@ namespace ZenoPCB
 
                     // Immediately publish updated Z Key values back so the app
                     // sees new state right away (instead of waiting up to 5s for
-                    // the next periodic publish).
+                    // the next periodic publish). Fire ALL ZENO_EVERY blocks
+                    // first so the snapshot includes every periodic publisher.
                     if (_zKeysEnabled) {
-                        if (_zKeyReadCallback) _zKeyReadCallback();
+                        ZenoTimer::getInstance().runAll();
                         _publishZKeyTelemetry();
                     }
 
@@ -1153,7 +1160,7 @@ namespace ZenoPCB
                                 }
                             }
                             if (dispatched > 0) {
-                                if (_zKeyReadCallback) _zKeyReadCallback();
+                                ZenoTimer::getInstance().runAll();
                                 _publishZKeyTelemetry();
                             }
                         } else {
@@ -1757,18 +1764,16 @@ namespace ZenoPCB
 
             if (zBuffer.isPublishDue())
             {
-                // Timer-only reset (NOT markPublished). Previously the call
-                // was markPublished(), which also wiped every dirty flag 
-                // meaning any `ZENO_WRITE(Zx, )` the user did from `loop()`
-                // between intervals got discarded before `_publishZKeyTelemetry()`
-                // ran, so only values set INSIDE ZENO_READ_ALL ever reached
-                // the cloud. markPublishTimer() preserves those values; the
-                // dirty clear now happens in `_publishZKeyTelemetry()` after
-                // a successful publish (it already calls clearDirtyFlags()).
+                // Timer-only reset (NOT markPublished). markPublishTimer()
+                // preserves any values the user wrote between intervals; the
+                // dirty clear happens in _publishZKeyTelemetry() after a
+                // successful publish.
                 zBuffer.markPublishTimer();
 
-                if (_zKeyReadCallback)
-                    _zKeyReadCallback();
+                // ZENO_EVERY dispatch — fire any periodic block whose
+                // interval has elapsed. Replaces the v0.3 _zKeyReadCallback
+                // (ZENO_READ_ALL) which was a single global producer.
+                ZenoTimer::getInstance().runDue(millis());
 
                 bool shouldPublish = zBuffer.isInstantPublishPending() || zBuffer.hasDirtyKeys();
 
@@ -2813,12 +2818,6 @@ namespace ZenoPCB
     Zeno &Zeno::onAnyZKeyChange(ZKeyChangeCallback callback)
     {
         ZKeyBuffer::getInstance().onAnyChange(callback);
-        return *this;
-    }
-
-    Zeno &Zeno::onZKeyRead(std::function<void()> callback)
-    {
-        _zKeyReadCallback = callback;
         return *this;
     }
 

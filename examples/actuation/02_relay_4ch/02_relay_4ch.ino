@@ -54,10 +54,10 @@ static inline void writeRelay(uint8_t idx, bool on)
     digitalWrite(RELAY_PINS[idx], v);
 }
 
-ZENO_READ(Z0) { bool on = param.toBool(); writeRelay(0, on); Serial.printf("[Z0] CH1 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z1) { bool on = param.toBool(); writeRelay(1, on); Serial.printf("[Z1] CH2 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z2) { bool on = param.toBool(); writeRelay(2, on); Serial.printf("[Z2] CH3 %s\n", on ? "ON" : "OFF"); }
-ZENO_READ(Z3) { bool on = param.toBool(); writeRelay(3, on); Serial.printf("[Z3] CH4 %s\n", on ? "ON" : "OFF"); }
+CLOUD_TO_DEVICE(Z0) { bool on = param.toBool(); writeRelay(0, on); Serial.printf("[Z0] CH1 %s\n", on ? "ON" : "OFF"); }
+CLOUD_TO_DEVICE(Z1) { bool on = param.toBool(); writeRelay(1, on); Serial.printf("[Z1] CH2 %s\n", on ? "ON" : "OFF"); }
+CLOUD_TO_DEVICE(Z2) { bool on = param.toBool(); writeRelay(2, on); Serial.printf("[Z2] CH3 %s\n", on ? "ON" : "OFF"); }
+CLOUD_TO_DEVICE(Z3) { bool on = param.toBool(); writeRelay(3, on); Serial.printf("[Z3] CH4 %s\n", on ? "ON" : "OFF"); }
 
 void setup()
 {
@@ -72,10 +72,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
-        .onZKeyChange(ZKey::Z1, onZ1)
-        .onZKeyChange(ZKey::Z2, onZ2)
-        .onZKeyChange(ZKey::Z3, onZ3)
         .begin();
 }
 

@@ -87,8 +87,19 @@ Zeno zeno;
   ZenoMultiConnectProvider multiProvider;
 #endif
 
-static const uint32_t PUBLISH_PERIOD_MS = 10000;
-static uint32_t s_lastPublish = 0;
+#if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET) && defined(ZENOPCB_ENABLE_CELLULAR)
+// Publish the active provider name + IP every 10 s so the dashboard can show
+// which link is currently carrying traffic.
+ZENO_EVERY(10000)
+{
+    const char *activeName = multiProvider.getName();
+    String      activeIP   = multiProvider.getLocalIP();
+    DEVICE_TO_CLOUD(Z0, String(activeName));
+    DEVICE_TO_CLOUD(Z1, activeIP);
+    Serial.printf("[04_multi_failover] active=%s ip=%s\n",
+                   activeName, activeIP.c_str());
+}
+#endif
 
 void setup()
 {
@@ -109,7 +120,6 @@ void setup()
         .device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&multiProvider)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .onConnected([]()
                      { Serial.println(F("[04_multi_failover] cloud connected (some link)")); })
         .begin();
@@ -123,19 +133,6 @@ void setup()
 void loop()
 {
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET) && defined(ZENOPCB_ENABLE_CELLULAR)
-    const uint32_t now = millis();
-    if (now - s_lastPublish >= PUBLISH_PERIOD_MS)
-    {
-        s_lastPublish = now;
-        // Publish the active provider name + IP so the dashboard can show
-        // which link is currently carrying traffic.
-        const char *activeName = multiProvider.getName();
-        String      activeIP   = multiProvider.getLocalIP();
-        ZENO_WRITE(Z0, String(activeName));
-        ZENO_WRITE(Z1, activeIP);
-        Serial.printf("[04_multi_failover] active=%s ip=%s\n",
-                       activeName, activeIP.c_str());
-    }
     zeno.loop();
 #else
     delay(1000);

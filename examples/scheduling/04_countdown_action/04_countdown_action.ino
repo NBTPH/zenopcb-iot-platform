@@ -57,9 +57,9 @@ static inline void writeLed(bool on)
 #endif
 }
 
-ZENO_READ(Z1)
+CLOUD_TO_DEVICE(Z1)
 {
-    long secs = param.toLong();
+    long secs = param.toInt();
     if (secs <= 0)
     {
         s_running = false;
@@ -83,7 +83,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z1, onZ1)
         .begin();
 }
 
@@ -93,9 +92,9 @@ void loop()
     {
         s_running = false;
         writeLed(false);
-        ZENO_WRITE(Z0, true);  // pulse a "fire" event
+        DEVICE_TO_CLOUD(Z0, true);  // pulse a "fire" event
         Serial.printf("[Countdown] FIRE\n");
-        ZENO_WRITE(Z0, false); // reset edge
+        DEVICE_TO_CLOUD(Z0, false); // reset edge
     }
     zeno.loop();
 }

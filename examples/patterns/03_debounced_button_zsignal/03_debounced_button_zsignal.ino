@@ -89,7 +89,7 @@ void loop()
             if (!s_longSent)
             {
                 ++s_clickCount;
-                ZENO_WRITE(Z0, (int32_t)s_clickCount);
+                DEVICE_TO_CLOUD(Z0, (int32_t)s_clickCount);
                 Serial.printf("[Click] count = %lu\n",
                                (unsigned long)s_clickCount);
             }
@@ -101,7 +101,7 @@ void loop()
         (now - s_pressStartMs) >= LONG_HOLD_MS)
     {
         s_longSent = true;
-        ZENO_WRITE(Z1, String("long"));
+        DEVICE_TO_CLOUD(Z1, String("long"));
         Serial.printf("[LongHold] fired\n");
     }
 

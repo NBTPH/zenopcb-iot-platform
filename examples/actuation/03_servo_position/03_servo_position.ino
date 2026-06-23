@@ -25,7 +25,11 @@
  */
 
 #include <ZenoPCBMain.h>
-#include <Servo.h>
+#if defined(ESP32)
+  #include <ESP32Servo.h>
+#else
+  #include <Servo.h>
+#endif
 
 using namespace ZenoPCB;
 
@@ -49,9 +53,9 @@ using namespace ZenoPCB;
 Zeno  zeno;
 Servo servo;
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
-    int deg = (int)param.toLong();
+    int deg = (int)param.toInt();
     if (deg < 0)   deg = 0;
     if (deg > 180) deg = 180;
     servo.write(deg);
@@ -67,7 +71,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

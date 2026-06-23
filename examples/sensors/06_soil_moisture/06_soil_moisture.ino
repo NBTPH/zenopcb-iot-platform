@@ -50,8 +50,6 @@ static const int DRY_RAW = 2900;
 static const int WET_RAW = 1200;
 
 Zeno zeno;
-static uint32_t s_lastSampleMs = 0;
-static const uint32_t SAMPLE_MS = 30000;
 
 static float toPercent(int raw)
 {
@@ -61,6 +59,15 @@ static float toPercent(int raw)
     return 100.0f * (float)(DRY_RAW - raw) / (float)(DRY_RAW - WET_RAW);
 }
 
+// Sample + publish soil moisture every 30 s.
+ZENO_EVERY(30000)
+{
+    const int raw = analogRead(SOIL_PIN);
+    const float pct = toPercent(raw);
+    DEVICE_TO_CLOUD(Z0, pct);
+    Serial.printf("[Soil] raw=%d pct=%.1f%%\n", raw, pct);
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -68,20 +75,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(30000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastSampleMs >= SAMPLE_MS)
-    {
-        s_lastSampleMs = now;
-        const int raw = analogRead(SOIL_PIN);
-        const float pct = toPercent(raw);
-        ZENO_WRITE(Z0, pct);
-        Serial.printf("[Soil] raw=%d pct=%.1f%%\n", raw, pct);
-    }
     zeno.loop();
 }

@@ -156,12 +156,8 @@ getInt	KEYWORD2
 getFloat	KEYWORD2
 getString	KEYWORD2
 getBool	KEYWORD2
-onZKeyChange	KEYWORD2
 onAnyZKeyChange	KEYWORD2
-onZKeyRead	KEYWORD2
-setZPublishInterval	KEYWORD2
 setModbusTelemetryInterval	KEYWORD2
-setZInstantPublish	KEYWORD2
 
 # Time
 isTimeSynced	KEYWORD2
@@ -184,10 +180,12 @@ getConfig	KEYWORD2
 getConnectionCount	KEYWORD2
 getDataMonitorCount	KEYWORD2
 
-# Macros (from ZenoPCBMain.h)
+# Macros (from ZenoPCBMain.h) — v0.4.0 declarative API
+DEVICE_TO_CLOUD	KEYWORD2
+CLOUD_TO_DEVICE	KEYWORD2
+ZENO_EVERY	KEYWORD2
+# Backward-compat alias
 ZENO_WRITE	KEYWORD2
-ZENO_READ	KEYWORD2
-ZENO_READ_ALL	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

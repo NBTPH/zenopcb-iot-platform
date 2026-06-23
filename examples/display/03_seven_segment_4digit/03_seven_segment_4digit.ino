@@ -55,9 +55,9 @@ using namespace ZenoPCB;
 Zeno          zeno;
 TM1637Display display(CLK_PIN, DIO_PIN);
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
-    long v = param.toLong();
+    long v = (long)param.toInt();
     if (v >  9999) v =  9999;
     if (v < -999)  v = -999;
     display.showNumberDec((int)v, false);
@@ -73,7 +73,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

@@ -43,9 +43,9 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-ZENO_READ(Z3)
+CLOUD_TO_DEVICE(Z3)
 {
-    int duty = (int)param.toLong();
+    int duty = (int)param.toInt();
     if (duty < 0)   duty = 0;
     if (duty > 255) duty = 255;
     analogWrite(PWM_PIN, duty);
@@ -61,7 +61,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z3, onZ3)
         .begin();
 }
 

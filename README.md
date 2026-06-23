@@ -6,7 +6,7 @@
 
 WiFi captive-portal provisioning · MQTT · OTA · Modbus · ZSignals · Alarms · Schedules · Irrigation · Diagnostics
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](library.properties)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](library.properties)
 [![Platforms](https://img.shields.io/badge/platforms-ESP32%20%7C%20ESP8266%20%7C%20UNO%20R4%20%7C%20STM32-orange.svg)](#nền-tảng-hỗ-trợ)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Arduino](https://img.shields.io/badge/Arduino-Library%20Manager-00979D.svg?logo=arduino)](https://www.arduino.cc/reference/en/libraries/)
@@ -23,7 +23,7 @@ WiFi captive-portal provisioning · MQTT · OTA · Modbus · ZSignals · Alarms 
 
 ## Tổng quan
 
-`ZenoPCB::Zeno` là một điểm vào fluent duy nhất cho toàn bộ vòng đời thiết bị IoT trên ZenoPCB Cloud:
+`ZenoPCB::Zeno` là điểm vào duy nhất cho toàn bộ vòng đời thiết bị IoT trên ZenoPCB Cloud. **v0.4.0** đổi sang API **declarative** — chỉ cần khai báo block ở file scope, library tự register, `setup()` còn 1 dòng:
 
 ```cpp
 #include <ZenoPCBMain.h>
@@ -31,18 +31,26 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
+// Cloud → Device: tự register, không cần .onZKeyChange()
+CLOUD_TO_DEVICE(Z0) {
+    digitalWrite(LED_BUILTIN, param.toBool() ? HIGH : LOW);
+    DEVICE_TO_CLOUD(Z0, param.toBool());     // echo state
+}
+
+// Device → Cloud định kỳ: tự register, không cần .onZKeyRead()
+ZENO_EVERY(5000) {
+    DEVICE_TO_CLOUD(Z1, analogRead(A0) * 0.1f);
+}
+
 void setup() {
-    zeno.wifi("SSID", "PASSWORD")
-        .device("DEVICE_ID", "DEVICE_TOKEN")
-        .enableZKeys()
-        .setZPublishInterval(5000)
-        .begin();
+    Serial.begin(115200);
+    zeno.wifi("SSID", "PASS").device("ID", "TOKEN").enableZKeys().begin();
 }
 
 void loop() { zeno.loop(); }
 ```
 
-- **Single include** — `#include <ZenoPCBMain.h>` kéo theo cả `ZenoPCB.h` và macros `ZENO_WRITE` / `ZENO_READ` / `ZENO_READ_ALL`.
+- **Single include** — `#include <ZenoPCBMain.h>` kéo theo cả `ZenoPCB.h` và 3 macro `DEVICE_TO_CLOUD` / `CLOUD_TO_DEVICE` / `ZENO_EVERY`.
 - **Broker built-in** — không cần khai báo `.mqtt(...)` cho luồng cơ bản; thư viện kết nối thẳng tới ZenoPCB Cloud broker. Tự khai broker chỉ cần thiết khi self-host.
 - **Zero external deps** — ArduinoJson, PubSubClient, TinyGSM, Preferences, FlashStorage, StreamDebugger đều đã vendor trong [src/vendor/](src/vendor/).
 - **HAL layer** — mọi truy cập phần cứng đi qua [`IZenoHal`](src/hal/IZenoHal.h). Port nền tảng mới chỉ cần hiện thực 5 interface con.
@@ -110,26 +118,24 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-// Z1: cloud → device  (LED control)
-ZENO_READ(Z1) {
+// Z1: cloud → device  (LED control). Self-register tự động.
+CLOUD_TO_DEVICE(Z1) {
     digitalWrite(LED_PIN, param.toBool() ? HIGH : LOW);
 }
 
-// Đọc tất cả sensor ngay trước mỗi publish cycle
-ZENO_READ_ALL {
-    ZENO_WRITE(Z0, analogRead(SENSOR_PIN) * (100.0f / ADC_FULL));
+// Z0: device → cloud mỗi 5 giây. Self-register tự động.
+ZENO_EVERY(5000) {
+    DEVICE_TO_CLOUD(Z0, analogRead(SENSOR_PIN) * (100.0f / ADC_FULL));
 }
 
 void setup() {
     Serial.begin(115200);
     pinMode(LED_PIN, OUTPUT);
 
+    // Setup chỉ còn 1 dòng — không cần .onZKeyChange / .onZKeyRead / .setZPublishInterval
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
-        .onZKeyRead(_zenoReadAll)
-        .onZKeyChange(ZKey::Z1, onZ1)
         .begin();
 }
 
@@ -233,25 +239,60 @@ void loop() { zeno.loop(); }
 
 ZSignals (kiểu dữ liệu C++: `ZKey`) là kênh telemetry/control 2 chiều với tới 255 slot. Mỗi slot có thể mang `int32_t`, `float`, `String`, hay `bool` — type được track tại runtime trong `ZValue`.
 
-```cpp
-ZENO_READ(Z1) { /* cloud → device. param là ZValue */ }
-ZENO_READ_ALL { /* gọi trước mỗi publish cycle */ }
+### 3 macro chính (v0.4.0+)
 
+| Macro | Hướng | Khi nào dùng |
+|---|---|---|
+| `DEVICE_TO_CLOUD(Zx, value)` | Device → Cloud (1 dòng) | Bất kỳ đâu cần publish giá trị mới |
+| `CLOUD_TO_DEVICE(Zx) { … }` | Cloud → Device (block) | File scope — nhận lệnh từ dashboard, điều khiển hardware |
+| `ZENO_EVERY(intervalMs) { … }` | Device → Cloud (định kỳ) | File scope — auto-publish telemetry mỗi N ms |
+
+### Pattern hoàn chỉnh
+
+```cpp
+// Nhận lệnh từ cloud → bật/tắt relay
+CLOUD_TO_DEVICE(Z0) {
+    bool on = param.toBool();
+    digitalWrite(RELAY, on ? HIGH : LOW);
+    DEVICE_TO_CLOUD(Z0, on);   // echo state để server xác nhận
+}
+
+// Gửi nhiệt độ mỗi 5 giây
+ZENO_EVERY(5000) {
+    DEVICE_TO_CLOUD(Z1, dht.readTemperature());
+}
+
+// Gửi độ ẩm mỗi 30 giây
+ZENO_EVERY(30000) {
+    DEVICE_TO_CLOUD(Z2, dht.readHumidity());
+}
+
+void setup() {
+    zeno.wifi(SSID, PASS).device(ID, TOKEN).enableZKeys().begin();
+}
+```
+
+### Các quy tắc quan trọng
+
+- **`CLOUD_TO_DEVICE` và `ZENO_EVERY` phải ở FILE SCOPE** (ngoài mọi hàm). Compiler tự chặn nếu đặt trong `loop()`/`setup()` (anonymous namespace error).
+- **Interval auto-clamp về 1000ms** — viết `ZENO_EVERY(500)` cũng chạy 1s/lần (bảo vệ MQTT broker khỏi spam).
+- **GET_ALL auto-refresh** — khi server hỏi state, library tự gọi MỌI `ZENO_EVERY` block ngay → response chứa snapshot mới nhất, server không phải poll loop.
+- **Backward compat** — `ZENO_WRITE(Zx, value)` vẫn alias `DEVICE_TO_CLOUD` cho user upgrade dần. `ZENO_READ` và `ZENO_READ_ALL` đã **xoá**.
+
+### Tùy chọn nâng cao
+
+```cpp
 zeno.enableZKeys()
-    .setZPublishInterval(5000)        // publish định kỳ
-    .setZInstantPublish(true)         // publish ngay khi đổi giá trị
-    .onZKeyChange(ZKey::Z1, onZ1)
-    .onAnyZKeyChange([](ZKey k, const ZValue& v) { /* ... */ })
-    .onZKeyRead(_zenoReadAll);
+    .onAnyZKeyChange([](ZKey k, const ZValue& v) { /* watch any key */ });
 ```
 
-Helper overloads cho callback:
-```cpp
-zeno.onZKeyChange(ZKey::Z0, [](float v)        { /* ... */ });
-zeno.onZKeyChange(ZKey::Z1, [](int32_t v)      { /* ... */ });
-zeno.onZKeyChange(ZKey::Z2, [](const String& v){ /* ... */ });
-zeno.onZKeyChange(ZKey::Z3, [](bool v)         { /* ... */ });
-```
+### Migration v0.3.x → v0.4.0
+
+| v0.3.x | v0.4.0 |
+|---|---|
+| `ZENO_READ(Z1) { … }` + `.onZKeyChange(ZKey::Z1, onZ1)` | `CLOUD_TO_DEVICE(Z1) { … }` |
+| `ZENO_READ_ALL { … }` + `.onZKeyRead(_zenoReadAll)` + `.setZPublishInterval(5000)` | `ZENO_EVERY(5000) { … }` |
+| `ZENO_WRITE(Z0, x)` | `DEVICE_TO_CLOUD(Z0, x)` *(alias vẫn dùng được)* |
 
 ## Tính năng tuỳ chọn (build flags)
 

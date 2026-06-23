@@ -52,8 +52,22 @@ using namespace ZenoPCB;
 Zeno zeno;
 DHT  dht(DHT_PIN, DHT_TYPE);
 
-static uint32_t s_lastReadMs = 0;
-static const uint32_t READ_PERIOD_MS = 5000;
+// Read DHT22 and publish T/H every 5 s.
+ZENO_EVERY(5000)
+{
+    const float t = dht.readTemperature();
+    const float h = dht.readHumidity();
+    if (!isnan(t) && !isnan(h))
+    {
+        DEVICE_TO_CLOUD(Z0, t);
+        DEVICE_TO_CLOUD(Z1, h);
+        Serial.printf("[DHT22] T=%.1fC H=%.1f%%\n", t, h);
+    }
+    else
+    {
+        Serial.printf("[DHT22] read failed\n");
+    }
+}
 
 void setup()
 {
@@ -63,28 +77,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastReadMs >= READ_PERIOD_MS)
-    {
-        s_lastReadMs = now;
-        const float t = dht.readTemperature();
-        const float h = dht.readHumidity();
-        if (!isnan(t) && !isnan(h))
-        {
-            ZENO_WRITE(Z0, t);
-            ZENO_WRITE(Z1, h);
-            Serial.printf("[DHT22] T=%.1fC H=%.1f%%\n", t, h);
-        }
-        else
-        {
-            Serial.printf("[DHT22] read failed\n");
-        }
-    }
     zeno.loop();
 }

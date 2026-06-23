@@ -78,7 +78,7 @@ void loop()
         s_lastFireMs = now;
         s_ledState   = !s_ledState;
         writeLed(s_ledState);
-        ZENO_WRITE(Z0, s_ledState);
+        DEVICE_TO_CLOUD(Z0, s_ledState);
         Serial.printf("[Timer] tick, LED %s\n", s_ledState ? "ON" : "OFF");
     }
     zeno.loop();

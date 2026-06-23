@@ -392,6 +392,19 @@ namespace ZenoPCB
         }
     }
 
+    // Bridge defined in ZenoTimer.cpp — walks the static-init queue of
+    // (ZKey, callback) pairs pushed by ZKeyHandlerRegistrar ctors.
+    extern void zenoTimer_drainPendingHandlers(void (*installer)(ZKey, void (*)(ZKey, const ZValue &)));
+
+    void ZKeyBuffer::commitPendingHandlers()
+    {
+        auto installer = [](ZKey key, void (*cb)(ZKey, const ZValue &))
+        {
+            ZKeyBuffer::getInstance().onChange(key, cb);
+        };
+        zenoTimer_drainPendingHandlers(installer);
+    }
+
     // ============================================
     // Stats & Debug
     // ============================================

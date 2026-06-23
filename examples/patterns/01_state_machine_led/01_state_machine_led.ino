@@ -83,12 +83,12 @@ static void transition(State next)
     Serial.printf("[FSM] %s -> %s\n", stateName(s_state), stateName(next));
     s_state = next;
     applyStateLeds(s_state);
-    ZENO_WRITE(Z1, String(stateName(s_state)));
+    DEVICE_TO_CLOUD(Z1, String(stateName(s_state)));
 }
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
-    const long v = param.toLong();
+    const long v = param.toInt();
     if (v < 0 || v > 2) return;
     transition(static_cast<State>(v));
 }
@@ -104,7 +104,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

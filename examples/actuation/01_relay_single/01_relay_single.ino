@@ -60,7 +60,7 @@ static inline void writeRelay(bool on)
     digitalWrite(RELAY_PIN, v);
 }
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     const bool on = param.toBool();
     writeRelay(on);
@@ -68,7 +68,7 @@ ZENO_READ(Z0)
     // polling get_all for confirmation. Without this echo, Z0 stays
     // ZValueType::NONE in the buffer and is skipped by get_all → the
     // server keeps re-asking on a short interval.
-    ZENO_WRITE(Z0, on);
+    DEVICE_TO_CLOUD(Z0, on);
     Serial.printf("[Z0] relay %s\n", on ? "ON" : "OFF");
 }
 
@@ -83,7 +83,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 
     // Publish the initial OFF state right after begin() so the server
@@ -91,7 +90,7 @@ void setup()
     // this seed write, Z0 stays NONE in the buffer until the first
     // cloud-control arrives, and the server keeps polling get_all
     // because nothing matches its expected key set.
-    ZENO_WRITE(Z0, false);
+    DEVICE_TO_CLOUD(Z0, false);
 }
 
 void loop()

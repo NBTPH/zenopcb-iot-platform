@@ -20,6 +20,7 @@
 #include "../core/ZenoPCBDebug.h"
 #include "../core/ZKeyTypes.h"
 #include "../core/ZKeyBuffer.h"
+#include "../core/ZenoTimer.h"
 
 namespace ZenoPCB
 {
@@ -275,6 +276,13 @@ namespace ZenoPCB
         // short interval - see user report on 01_relay_single.ino.
         doc.to<JsonObject>();
 
+        // v0.4.0 — fire every ZENO_EVERY block immediately so the
+        // response telemetry includes a fresh value from every periodic
+        // publisher, even if its interval hasn't elapsed yet. Without this,
+        // a Z key whose first scheduled run hasn't happened wouldn't appear
+        // in the GET_ALL response.
+        ZenoTimer::getInstance().runAll();
+
         // 1. Merge Modbus register data (if any registers configured)
         // includeNulls=true: get_all must show ALL registers including stale-expired as null
         String modbusJson = ModbusDataBuffer::getInstance().buildTelemetryJson(4096, true);
@@ -290,7 +298,9 @@ namespace ZenoPCB
             }
         }
 
-        // 2. Merge ALL set Z Keys (snapshot, ignores dirty flag)
+        // 2. Merge ALL set Z Keys (snapshot, ignores dirty flag).
+        // Includes both keys set by ZENO_EVERY (just refreshed via runAll
+        // above) and keys set by cloud control echoes inside CLOUD_TO_DEVICE.
         ZKeyBuffer::getInstance().mergeAllIntoJson(doc);
 
         String output;

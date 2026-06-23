@@ -46,8 +46,15 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static uint32_t s_lastSampleMs = 0;
-static const uint32_t SAMPLE_PERIOD_MS = 1000;
+
+// Sample + publish the analog reading every 5 s.
+ZENO_EVERY(5000)
+{
+    const float raw = (float)analogRead(SENSOR_PIN);
+    const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
+    DEVICE_TO_CLOUD(Z2, pct);
+    Serial.printf("[Z2] analog = %.1f%%\n", pct);
+}
 
 void setup()
 {
@@ -56,20 +63,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(5000)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-    if (now - s_lastSampleMs >= SAMPLE_PERIOD_MS)
-    {
-        s_lastSampleMs = now;
-        const float raw = (float)analogRead(SENSOR_PIN);
-        const float pct = (raw / ADC_FULL_SCALE) * 100.0f;
-        ZENO_WRITE(Z2, pct);
-        Serial.printf("[Z2] analog = %.1f%%\n", pct);
-    }
     zeno.loop();
 }

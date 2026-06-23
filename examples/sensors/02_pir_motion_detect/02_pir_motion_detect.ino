@@ -64,7 +64,7 @@ void loop()
     {
         s_lastState = s;
         const bool motion = (s == HIGH);
-        ZENO_WRITE(Z0, motion);
+        DEVICE_TO_CLOUD(Z0, motion);
         Serial.printf("[PIR] %s\n", motion ? "MOTION" : "quiet");
     }
     zeno.loop();

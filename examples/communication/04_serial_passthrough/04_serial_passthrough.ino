@@ -62,7 +62,7 @@ Zeno zeno;
 static char     s_rxBuf[128];
 static uint16_t s_rxLen = 0;
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     const String out = param.toString();
     DEV_SERIAL.print(out);
@@ -82,7 +82,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 
@@ -94,7 +93,7 @@ void loop()
         if (c == '\n')
         {
             s_rxBuf[s_rxLen] = '\0';
-            ZENO_WRITE(Z1, String(s_rxBuf));
+            DEVICE_TO_CLOUD(Z1, String(s_rxBuf));
             Serial.printf("[Serial] rx -> Z1: %s\n", s_rxBuf);
             s_rxLen = 0;
         }
@@ -106,7 +105,7 @@ void loop()
     if (s_rxLen >= sizeof(s_rxBuf) - 1)
     {
         s_rxBuf[s_rxLen] = '\0';
-        ZENO_WRITE(Z1, String(s_rxBuf));
+        DEVICE_TO_CLOUD(Z1, String(s_rxBuf));
         s_rxLen = 0;
     }
     zeno.loop();

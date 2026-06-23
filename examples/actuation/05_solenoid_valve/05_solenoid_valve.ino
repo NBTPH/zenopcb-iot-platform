@@ -64,11 +64,11 @@ static void writeValve(bool on)
     digitalWrite(VALVE_PIN, v);
     s_valveOn      = on;
     s_valveStartMs = on ? millis() : 0;
-    ZENO_WRITE(Z0, on); // echo state back to cloud
+    DEVICE_TO_CLOUD(Z0, on); // echo state back to cloud
     Serial.printf("[VALVE] %s\n", on ? "OPEN" : "CLOSED");
 }
 
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     writeValve(param.toBool());
 }
@@ -83,7 +83,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 

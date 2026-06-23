@@ -69,8 +69,8 @@ void onScheduleExecuted(const String &id,
     ++s_fireCount;
     Serial.printf("[Cron] %s fire #%lu (value=%lld)\n",
                    id.c_str(), (unsigned long)s_fireCount, (long long)value);
-    ZENO_WRITE(Z0, (int32_t)s_fireCount);
-    ZENO_WRITE(Z1, true);
+    DEVICE_TO_CLOUD(Z0, (int32_t)s_fireCount);
+    DEVICE_TO_CLOUD(Z1, true);
     startPulse();
 }
 
@@ -104,7 +104,7 @@ void loop()
     {
         s_pulseActive = false;
         digitalWrite(OUTPUT_PIN, LOW);
-        ZENO_WRITE(Z1, false);
+        DEVICE_TO_CLOUD(Z1, false);
     }
     zeno.loop();
 #endif

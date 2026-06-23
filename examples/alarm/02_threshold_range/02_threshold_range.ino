@@ -59,10 +59,10 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-ZENO_READ_ALL
+ZENO_EVERY(3000)
 {
     const float pct = (float)analogRead(SENSOR_PIN) / ADC_FULL * 100.0f;
-    ZENO_WRITE(Z2, pct);
+    DEVICE_TO_CLOUD(Z2, pct);
 }
 
 void onAlarmTriggered(const String &ruleId, const String &key,
@@ -97,8 +97,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(3000)
-        .onZKeyRead(_zenoReadAll)
         .enableAlarm()
         .onAlarmTriggered(onAlarmTriggered)
         .begin();

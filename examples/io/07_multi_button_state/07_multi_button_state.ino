@@ -87,9 +87,9 @@ void loop()
             // ZSignal write on enum key
             switch (s_btns[i].key)
             {
-                case ZKey::Z1: ZENO_WRITE(Z1, pressed); break;
-                case ZKey::Z2: ZENO_WRITE(Z2, pressed); break;
-                case ZKey::Z3: ZENO_WRITE(Z3, pressed); break;
+                case ZKey::Z1: DEVICE_TO_CLOUD(Z1, pressed); break;
+                case ZKey::Z2: DEVICE_TO_CLOUD(Z2, pressed); break;
+                case ZKey::Z3: DEVICE_TO_CLOUD(Z3, pressed); break;
                 default: break;
             }
             Serial.printf("[btn %d] %s\n", i, pressed ? "PRESS" : "RELEASE");

@@ -60,7 +60,7 @@ static inline void writeLed(bool on)
 }
 
 // Cloud writes Z0 -> LED on/off
-ZENO_READ(Z0)
+CLOUD_TO_DEVICE(Z0)
 {
     const bool on = param.toBool();
     writeLed(on);
@@ -77,7 +77,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
         .begin();
 }
 
@@ -88,8 +87,8 @@ void loop()
     {
         s_lastBtn = btn;
         const bool pressed = (btn == LOW);
-        writeLed(pressed);          // echo to LED locally
-        ZENO_WRITE(Z1, pressed);    // tell cloud the button state
+        writeLed(pressed);              // echo to LED locally
+        DEVICE_TO_CLOUD(Z1, pressed);   // tell cloud the button state
     }
 
     zeno.loop();

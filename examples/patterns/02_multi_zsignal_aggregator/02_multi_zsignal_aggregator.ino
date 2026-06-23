@@ -48,12 +48,42 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static uint32_t s_lastSampleMs = 0;
-static uint32_t s_lastSummaryMs = 0;
-static const uint32_t SAMPLE_MS  = 2000;
-static const uint32_t SUMMARY_MS = 10000;
+static const uint32_t SAMPLE_MS    = 2000;
+// Summary is emitted every SUMMARY_EVERY_N samples (so 5 * 2000 ms = 10 s).
+// Library limitation: only one ZENO_EVERY block per translation unit, so the
+// summary cadence is sub-divided inside the same block rather than declared
+// as a second block.
+static const uint8_t  SUMMARY_EVERY_N = 5;
 
-static float s_pct[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+static float   s_pct[5]      = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+static uint8_t s_sampleCount = 0;
+
+ZENO_EVERY(SAMPLE_MS)
+{
+    for (int i = 0; i < 5; ++i)
+    {
+        s_pct[i] = (float)analogRead(ADC_PINS[i]) / ADC_FULL * 100.0f;
+    }
+    DEVICE_TO_CLOUD(Z0, s_pct[0]);
+    DEVICE_TO_CLOUD(Z1, s_pct[1]);
+    DEVICE_TO_CLOUD(Z2, s_pct[2]);
+    DEVICE_TO_CLOUD(Z3, s_pct[3]);
+    DEVICE_TO_CLOUD(Z4, s_pct[4]);
+
+    if (++s_sampleCount >= SUMMARY_EVERY_N)
+    {
+        s_sampleCount = 0;
+        String json = "{\"ch\":[";
+        for (int i = 0; i < 5; ++i)
+        {
+            if (i > 0) json += ",";
+            json += String(s_pct[i], 1);
+        }
+        json += "]}";
+        DEVICE_TO_CLOUD(Z5, json);
+        Serial.printf("[Aggregator] %s\n", json.c_str());
+    }
+}
 
 void setup()
 {
@@ -62,41 +92,10 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .setZPublishInterval(SUMMARY_MS)
         .begin();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-
-    if (now - s_lastSampleMs >= SAMPLE_MS)
-    {
-        s_lastSampleMs = now;
-        for (int i = 0; i < 5; ++i)
-        {
-            s_pct[i] = (float)analogRead(ADC_PINS[i]) / ADC_FULL * 100.0f;
-        }
-        ZENO_WRITE(Z0, s_pct[0]);
-        ZENO_WRITE(Z1, s_pct[1]);
-        ZENO_WRITE(Z2, s_pct[2]);
-        ZENO_WRITE(Z3, s_pct[3]);
-        ZENO_WRITE(Z4, s_pct[4]);
-    }
-
-    if (now - s_lastSummaryMs >= SUMMARY_MS)
-    {
-        s_lastSummaryMs = now;
-        String json = "{\"ch\":[";
-        for (int i = 0; i < 5; ++i)
-        {
-            if (i > 0) json += ",";
-            json += String(s_pct[i], 1);
-        }
-        json += "]}";
-        ZENO_WRITE(Z5, json);
-        Serial.printf("[Aggregator] %s\n", json.c_str());
-    }
-
     zeno.loop();
 }

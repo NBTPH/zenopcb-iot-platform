@@ -59,10 +59,10 @@ static void render()
     oled.display();
 }
 
-ZENO_READ(Z0) { s_row[0] = param.toString(); render(); }
-ZENO_READ(Z1) { s_row[1] = param.toString(); render(); }
-ZENO_READ(Z2) { s_row[2] = param.toString(); render(); }
-ZENO_READ(Z3) { s_row[3] = param.toString(); render(); }
+CLOUD_TO_DEVICE(Z0) { s_row[0] = param.toString(); render(); }
+CLOUD_TO_DEVICE(Z1) { s_row[1] = param.toString(); render(); }
+CLOUD_TO_DEVICE(Z2) { s_row[2] = param.toString(); render(); }
+CLOUD_TO_DEVICE(Z3) { s_row[3] = param.toString(); render(); }
 
 void setup()
 {
@@ -77,10 +77,6 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
-        .onZKeyChange(ZKey::Z0, onZ0)
-        .onZKeyChange(ZKey::Z1, onZ1)
-        .onZKeyChange(ZKey::Z2, onZ2)
-        .onZKeyChange(ZKey::Z3, onZ3)
         .begin();
 }
 
