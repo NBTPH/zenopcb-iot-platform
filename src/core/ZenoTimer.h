@@ -28,10 +28,9 @@
 namespace ZenoPCB
 {
 
-    // 1 Hz hard floor. Even if user writes ZENO_EVERY(100), the dispatcher
-    // throttles to 1000 ms minimum to protect the MQTT broker from spam.
-    // Same as Z_KEY_MIN_PUBLISH_INTERVAL.
-    constexpr uint32_t ZENO_TIMER_MIN_INTERVAL = 1000;
+    // 10 Hz hard floor. Even if user writes ZENO_EVERY(10), the dispatcher
+    // throttles to 100 ms minimum to protect the CPU from having to update values many times.
+    constexpr uint32_t ZENO_TIMER_MIN_INTERVAL = 100;
 
     // Per-platform active-slot count. Tuned to F103's 20 KB SRAM.
 #if defined(STM32F1xx)

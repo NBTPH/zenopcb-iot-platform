@@ -1766,6 +1766,11 @@ namespace ZenoPCB
         {
             auto &zBuffer = ZKeyBuffer::getInstance();
 
+            // ZENO_EVERY dispatch — fire any periodic block whose
+            // interval has elapsed. Replaces the v0.3 _zKeyReadCallback
+            // (ZENO_READ_ALL) which was a single global producer.
+            ZenoTimer::getInstance().runDue(millis());
+
             if (zBuffer.isPublishDue())
             {
                 // Timer-only reset (NOT markPublished). markPublishTimer()
@@ -1773,11 +1778,6 @@ namespace ZenoPCB
                 // dirty clear happens in _publishZKeyTelemetry() after a
                 // successful publish.
                 zBuffer.markPublishTimer();
-
-                // ZENO_EVERY dispatch — fire any periodic block whose
-                // interval has elapsed. Replaces the v0.3 _zKeyReadCallback
-                // (ZENO_READ_ALL) which was a single global producer.
-                ZenoTimer::getInstance().runDue(millis());
 
                 bool shouldPublish = zBuffer.isInstantPublishPending() || zBuffer.hasDirtyKeys();
 
