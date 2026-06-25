@@ -355,10 +355,13 @@ namespace ZenoPCB
     void ZKeyBuffer::markPublishTimer()
     {
         _lastPublishTime = millis();
-        _instantPublishPending = false;
         // Intentionally NOT calling clearDirtyFlags() keeps values set from
         // loop() (e.g. `ZENO_WRITE(Z0, x)` outside ZENO_READ_ALL) alive so
         // _publishZKeyTelemetry() picks them up on this cycle.
+
+        //Not reseting _instantPublishPending before calling into publishing function
+        //reset only when publish is successful in _publishZKeyTelemetry() calling to markPublished()
+        //so that ZKey is instantly retries to publish after minimal time when instant publish is enabled
     }
 
     // ============================================

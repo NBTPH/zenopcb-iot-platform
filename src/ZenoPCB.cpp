@@ -759,7 +759,7 @@ namespace ZenoPCB
         if (_mqtt && _mqttEnabled)
         {
             ZENO_LOG_VERBOSE("Setting up unified MQTT callbacks...");
-            _mqtt->onConnected([this]()
+            auto handleMqttConnected = [this]()
                                {
 
                 if (!_mqtt || !_mqtt->isConnected()) {
@@ -988,8 +988,12 @@ namespace ZenoPCB
                     ZENO_LOG_VERBOSE("[5] ZKey publish timer reset (stabilization delay)");
                 }
 
-                ZENO_LOG_VERBOSE("MQTT subscriptions completed"); });
-
+                ZENO_LOG_VERBOSE("MQTT subscriptions completed"); };
+            _mqtt->onConnected(handleMqttConnected); //assign onConnected callback for reconnections
+            
+            if(_mqtt->isConnected()){ //calls into it since boot up might established connections before callbacks where assinged
+                handleMqttConnected();
+            }
             // ============================================
             // Setup UNIFIED MQTT onMessage Callback
             // MUST handle ALL message routing in ONE place
@@ -997,7 +1001,7 @@ namespace ZenoPCB
             ZENO_LOG_VERBOSE("Setting up unified MQTT onMessage callback...");
             _mqtt->onMessage([this](const String &topic, const String &payload)
                              {
-
+                                
                 // ========================================
                 // Route to appropriate handler based on topic
                 // ========================================

@@ -31,7 +31,7 @@ namespace ZenoPCB
     constexpr uint8_t Z_KEY_MAX = 254;
     constexpr uint16_t Z_KEY_COUNT = 255;
     constexpr uint32_t Z_KEY_DEFAULT_PUBLISH_INTERVAL = 5000; // 5 seconds
-    constexpr uint32_t Z_KEY_MIN_PUBLISH_INTERVAL = 1000;     // 1 second minimum
+    constexpr uint32_t Z_KEY_MIN_PUBLISH_INTERVAL = 250;     // 0.25 second minimum (1 second a bit too long for instant publish)
 
     // ============================================
     // Z Key Enum (Type-safe, IDE autocomplete)
