@@ -1,42 +1,35 @@
 /**
  * @file 00_hello_zsignals.ino
- * @brief Hello-world for ZenoPCB ZSignals — read one analog input, drive one LED, talk to the cloud both ways.
+ * @brief Hello-world for ZenoPCB ZSignals — send one local value and receive one cloud value.
  *
  * What you'll learn:
  *   - What a ZSignal is (a named slot on the ZenoPCB Cloud, called Z0..Zn)
- *   - How to publish a sensor value to the cloud on a timer (Device -> Cloud)
- *   - How to receive a command from the cloud and act on it (Cloud -> Device)
- *   - Why ADC code looks different on each board (resolution varies)
+ *   - How to update a local ZSignal value in code (Device -> Cloud)
+ *   - How to receive a ZSignal value written from the dashboard (Cloud -> Device)
+ *   - How ZENO_EVERY sets the local update rate separately from the MQTT publish rate
  *
  * Hardware needed:
  *   - Any supported board (ESP32 / ESP8266 / UNO R4 WiFi / STM32 F1 / STM32 F4)
- *   - LED + 220 Ohm resistor on LED_PIN (or just use the on-board LED)
- *   - Optional: potentiometer or analog sensor wired to SENSOR_PIN.
- *     With nothing wired you will still see noisy "floating" readings — that
- *     is fine for confirming the cloud link works end-to-end.
- *   - Jumper wires, breadboard
  *
  * Wiring:
- *   - LED_PIN  -> LED anode -> 220 Ohm -> GND
- *   - SENSOR_PIN -> potentiometer wiper (outer pins to 3.3 V and GND)
+ *   - None, only the board connected to computer via usb to see print outputs
  *
  * Cloud dashboard setup:
- *   - Create Z0 of type Float — sensor reading expressed as 0..100 percent
- *   - Create Z1 of type Bool  — turn the LED on/off from the dashboard
+ *   - Create Z0 of type Integer — device-generated value sent to the cloud
+ *   - Create Z1 of type Integer — dashboard value sent back to the device
  *
  * How to use:
  *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below.
  *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
  *   3. Flash to the board.
- *   4. Open Serial Monitor at 115200 baud — you should see a Z0 line every 5 seconds.
- *   5. On the dashboard, watch Z0 update every 5 s and toggle Z1 to control the LED.
+ *   4. Open Serial Monitor at 115200 baud — you should see local Z0 updates every 0.5 s.
+ *   5. On the dashboard, watch Z0 publish every 1 s and write a value to Z1.
  *
  * Tips & common mistakes:
  *   - The MQTT broker hostname is built into the library — you do NOT need to
  *     run your own broker.
- *   - On the STM32F1 Blue Pill, the on-board LED is active-LOW (LOW = on).
- *     The code handles this for you; remember it if you swap pins.
- *   - ESP32 GPIO 34 is input-only — you cannot use it as an output.
+ *   - This example intentionally avoids ADC, buttons, LEDs, and other hardware
+ *     details so the ZSignal send/receive flow is easy to see first.
  */
 
 #include <ZenoPCBMain.h>
@@ -52,67 +45,34 @@ using namespace ZenoPCB;
 #define DEVICE_TOKEN "REPLACE_AT_PROVISIONING"
 
 // ============================================
-// Pin + ADC settings per board.
-// ADCs have different bit-widths, so the "full scale" raw value differs:
-//   ESP32 / STM32 = 12-bit (0..4095), ESP8266 = 10-bit (0..1023),
-//   UNO R4 WiFi = 14-bit (0..16383). We use SENSOR_MAX below to normalise.
-// ============================================
-#if defined(ESP32)
-  #define SENSOR_PIN 34       // ESP32 GPIO 34 — input-only ADC pin
-  #define SENSOR_MAX 4095.0f  // 12-bit ADC
-  #define LED_PIN    2        // Built-in LED on most ESP32 dev boards
-#elif defined(ESP8266)
-  #define SENSOR_PIN A0       // ESP8266 only has one ADC pin (A0)
-  #define SENSOR_MAX 1023.0f  // 10-bit ADC
-  #define LED_PIN    LED_BUILTIN
-#elif defined(ARDUINO_UNOR4_WIFI)
-  #define SENSOR_PIN A0
-  #define SENSOR_MAX 16383.0f // 14-bit ADC (default on UNO R4)
-  #define LED_PIN    LED_BUILTIN
-#elif defined(STM32F4)
-  #define SENSOR_PIN PA0      // Nucleo-F429ZI Arduino A0
-  #define SENSOR_MAX 4095.0f  // 12-bit ADC
-  #define LED_PIN    PA5      // Nucleo-F429ZI green user LED
-#elif defined(STM32F1)
-  #define SENSOR_PIN PA0      // Blue Pill PA0
-  #define SENSOR_MAX 4095.0f  // 12-bit ADC
-  #define LED_PIN    PC13     // Blue Pill on-board LED — note: active-LOW
-#endif
-
-// ============================================
 // Globals
 // ============================================
 Zeno zeno;
-
+int random_number;
+static const uint32_t RND_PERIOD_MS = 500;  // half-second per generated value
+static uint32_t s_lastRnd = 0;              // millis() of last value update
 // ============================================
-// Device -> Cloud: sample the sensor and publish Z0 every 5 seconds.
+// Device -> Cloud: send the current local value every 0.5 seconds.
+// setZPublishInterval(1000) below publishes dirty Z values every 1 second.
 // ZENO_EVERY(N) runs the body roughly every N milliseconds, without using
 // delay() — so the rest of the loop keeps running.
 // ============================================
-ZENO_EVERY(5000)
+ZENO_EVERY(500)
 {
-    float raw = (float)analogRead(SENSOR_PIN);
-    float scaled = raw / SENSOR_MAX * 100.0f; // normalise to 0..100 across all boards
-    DEVICE_TO_CLOUD(Z0, scaled);
-    Serial.print("[Z0] sensor = ");
-    Serial.println(scaled);
+    DEVICE_TO_CLOUD(Z0, random_number);
+    Serial.print("[Z0] Sending = ");
+    Serial.println(random_number);
 }
 
 // ============================================
 // Cloud -> Device: triggered whenever the dashboard writes Z1.
-// `param.toBool()` converts the incoming value to a boolean.
+// `param.toInt()` converts the incoming value to an integer.
 // ============================================
 CLOUD_TO_DEVICE(Z1)
 {
-    bool on = param.toBool();
-#if defined(STM32F1)
-    // Blue Pill LED is active-LOW, so invert the level.
-    digitalWrite(LED_PIN, on ? LOW : HIGH);
-#else
-    digitalWrite(LED_PIN, on ? HIGH : LOW);
-#endif
-    Serial.print("[Z1] LED ");
-    Serial.println(on ? "ON" : "OFF");
+    const int received_value = param.toInt();
+    Serial.print("[Z1] Cloud received: ");
+    Serial.println(received_value);
 }
 
 // ============================================
@@ -120,15 +80,16 @@ CLOUD_TO_DEVICE(Z1)
 // ============================================
 void setup()
 {
+    random_number = 0; // start from a known value before the first generated update
     Serial.begin(115200);
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);    // start OFF so we don't glitch on boot
+    randomSeed(micros());
 
     // Fluent chain: connect to WiFi, identify to the cloud, enable the ZSignal
     // (Z0..Zn) feature, then start the background loop.
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 }
 
@@ -137,5 +98,12 @@ void setup()
 // ============================================
 void loop()
 {
+    const uint32_t now = millis();
+    // Non-blocking timer: generate a new local value on a simple interval.
+    if (now - s_lastRnd >= RND_PERIOD_MS)
+    {
+      s_lastRnd = now;
+      random_number = random(10000); // generate a value from 0 to 9999
+    }
     zeno.loop();    // services WiFi + MQTT + ZENO_EVERY timers — must be called every loop
 }

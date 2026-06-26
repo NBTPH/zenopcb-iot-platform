@@ -39,8 +39,8 @@
  *   1. Replace WIFI_SSID, WIFI_PASS, DEVICE_ID, and DEVICE_TOKEN below with
  *      values from your ZenoPCB dashboard.
  *   2. Flash the sketch and open the Serial Monitor at 115200 baud.
- *   3. Watch the device connect to WiFi, then the cloud. A counter publishes
- *      to Z0 every 30 seconds — confirm the new value on the dashboard.
+ *   3. Watch the device connect to WiFi, then the cloud. A counter samples
+ *      every 0.5 s and publishes to Z0 every 1 s.
  *
  * Tips & common mistakes:
  *   - WIFI_PASS is case-sensitive. ESP32/ESP8266 only support 2.4 GHz WiFi —
@@ -69,9 +69,9 @@ Zeno zeno;
 
 static uint32_t s_beatCount = 0;          // counter incremented on each heartbeat
 
-// Device -> Cloud: publish a heartbeat every 30 seconds.
+// Device -> Cloud: sample a heartbeat every 0.5 seconds.
 // ZENO_EVERY auto-registers this block at boot — no need to call it from loop().
-ZENO_EVERY(30000)
+ZENO_EVERY(500)
 {
     s_beatCount++;
     DEVICE_TO_CLOUD(Z0, (int32_t)s_beatCount);  // send counter to dashboard slot Z0
@@ -90,6 +90,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()                    // turns on the Z0..Z39 cloud-key system
+        .setZPublishInterval(1000)        // publish dirty values every 1 second
         .onConnected([]()
                      { Serial.println(F("[01_wifi_basic] cloud connected")); })
         .begin();

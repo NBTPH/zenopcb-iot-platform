@@ -78,6 +78,9 @@ Zeno zeno;
 static bool     s_running    = false;
 static uint32_t s_startMs    = 0;
 static uint32_t s_durationMs = 0;
+static bool     s_firePulseActive = false;
+static uint32_t s_firePulseStartMs = 0;
+static const uint32_t FIRE_PULSE_MS = 300; // long enough for instant publish throttle
 
 // Wrap digitalWrite for the F103 active-LOW LED quirk (PC13 lights on LOW).
 static inline void writeLed(bool on)
@@ -97,6 +100,7 @@ CLOUD_TO_DEVICE(Z1)
     {
         // Cancel: stop the countdown and shut the LED off.
         s_running = false;
+        s_firePulseActive = false;
         writeLed(false);
         Serial.printf("[Countdown] cancelled\n");
         return;
@@ -118,6 +122,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZInstantPublish(true)
         .begin();
 }
 
@@ -128,10 +133,17 @@ void loop()
     {
         s_running = false;
         writeLed(false);
-        // One-shot edge: write true then false so dashboard event handlers
-        // see a single "fire" event, not a sticky state.
+        // One-shot edge: hold true briefly, then clear below. Writing true
+        // and false back-to-back would collapse to only the final false value.
         DEVICE_TO_CLOUD(Z0, true);
+        s_firePulseActive = true;
+        s_firePulseStartMs = millis();
         Serial.printf("[Countdown] FIRE\n");
+    }
+
+    if (s_firePulseActive && (millis() - s_firePulseStartMs >= FIRE_PULSE_MS))
+    {
+        s_firePulseActive = false;
         DEVICE_TO_CLOUD(Z0, false);
     }
     zeno.loop();

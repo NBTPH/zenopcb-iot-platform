@@ -27,8 +27,8 @@
  *   1. Replace WIFI_SSID / WIFI_PASS / DEVICE_ID / DEVICE_TOKEN below.
  *   2. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
  *   3. Flash and open Serial Monitor at 115200 baud.
- *   4. Move your hand 5..200 cm in front of the sensor — Z0 should track it
- *      every 2 s.
+ *   4. Move your hand 5..200 cm in front of the sensor — local samples run
+ *      every 0.5 s and Z0 publishes every 1 s.
  *
  * Tips & common mistakes:
  *   - The HC-SR04 is useful from about 2 cm to 4 m. Outside that range pulseIn
@@ -81,8 +81,9 @@ static float measureDistanceCm()
     return (float)durUs * 0.0343f * 0.5f;
 }
 
-// Device -> Cloud: ping and publish distance every 2 seconds.
-ZENO_EVERY(2000)
+// Device -> Cloud: ping every 0.5 seconds.
+// setZPublishInterval(1000) below publishes dirty Z values every 1 second.
+ZENO_EVERY(500)
 {
     const float d = measureDistanceCm();
     if (d > 0.0f)    // skip if the measurement timed out
@@ -102,6 +103,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 }
 

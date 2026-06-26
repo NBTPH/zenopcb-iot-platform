@@ -1,6 +1,6 @@
 /**
  * @file 05_dallas_ds18b20.ino
- * @brief Read a Dallas DS18B20 1-Wire temperature sensor and publish degC to Z0 every 5 seconds.
+ * @brief Read a Dallas DS18B20 1-Wire temperature sensor and publish degC to Z0 every 2 seconds.
  *
  * What you'll learn:
  *   - What 1-Wire is and why DS18B20 only needs one data pin for many sensors
@@ -66,8 +66,9 @@ Zeno zeno;
 OneWire             oneWire(ONEWIRE_PIN);
 DallasTemperature   sensors(&oneWire);    // wraps the 1-Wire bus with a friendly API
 
-// Device -> Cloud: read DS18B20 and publish degC every 5 seconds.
-ZENO_EVERY(5000)
+// Device -> Cloud: read DS18B20 every 1 second.
+// setZPublishInterval(2000) below publishes dirty Z values every 2 seconds.
+ZENO_EVERY(1000)
 {
     sensors.requestTemperatures();           // tell every sensor on the bus to convert
     const float t = sensors.getTempCByIndex(0);
@@ -88,6 +89,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(2000)
         .begin();
 }
 

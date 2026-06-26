@@ -121,6 +121,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 
     // Seed Z0 with the initial OFF state right after connect. This makes the

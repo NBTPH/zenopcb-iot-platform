@@ -72,6 +72,7 @@ static inline void writeLed(bool on)
 #else
     digitalWrite(LED_PIN, on ? HIGH : LOW);
 #endif
+    Serial.println(on ? " ON" : " OFF");
 }
 
 // Cloud -> Device: dashboard writes Z0 -> turn LED on/off.
@@ -92,6 +93,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(500)
         .begin();
 }
 

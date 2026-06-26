@@ -61,8 +61,8 @@
  *   3. Replace DEVICE_ID + DEVICE_TOKEN below.
  *   4. (Optional) Configure the APN once via the captive portal: hold IO-0
  *      for 3 seconds on first boot. The library stores it in NVS afterwards.
- *   5. Flash and open the Serial Monitor at 115200 baud. A heartbeat
- *      publishes to Z0 every 60 seconds — slower cadence saves cellular data.
+ *   5. Flash and open the Serial Monitor at 115200 baud. A heartbeat samples
+ *      every 1 s and publishes to Z0 every 2 s.
  *
  * Tips & common mistakes:
  *   - Cellular modems draw heavy current spikes (up to 2 A during TX bursts).
@@ -71,8 +71,8 @@
  *   - First registration after power-on takes 15-60 seconds. Be patient and
  *     check the Serial Monitor for `getSignalQuality()` values — 0 means
  *     "no signal", 31 is "excellent".
- *   - Heartbeats are intentionally every 60 s (not 30 s like WiFi) because
- *     cellular data plans are usually metered.
+ *   - Heartbeats publish more slowly than WiFi examples because cellular data
+ *     plans are usually metered.
  */
 
 // IMPORTANT: select your modem family BEFORE `#include <ZenoPCBMain.h>`.
@@ -125,10 +125,9 @@ Zeno zeno;
 static uint32_t s_beatCount = 0;
 
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_CELLULAR)
-// Device -> Cloud: heartbeat every 60 seconds. Slower than WiFi (30 s) to
-// keep cellular bills small. Each line also logs signal strength + IP so you
-// can see whether the modem is registered on the network.
-ZENO_EVERY(60000)
+// Device -> Cloud: sample heartbeat every 1 second. Publish cadence is 2 s
+// below to keep the cellular example responsive without being too chatty.
+ZENO_EVERY(1000)
 {
     s_beatCount++;
     DEVICE_TO_CLOUD(Z0, (int32_t)s_beatCount);
@@ -152,6 +151,7 @@ void setup()
     zeno.device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&cellProvider)
         .enableZKeys()
+        .setZPublishInterval(2000)
         .onConnected([]()
                      { Serial.println(F("[03_4g_sim7600] cloud connected via 4G")); })
         .begin();

@@ -94,9 +94,9 @@ Zeno zeno;
 static uint32_t s_alarmLitUntilMs = 0;
 static const uint32_t LIT_MS = 5000; // hold the LED on for 5 s after a trip
 
-// Device -> Cloud: publish the sensor reading every 3 seconds so the cloud
-// can evaluate its alarm rule against it.
-ZENO_EVERY(3000)
+// Device -> Cloud: sample the sensor every 0.5 seconds so the cloud can
+// evaluate its alarm rule against fresh data. Publish cadence is 1 s below.
+ZENO_EVERY(500)
 {
     const float pct = (float)analogRead(SENSOR_PIN) / ADC_FULL * 100.0f;
     DEVICE_TO_CLOUD(Z2, pct);
@@ -138,6 +138,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .enableAlarm()                       // turn on alarm subsystem
         .onAlarmTriggered(onAlarmTriggered)  // wire our callback
         .begin();

@@ -62,8 +62,9 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-// Device -> Cloud: sample brightness and publish every 1 second.
-ZENO_EVERY(1000)
+// Device -> Cloud: sample brightness every 0.5 seconds.
+// setZPublishInterval(1000) below publishes dirty Z values every 1 second.
+ZENO_EVERY(500)
 {
     const float raw = (float)analogRead(LDR_PIN);
     const float pct = (raw / ADC_FULL_SCALE) * 100.0f;  // normalise to 0..100 %
@@ -78,6 +79,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 }
 

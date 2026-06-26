@@ -5,7 +5,7 @@
  * What you'll learn:
  *   - What analogRead() returns on different boards (different bit-widths)
  *   - How to normalise a raw ADC value to a uniform 0..100 % range
- *   - How ZENO_EVERY(N) schedules periodic Device -> Cloud publishes
+ *   - How ZENO_EVERY(N) samples values while setZPublishInterval(N) publishes them
  *
  * Hardware needed:
  *   - Any supported board with an ADC pin
@@ -64,8 +64,9 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-// Device -> Cloud: read the analog input and publish every 5 seconds.
-ZENO_EVERY(5000)
+// Device -> Cloud: read the analog input every 0.5 seconds.
+// setZPublishInterval(1000) below publishes dirty Z values every 1 second.
+ZENO_EVERY(500)
 {
     const float raw = (float)analogRead(SENSOR_PIN);
     const float pct = (raw / ADC_FULL_SCALE) * 100.0f;   // normalise across boards
@@ -80,6 +81,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(500)
         .begin();
 }
 

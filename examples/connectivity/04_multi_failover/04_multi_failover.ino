@@ -54,7 +54,7 @@
  *   2. Build with the three flags above.
  *   3. Replace credentials below.
  *   4. Flash and open the Serial Monitor at 115200 baud. The active provider
- *      name is published to Z0 every 10 seconds.
+ *      name samples every 1 s and publishes to Z0 every 2 s.
  *   5. Try unplugging the Ethernet cable: Z0 should switch to "WiFi".
  *      Disable the WiFi network: Z0 should switch to "4G".
  *
@@ -116,9 +116,9 @@ Zeno zeno;
 #endif
 
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET) && defined(ZENOPCB_ENABLE_CELLULAR)
-// Device -> Cloud: every 10 seconds, publish the name + IP of the link that
-// is currently carrying traffic. The dashboard can then plot link state.
-ZENO_EVERY(10000)
+// Device -> Cloud: sample the active link every 1 second. Publish cadence is
+// 2 s below because failover can involve slower network providers.
+ZENO_EVERY(1000)
 {
     const char *activeName = multiProvider.getName();    // "Ethernet" / "WiFi" / "4G"
     String      activeIP   = multiProvider.getLocalIP();
@@ -147,6 +147,7 @@ void setup()
         .device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&multiProvider)
         .enableZKeys()
+        .setZPublishInterval(2000)
         .onConnected([]()
                      { Serial.println(F("[04_multi_failover] cloud connected (some link)")); })
         .begin();

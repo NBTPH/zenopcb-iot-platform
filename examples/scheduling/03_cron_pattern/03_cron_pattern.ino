@@ -125,6 +125,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZInstantPublish(true)
         .enableSchedule()
         .onScheduleExecuted(onScheduleExecuted)
         .begin();

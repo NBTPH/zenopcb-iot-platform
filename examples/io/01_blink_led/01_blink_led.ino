@@ -76,6 +76,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZInstantPublish(true)
         .begin();
 }
 
@@ -88,12 +89,14 @@ void loop()
         s_lastToggle = now;
         s_ledState   = !s_ledState;
 
+        Serial.print("Turning LED");
 #if defined(STM32F1)
         // Blue Pill LED is active-LOW, so invert the level.
         digitalWrite(LED_PIN, s_ledState ? LOW : HIGH);
 #else
         digitalWrite(LED_PIN, s_ledState ? HIGH : LOW);
 #endif
+        Serial.println(s_ledState ? " ON" : " OFF");
 
         // Device -> Cloud: publish the new boolean to Z0.
         DEVICE_TO_CLOUD(Z0, s_ledState);

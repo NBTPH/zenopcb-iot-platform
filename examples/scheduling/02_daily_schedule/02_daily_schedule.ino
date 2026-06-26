@@ -133,6 +133,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .enableSchedule()                          // turn on schedule engine
         .onScheduleExecuted(onScheduleExecuted)    // wire our callback
         .begin();

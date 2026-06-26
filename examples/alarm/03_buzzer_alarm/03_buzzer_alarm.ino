@@ -86,9 +86,9 @@ Zeno zeno;
 static uint32_t s_buzzerOffMs = 0;
 static const uint32_t PULSE_MS = 3000; // 3-second beep
 
-// Device -> Cloud: stream sensor readings to Z2 every 3 s for the rule
-// engine to evaluate.
-ZENO_EVERY(3000)
+// Device -> Cloud: sample sensor readings to Z2 every 0.5 s for the rule
+// engine to evaluate. Publish cadence is 1 s below.
+ZENO_EVERY(500)
 {
     const float pct = (float)analogRead(SENSOR_PIN) / ADC_FULL * 100.0f;
     DEVICE_TO_CLOUD(Z2, pct);
@@ -121,6 +121,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .enableAlarm()
         .onAlarmTriggered(onAlarmTriggered)
         .begin();

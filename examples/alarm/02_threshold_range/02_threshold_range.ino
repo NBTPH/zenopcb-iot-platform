@@ -93,9 +93,9 @@ using namespace ZenoPCB;
 
 Zeno zeno;
 
-// Device -> Cloud: publish the sensor value every 3 s so the cloud rule
-// engine has something to evaluate against.
-ZENO_EVERY(3000)
+// Device -> Cloud: sample the sensor value every 0.5 s so the cloud rule
+// engine has fresh data to evaluate. Publish cadence is 1 s below.
+ZENO_EVERY(500)
 {
     const float pct = (float)analogRead(SENSOR_PIN) / ADC_FULL * 100.0f;
     DEVICE_TO_CLOUD(Z2, pct);
@@ -138,6 +138,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .enableAlarm()
         .onAlarmTriggered(onAlarmTriggered)
         .begin();

@@ -1,7 +1,7 @@
 /**
  * @file 02_multi_zsignal_aggregator.ino
- * @brief Read 5 analog channels every 2 s, publish each as Z0..Z4, and every
- *        10 s also publish a combined JSON summary on Z5.
+ * @brief Read 5 analog channels every 0.5 s, publish each as Z0..Z4 every
+ *        1 s, and every 2 s also publish a combined JSON summary on Z5.
  *
  * What you'll learn:
  *   - Publishing multiple independent values from a single ZENO_EVERY block.
@@ -21,7 +21,7 @@
  *
  * Cloud dashboard setup:
  *   - Create Z0..Z4 of type Float — one per channel, value in percent.
- *   - Create Z5 of type String — receives the combined JSON summary every 10 s.
+ *   - Create Z5 of type String — receives the combined JSON summary every 2 s.
  *
  * @category Patterns
  * @level Intermediate
@@ -39,8 +39,8 @@
  * 3. Flash the board.
  * 4. Open Serial Monitor at 115200 baud.
  * 5. Each loop iteration reads 5 analog channels and writes them to Z0..Z4
- *    (normalised to 0..100% using the board's ADC bit depth). Every 10 s
- *    (every 5 samples at 2 s cadence) the JSON summary is also written to
+ *    (normalised to 0..100% using the board's ADC bit depth). Every 2 s
+ *    (every 4 samples at 0.5 s cadence) the JSON summary is also written to
  *    Z5 — useful when downstream consumers prefer one event over five.
  *
  * Tips & common mistakes:
@@ -82,17 +82,17 @@ using namespace ZenoPCB;
 #endif
 
 Zeno zeno;
-static const uint32_t SAMPLE_MS    = 2000; // sample all 5 channels every 2 s
-// Summary is emitted every SUMMARY_EVERY_N samples (so 5 * 2000 ms = 10 s).
+static const uint32_t SAMPLE_MS    = 500; // sample all 5 channels every 0.5 s
+// Summary is emitted every SUMMARY_EVERY_N samples (so 4 * 500 ms = 2 s).
 // Library limitation: only one ZENO_EVERY block per translation unit, so the
 // summary cadence is sub-divided inside the same block rather than declared
 // as a second block.
-static const uint8_t  SUMMARY_EVERY_N = 5;
+static const uint8_t  SUMMARY_EVERY_N = 4;
 
 static float   s_pct[5]      = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 static uint8_t s_sampleCount = 0;
 
-// Device -> Cloud: every SAMPLE_MS, read all 5 channels and publish them.
+// Device -> Cloud: every SAMPLE_MS, read all 5 channels and mark them dirty.
 ZENO_EVERY(SAMPLE_MS)
 {
     // 1) Sample all channels and convert raw ADC counts to a percentage.
@@ -130,6 +130,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 }
 

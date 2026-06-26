@@ -1,6 +1,6 @@
 /**
  * @file 01_dht22_temp_humidity.ino
- * @brief Read temperature and humidity from a DHT22 sensor and publish to Z0 and Z1 every 5 seconds.
+ * @brief Read temperature and humidity from a DHT22 sensor and publish to Z0 and Z1 every 2 seconds.
  *
  * What you'll learn:
  *   - How to talk to a 1-wire DHT22 sensor through the Adafruit DHT library
@@ -27,10 +27,10 @@
  *   2. Install the "DHT sensor library" by Adafruit (see @lib_deps).
  *   3. Open Tools > Partition Scheme > "Minimal SPIFFS (1.9MB APP)" (ESP32 only).
  *   4. Flash and open Serial Monitor at 115200 baud.
- *   5. Z0 / Z1 should update every 5 s; breathe on the sensor to see them change.
+ *   5. Z0 / Z1 should update every 2 s; breathe on the sensor to see them change.
  *
  * Tips & common mistakes:
- *   - DHT22 needs at least ~2 s between reads. 5 s is comfortably safe.
+ *   - DHT22 needs at least ~2 s between reads; this example keeps that limit.
  *   - Without the 4.7 kOhm pull-up you'll get random read failures (NaN).
  *   - If readings show as NaN, double-check VCC, GND, and the pull-up resistor.
  *
@@ -65,8 +65,9 @@ using namespace ZenoPCB;
 Zeno zeno;
 DHT  dht(DHT_PIN, DHT_TYPE);
 
-// Device -> Cloud: read temperature + humidity and publish every 5 seconds.
-ZENO_EVERY(5000)
+// Device -> Cloud: read temperature + humidity every 2 seconds.
+// setZPublishInterval(2000) below publishes dirty Z values on the same cadence.
+ZENO_EVERY(2000)
 {
     const float t = dht.readTemperature();   // degC
     const float h = dht.readHumidity();      // % RH
@@ -92,6 +93,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(2000)
         .begin();
 }
 

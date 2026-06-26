@@ -59,8 +59,8 @@
  *   2. Replace DEVICE_ID and DEVICE_TOKEN below.
  *   3. Add `-DZENOPCB_ENABLE_ETHERNET` to your build flags (ESP32 only).
  *   4. Flash and open the Serial Monitor at 115200 baud.
- *   5. The router's DHCP assigns an IP; a heartbeat then publishes to Z0
- *      every 30 seconds.
+ *   5. The router's DHCP assigns an IP; a heartbeat samples every 0.5 s and
+ *      publishes to Z0 every 1 s.
  *
  * How to use:
  *   1. Replace DEVICE_ID / DEVICE_TOKEN below.
@@ -118,8 +118,8 @@ Zeno zeno;
 static uint32_t s_beatCount = 0;
 
 #if defined(ESP32) && defined(ZENOPCB_ENABLE_ETHERNET)
-// Device -> Cloud: publish a heartbeat every 30 seconds, plus the current IP.
-ZENO_EVERY(30000)
+// Device -> Cloud: sample a heartbeat every 0.5 seconds, plus the current IP.
+ZENO_EVERY(500)
 {
     s_beatCount++;
     DEVICE_TO_CLOUD(Z0, (int32_t)s_beatCount);
@@ -141,6 +141,7 @@ void setup()
     zeno.device(DEVICE_ID, DEVICE_TOKEN)
         .setNetworkProvider(&ethProvider)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .onConnected([]()
                      { Serial.println(F("[02_ethernet_w5500] cloud connected via Ethernet")); })
         .begin();

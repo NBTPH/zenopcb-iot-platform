@@ -1,6 +1,6 @@
 /**
  * @file 06_soil_moisture.ino
- * @brief Read a capacitive soil moisture sensor and publish 0..100 % to Z0 every 30 seconds.
+ * @brief Read a capacitive soil moisture sensor and publish 0..100 % to Z0 every 1 second.
  *
  * What you'll learn:
  *   - The difference between capacitive (recommended) and resistive (corrodes) soil probes
@@ -26,7 +26,8 @@
  *   3. Calibrate DRY_RAW and WET_RAW by running this sketch with the probe
  *      held in dry air (DRY) and submerged in water (WET), then update the
  *      constants below.
- *   4. Flash and open Serial Monitor at 115200 baud — Z0 updates every 30 s.
+ *   4. Flash and open Serial Monitor at 115200 baud — local samples run every
+ *      0.5 s and Z0 publishes every 1 s.
  *
  * Tips & common mistakes:
  *   - Capacitive probes give LOWER raw ADC values when wet. We invert that
@@ -72,8 +73,9 @@ static float toPercent(int raw)
     return 100.0f * (float)(DRY_RAW - raw) / (float)(DRY_RAW - WET_RAW);
 }
 
-// Device -> Cloud: sample soil moisture and publish every 30 seconds.
-ZENO_EVERY(30000)
+// Device -> Cloud: sample soil moisture every 0.5 seconds.
+// setZPublishInterval(1000) below publishes dirty Z values every 1 second.
+ZENO_EVERY(500)
 {
     const int raw = analogRead(SOIL_PIN);
     const float pct = toPercent(raw);
@@ -88,6 +90,7 @@ void setup()
     zeno.wifi(WIFI_SSID, WIFI_PASS)
         .device(DEVICE_ID, DEVICE_TOKEN)
         .enableZKeys()
+        .setZPublishInterval(1000)
         .begin();
 }
 
